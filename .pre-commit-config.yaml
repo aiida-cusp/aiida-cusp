@@ -6,5 +6,8 @@ repos:
   - id: check-yaml
   - id: fix-encoding-pragma
   - id: trailing-whitespace
+- repo: https://gitlab.com/pycqa/flake8
+  rev: 3.8.1
+  hooks:
   - id: flake8
     args: ['--ignore=F401,F841,W503,E402']

@@ -1,0 +1,31 @@
+{
+    "name": "aiida-cusp",
+    "version": "0.0",
+    "author": "Andreas Stamminger",
+    "author_email": "stammingera@gmail.com",
+    "classifiers": [
+        "Development Status ::",
+        "Programming Language :: Python :: 3"
+		],
+    "platforms": [
+        "unix"
+    ],
+    "entry_points": {
+    },
+    "install_requires": [
+        "aiida-core>=1.0.0a1,<2.0.0",
+        "custodian",
+        "pymatgen"
+    ],
+    "extras_require": {
+        "docs": [
+            "sphinx",
+            "sphinx_rtd_scheme"
+        ],
+        "develop": [
+            "pre-commit"
+        ]
+    },
+    "license": "MIT License",
+    "url": "https://github.com/astamminger/aiida-cusp"
+}

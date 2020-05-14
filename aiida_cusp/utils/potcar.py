@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+
 """
 Utility module implementing several methods for parsing and interacting
 with VASP potential files.
 """
+
 
 import re
 import hashlib
@@ -15,6 +17,8 @@ import warnings
 #        really needs it
 # FIXME: possibly switch from title line identifiers to a more robust
 #        identifier for the quirk mapping
+# FIXME: move custom exceptions to a central module
+
 
 class PotcarParsingError(Exception):
     """Exception raised by the PotcarParser class."""
@@ -23,7 +27,7 @@ class PotcarParsingError(Exception):
 
 class PotcarParser(object):
     """
-    Parsing library for parsing VASP POTCAR files
+    Parsing library for VASP POTCAR files
 
     :param path_to_potcar_file: path to a VASP POTCAR file
     :type path_to_potcar_file: pathlib.Path

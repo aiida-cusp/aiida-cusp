@@ -15,7 +15,7 @@ pytest_plugins = ['aiida.manage.tests.pytest_fixtures']
 
 
 @pytest.fixture(scope='function')
-def interactive_potcar_file(temporary_workdir):
+def interactive_potcar_file(tmpdir):
     """
     Opens a variably named POTCAR file with interactive access to it's
     contents.
@@ -23,7 +23,7 @@ def interactive_potcar_file(temporary_workdir):
     class InteractivePotcar(object):
         def __init__(self, tmpfolder):
             """Setup internal variables."""
-            self._tempfolder = pathlib.Path(tmpfolder)
+            self._tmpfolder = pathlib.Path(tmpdir)
             self._filepath = None
             self._file = None
 
@@ -63,4 +63,4 @@ def interactive_potcar_file(temporary_workdir):
                 raise Exception("Unable to write contents to file, currently "
                                 "no open file handle available.")
 
-    return InteractivePotcar(temporary_workdir)
+    return InteractivePotcar(tmpdir)

@@ -25,7 +25,8 @@
         ],
         "develop": [
             "pre-commit",
-						"pytest"
+						"pytest",
+						"pgtest"
         ]
     },
     "license": "MIT License",

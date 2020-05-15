@@ -1,15 +1,16 @@
 {
     "name": "aiida-cusp",
-    "version": "0.0",
+    "version": "0.0.0",
     "author": "Andreas Stamminger",
     "author_email": "stammingera@gmail.com",
     "classifiers": [
-        "Development Status ::",
-        "Programming Language :: Python :: 3"
+        "Development Status :: 1 - Planning",
+        "Programming Language :: Python :: 3",
+				"Topic :: Scientific/Engineering :: Physics",
+				"License :: OSI Approved :: MIT License",
+				"Environment :: Plugins",
+				"Framework :: AiiDA"
 		],
-    "platforms": [
-        "unix"
-    ],
     "entry_points": {
     },
     "install_requires": [
@@ -20,10 +21,11 @@
     "extras_require": {
         "docs": [
             "sphinx",
-            "sphinx_rtd_scheme"
+            "sphinx_rtd_theme"
         ],
         "develop": [
-            "pre-commit"
+            "pre-commit",
+						"pytest"
         ]
     },
     "license": "MIT License",

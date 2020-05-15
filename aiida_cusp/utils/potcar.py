@@ -104,10 +104,11 @@ class PotcarParser(object):
     }
 
     # regular expressions used for parsing
-    # match ^ and consecutive whitespaces (reduce potcar content)
-    _RE_REDUCE_CONTENT = re.compile(r"[\^ \t]+")
+    # remove and codense to transform contents in well defined state
+    _RE_REMOVE_CHARS = re.compile(r"[\^\t]")  # replace with ""
+    _RE_CONDENSE_CHARS = re.compile(r"[ ]+")  # replace with " "
     # header
-    _RE_HEADER = re.compile(r"(?i)(^[\s\S]+)(?:end of psctr)")
+    _RE_HEADER = re.compile(r"(?i)(?<=psctr are\:)([\s\S]+)(?=end of psctr)")
     # element
     _RE_ELEMENT = re.compile(r"(?i)(?<=VRHFIN)(?:\s*=\s*)([a-z]+)(?=\s*\:)")
     # creation date
@@ -142,9 +143,12 @@ class PotcarParser(object):
         :return: returns the reduced contents of the potcar file
         :rtype: str
         """
-        with open(self.path, 'rU') as potcar:
+        with open(self.path, 'r') as potcar:
             content = potcar.read()
-        reduced_content = self._RE_REDUCE_CONTENT.sub(r" ", content)
+        reduced_content = content
+        # remove all unwanted chars from the contents
+        reduced_content = self._RE_REMOVE_CHARS.sub(r"", reduced_content)
+        reduced_content = self._RE_CONDENSE_CHARS.sub(r" ", reduced_content)
         return reduced_content
 
     def hash_contents(self):

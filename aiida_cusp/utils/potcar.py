@@ -105,8 +105,8 @@ class PotcarParser(object):
 
     # regular expressions used for parsing
     # remove and codense to transform contents in well defined state
-    _RE_REMOVE_CHARS = re.compile(r"[\^\t]")  # replace with ""
-    _RE_CONDENSE_CHARS = re.compile(r"[ ]+")  # replace with " "
+    _RE_REMOVE_CHARS = re.compile(r"[\^]")  # replace with ""
+    _RE_CONDENSE_CHARS = re.compile(r"[ \t]+")  # replace with " "
     # header
     _RE_HEADER = re.compile(r"(?i)(?<=psctr are\:)([\s\S]+)(?=end of psctr)")
     # element

@@ -11,7 +11,7 @@ import string
 
 from pymatgen.core import periodic_table
 
-from aiida_cusp.utils import PotcarParser
+from aiida_cusp.utils import PotcarParser, PotcarParsingError
 
 
 # ever growing list of sample cases testing the regular expression used
@@ -184,47 +184,14 @@ def test_potcar_parser_class(interactive_potcar_file):
     assert parsed.version == 99990399
 
 
-# test application of implemented quirks
-@pytest.mark.parametrize('quirk,expected_attributes',
-[   # noqa: E128
-    ('PAW_PBE Xe 07Sep2000', {
-        'element': 'Xe',
-    })
-    ('PAW Xe 07Sep2000', {
-        'element': 'Xe',
-    })
-    ('PAW_PBE Zr_sv 04Jan2005', {
-        'element': 'Zr',
-    })
-    ('US Bi', {
-        'element': 'Bi',
-    })
-    ('PAW Bi_pv 29Jan08', {
-        'version': 20080129,
-    })
-    ('PAW Ga_d_GW 10Nov06', {
-        'version': 20061110,
-    })
-    ('PAW_PBE Bi_pv 29Jan08', {
-        'version': 20080129,
-    })
-    ('PAW_PBE Bi_pv 29Jan08 GW ready', {
-        'version': 20080129,
-    })
-    ('PAW_PBE Ga_sv_GW 03Mar08', {
-        'version': 20080303,
-    })
-])
-def test_quirks_are_applied(interactive_potcar_file, quirk,
-                            expected_attributes):
+def test_apply_quirks(interactive_potcar_file):
     # construct potential with appropriate title line to trigger the
-    # quirk execution
+    # corresponindg quirk
     potential_contents = "\n".join([
-        "{} VRHFIN =Xy: s100p100d100".format(quirk),
-        "9.999999999999999999999",
+        "functional Xy 01Jan1000",
         "parameters from PSCTR are:",
         "VRHFIN =Xy: s100p100d100",
-        "TITEL  = {}".format(quirk),
+        "TITEL  = functional Xy 01Jan1000"
         "END of PSCTR-controll parameters",
         "numerical potential contents following the header",
     ])
@@ -232,5 +199,50 @@ def test_quirks_are_applied(interactive_potcar_file, quirk,
     interactive_potcar_file.write(potential_contents)
     path_to_potcar = interactive_potcar_file.filepath
     parsed_potential = PotcarParser(path_to_potcar)
-    for (attr_name, expected_attr_val) in expected_attributes.items():
-        assert getattr(parsed_potential, attr_name) == expected_attr_val
+    assert parsed_potential.element == 'Xy'
+    assert parsed_potential.version == 10000101
+    # setup a custom quirk
+    parsed_potential._QUIRKS = {
+        'hash123': [
+            lambda self: setattr(self, 'element', 'Yz'),
+            lambda self: setattr(self, 'version', 99999999),
+        ],
+    }
+    # change potential hash to match the quirk-hash
+    parsed_potential.hash = 'hash123'
+    # run apply_quirk() and check contents have changed
+    parsed_potential.apply_quirks()
+    assert parsed_potential.element == 'Yz'
+    assert parsed_potential.version == 99999999
+
+
+# check that unparseable version, element or date raises and exception
+def test_unparseable_raises(interactive_potcar_file):
+    potential_contents = "\n".join([
+        "functional Xy 01Jan1000",
+        "parameters from PSCTR are:",
+        "VRHFIN =Xy: s100p100d100",
+        "TITEL  = functional Xy 01Jan1000"
+        "END of PSCTR-controll parameters",
+    ])
+    interactive_potcar_file.open("POTCAR")
+    interactive_potcar_file.write(potential_contents)
+    path_to_potcar = interactive_potcar_file.filepath
+    # def unparsed element
+    parsed_potential = PotcarParser(path_to_potcar)
+    parsed_potential.element = None
+    with pytest.raises(PotcarParsingError) as exception:
+        parsed_potential.verify_parsed()
+    assert "Error parsing the element for file" in str(exception.value)
+    # def unparsed header
+    parsed_potential = PotcarParser(path_to_potcar)
+    parsed_potential.header = None
+    with pytest.raises(PotcarParsingError) as exception:
+        parsed_potential.verify_parsed()
+    assert "Error parsing the header for file" in str(exception.value)
+    # def unparsed version
+    parsed_potential = PotcarParser(path_to_potcar)
+    parsed_potential.version = None
+    with pytest.raises(PotcarParsingError) as exception:
+        parsed_potential.verify_parsed()
+    assert "Error parsing creation date for file" in str(exception.value)

@@ -44,19 +44,16 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      rabbitmq:
-        image: rabbitmq:latest
-        ports:
-          - 5672:5672
+#      rabbitmq:
+#        image: rabbitmq:latest
+#        ports:
+#          - 5672:5672
     steps:
       - name: Check postgres
         run: |
           sudo apt update
           sudo apt install postgresql-10
-          pg_isready || true
-          which pg_isready || true
-          which pg_ctl || true
-          which postgres || true
+          pg_isready -h localhost -p 5432
 #      - uses: actions/checkout@v2
 #      - name: Setup Python ${{ matrix.python-version }}
 #        uses: actions/setup-python@v2

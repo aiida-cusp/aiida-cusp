@@ -50,15 +50,12 @@ jobs:
           - 5672:5672
     steps:
 #      - uses: actions/checkout@v2
-      - name: Install pg_ctl on host machine
-        run: |
-          # AiiDA makes use of the pg_ctl command, thus postgresql-10 has
-          # to be installed on the host machine
-          sudo apt update
-          sudo apt install postgresql-10
-          # check pg_ctl is indeed available
-          which pg_ctl
-          pg_ctl -V
+    - name: Install pg_ctl on host machine
+      run: |
+        sudo apt update
+        sudo apt install postgresql-10
+        which pg_ctl
+        pg_ctl -V
 #      - name: Setup Python ${{ matrix.python-version }}
 #        uses: actions/setup-python@v2
 #        with:

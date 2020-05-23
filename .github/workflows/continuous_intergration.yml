@@ -58,6 +58,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install .[develop]
+          reentry scan
       - name: Test package using pytest
         run: |
           pytest

@@ -52,11 +52,11 @@ jobs:
       - name: Check postgres
         run: |
           sudo apt update
-          sudo apt install postgresql-client-10
-          pg_isready
-          which pg_isready
-          which pg_ctl
-          which postgres
+          sudo apt install postgresql-10
+          pg_isready || true
+          which pg_isready || true
+          which pg_ctl || true
+          which postgres || true
 #      - uses: actions/checkout@v2
 #      - name: Setup Python ${{ matrix.python-version }}
 #        uses: actions/setup-python@v2

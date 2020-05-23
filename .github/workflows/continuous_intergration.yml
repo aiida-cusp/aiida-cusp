@@ -9,22 +9,22 @@ on:
   pull_request:
     branches: [ develop ]
 
-jobs:
-  pre-commit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install .[develop]
-      - name: Run pre-commit hook
-        run: |
-          pre-commit run --all-files
+#jobs:
+#  pre-commit:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Setup Python 3.8
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: 3.8
+#      - name: Install dependencies
+#        run: |
+#          python -m pip install --upgrade pip
+#          pip install .[develop]
+#      - name: Run pre-commit hook
+#        run: |
+#          pre-commit run --all-files
 
   run-pytest:
     runs-on: ubuntu-latest
@@ -49,16 +49,20 @@ jobs:
         ports:
           - 5672:5672
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Dependencies
+      - name: Check postgres
         run: |
-          python -m pip install --upgrade pip
-          pip install -e .[develop]
-          reentry scan
-      - name: Test package using pytest
-        run: |
-          pytest
+          which pg_ctl
+          which postgres
+#      - uses: actions/checkout@v2
+#      - name: Setup Python ${{ matrix.python-version }}
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#      - name: Install Dependencies
+#        run: |
+#          python -m pip install --upgrade pip
+#          pip install -e .[develop]
+#          reentry scan
+#      - name: Test package using pytest
+#        run: |
+#          pytest

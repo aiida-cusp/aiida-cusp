@@ -49,15 +49,16 @@ jobs:
 #        ports:
 #          - 5672:5672
     steps:
-      - name: Check postgres
+#      - uses: actions/checkout@v2
+      - name: Install pg_ctl on host machine
         run: |
           pg_isready
           pg_ctl -V
-        env:
-          POSTGRES_HOST: localhost
 #          sudo apt update
 #          sudo apt install postgresql-10
-#      - uses: actions/checkout@v2
+          # check database can connect and pg_ctl available
+        env:
+          PGHOST: localhost
 #      - name: Setup Python ${{ matrix.python-version }}
 #        uses: actions/setup-python@v2
 #        with:
@@ -69,4 +70,4 @@ jobs:
 #          reentry scan
 #      - name: Test package using pytest
 #        run: |
-#          pytes
+#          pytest

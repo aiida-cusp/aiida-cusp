@@ -53,6 +53,8 @@ jobs:
         run: |
           pg_isready
           pg_ctl -V
+        env:
+          POSTGRES_HOST: localhost
 #          sudo apt update
 #          sudo apt install postgresql-10
 #      - uses: actions/checkout@v2

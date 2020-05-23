@@ -51,9 +51,10 @@ jobs:
     steps:
       - name: Check postgres
         run: |
+          sudo apt update
+          sudo apt install postgresql-10-client
           pg_isready
-          which rabbitmqctl
-          whoch pg_isready
+          which pg_isready
           which pg_ctl
           which postgres
 #      - uses: actions/checkout@v2
@@ -68,4 +69,4 @@ jobs:
 #          reentry scan
 #      - name: Test package using pytest
 #        run: |
-#          pytest
+#          pytes

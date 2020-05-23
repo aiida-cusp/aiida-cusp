@@ -52,18 +52,23 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install pg_ctl on host machine
       run: |
+        # install postgresql on the host machine as well since pg_ctl has to
+        # be available for AiiDA to work
         sudo apt update
         sudo apt install postgresql-10
+        # check pg_ctl is available
         /usr/lib/postgresql/10/bin/pg_ctl -V
-    #- name: Setup Python ${{ matrix.python-version }}
-    #  uses: actions/setup-python@v2
-    #  with:
-    #    python-version: ${{ matrix.python-version }}
-    #- name: Install aiida-cusp package and dependencies
-    #  run: |
-    #    python -m pip install --upgrade pip
-    #    pip install -e .[develop]
-    #    reentry scan
-    #- name: Test package using pytest
-    #  run: |
-    #    pytest
+    - name: Setup Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install aiida-cusp package and dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[develop]
+        reentry scan
+        # print out the list of installed packages
+        pip freeze
+    - name: Test package using pytest
+      run: |
+        pytest

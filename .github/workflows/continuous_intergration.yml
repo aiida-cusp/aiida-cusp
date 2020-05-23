@@ -51,9 +51,10 @@ jobs:
     steps:
       - name: Check postgres
         run: |
-          sudo apt update
-          sudo apt install postgresql-10
           pg_isready -h localhost -p 5432
+          pg_ctl -V
+#          sudo apt update
+#          sudo apt install postgresql-10
 #      - uses: actions/checkout@v2
 #      - name: Setup Python ${{ matrix.python-version }}
 #        uses: actions/setup-python@v2

@@ -44,30 +44,31 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-#      rabbitmq:
-#        image: rabbitmq:latest
-#        ports:
-#          - 5672:5672
+      rabbitmq:
+        image: rabbitmq:latest
+        ports:
+          - 5672:5672
     steps:
-#      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
       - name: Install pg_ctl on host machine
         run: |
-          pg_isready
+          # AiiDA makes use of the pg_ctl command, thus postgresql-10 has
+          # to be installed on the host machine
+          sudo apt update
+          sudo apt install postgresql-10
+          # check pg_ctl is indeed available
           pg_ctl -V
-#          sudo apt update
-#          sudo apt install postgresql-10
-          # check database can connect and pg_ctl available
         env:
           PGHOST: localhost
-#      - name: Setup Python ${{ matrix.python-version }}
-#        uses: actions/setup-python@v2
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#      - name: Install Dependencies
-#        run: |
-#          python -m pip install --upgrade pip
-#          pip install -e .[develop]
-#          reentry scan
-#      - name: Test package using pytest
-#        run: |
-#          pytest
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[develop]
+          reentry scan
+      - name: Test package using pytest
+        run: |
+          pytest

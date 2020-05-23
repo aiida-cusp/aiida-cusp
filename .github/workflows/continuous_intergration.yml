@@ -51,6 +51,7 @@ jobs:
     steps:
       - name: Check postgres
         run: |
+          pg_isready
           which pg_ctl
           which postgres
 #      - uses: actions/checkout@v2

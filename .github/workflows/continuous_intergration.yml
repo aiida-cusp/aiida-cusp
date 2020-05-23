@@ -49,22 +49,21 @@ jobs:
         ports:
           - 5672:5672
     steps:
-#      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
     - name: Install pg_ctl on host machine
       run: |
         sudo apt update
         sudo apt install postgresql-10
-        which true
-        pg_ctl -V
-#      - name: Setup Python ${{ matrix.python-version }}
-#        uses: actions/setup-python@v2
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#      - name: Install aiida-cusp package and dependencies
-#        run: |
-#          python -m pip install --upgrade pip
-#          pip install -e .[develop]
-#          reentry scan
-#      - name: Test package using pytest
-#        run: |
-#          pytest
+        /usr/lib/postgresql/10/bin/pg_ctl -V
+    #- name: Setup Python ${{ matrix.python-version }}
+    #  uses: actions/setup-python@v2
+    #  with:
+    #    python-version: ${{ matrix.python-version }}
+    #- name: Install aiida-cusp package and dependencies
+    #  run: |
+    #    python -m pip install --upgrade pip
+    #    pip install -e .[develop]
+    #    reentry scan
+    #- name: Test package using pytest
+    #  run: |
+    #    pytest

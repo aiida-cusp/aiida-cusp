@@ -52,7 +52,7 @@ jobs:
       - name: Check postgres
         run: |
           sudo apt update
-          sudo apt install postgresql-10-client
+          sudo apt install postgresql-client-10
           pg_isready
           which pg_isready
           which pg_ctl

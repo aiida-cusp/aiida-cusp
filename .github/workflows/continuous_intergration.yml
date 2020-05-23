@@ -54,7 +54,7 @@ jobs:
       run: |
         sudo apt update
         sudo apt install postgresql-10
-        which pg_ctl
+        which true
         pg_ctl -V
 #      - name: Setup Python ${{ matrix.python-version }}
 #        uses: actions/setup-python@v2

@@ -25,7 +25,7 @@ jobs:
     - name: Run pre-commit hook
       run: |
         pre-commit run --all-files
-        
+
   run-pytest:
     runs-on: ubuntu-latest
     strategy:

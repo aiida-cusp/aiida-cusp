@@ -51,7 +51,7 @@ jobs:
     steps:
       - name: Check postgres
         run: |
-          pg_isready -h localhost -p 5432
+          pg_isready
           pg_ctl -V
 #          sudo apt update
 #          sudo apt install postgresql-10

@@ -58,13 +58,11 @@ jobs:
           sudo apt install postgresql-10
           # check pg_ctl is indeed available
           pg_ctl -V
-        env:
-          PGHOST: localhost
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Dependencies
+      - name: Install aiida-cusp package and dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e .[develop]

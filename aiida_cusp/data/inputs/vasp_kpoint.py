@@ -71,10 +71,18 @@ class VaspKpointData(Dict):
         """
         Return a descriptive string of the stored k-point contents.
         """
-        # simply use the representation defined by the kpoints object
-        # itself which will print the contents in VASP input format
-        kpoints = self.get_kpoints()
-        return kpoints.__str__()
+        kpoint_dict = self.get_dict()
+        grid_style = kpoint_dict['generation_style']
+        if (grid_style == 'Automatic'):
+            # kpoint format Automatic: [[int(subdivisions)]]
+            subdiv = kpoint_dict['kpoints'][0][0]
+            return u'Automatic (Subdivisions: {})'.format(subdiv)
+        elif (grid_style == 'Line_mode'):
+            return u'Line-mode'
+        else:  # Monkhorst or Gamma grid
+            kpt_grid = kpoint_dict['kpoints'][0]
+            kpt_grid_str = 'x'.join(map(str, kpt_grid))
+            return u'{} ({})'.format(grid_style, kpt_grid_str)
 
 
 class KpointWrapper(object):

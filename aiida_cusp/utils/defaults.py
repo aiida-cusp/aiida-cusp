@@ -18,3 +18,7 @@ class VaspDefaults(object):
         'potUSPP_GGA': 'pw91_us',
         'potpaw_GGA': 'pw91',
     }
+    # filenames for VASP input and output files
+    FNAMES = {
+        'potcar': 'POTCAR',
+    }

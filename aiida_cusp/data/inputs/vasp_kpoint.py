@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+
+
 """
 Datatype and methods to initialize and interact with VASP specific KPOINTS
 input data
 """
+
 
 import warnings
 

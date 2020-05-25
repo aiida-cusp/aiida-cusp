@@ -293,3 +293,36 @@ class PotcarParser(object):
             # ... fail otherwise
             else:
                 return None
+
+#
+# TODO: Decide if these methods should go in here or somewhere else
+#  @classmethod
+#  def name_from_path(cls, path_to_potcar):
+#      """
+#      Figure out the potentials name from the given file path.
+#
+#      Assumes that the given filepath corresponds to the organization in
+#      the pseudo-potential libraries distributed by VASP, i.e. the path is
+#      assumed to be of the form /.../functiona_folder/potential_name/POTCAR
+#      """
+#      # figure out the name
+#      pass
+#
+#  @classmethod
+#  def functional_from_path(cls, path_to_potcar):
+#      """
+#      Figure out the potential's functional group from the given filepath.
+#
+#      Assumes that the given filepath corresponds to the organization in
+#      the pseudo-potential libraries distributed by VASP, i.e. the path is
+#      assumed to be of the form /.../functiona_folder/potential_name/POTCAR
+#      """
+#      # figure out the functional
+#      functional_folder_names = VaspDefaults.FUNCTIONAL_MAP.keys()
+#      functional_folder = str(path_to_potcar.parent.parent.name)
+#      for folder_name, internal_name  in VaspDefaults.FUNCTIONAL_MAP.items():
+#          if folder_name.lower() == functional_folder.lower():
+#              return internal_name
+#      raise VaspPotcarFileError("Unable to determine the functional group "
+#                                "from the given filepath '{}'"
+#                                .format(path_to_potcar))

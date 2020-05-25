@@ -14,6 +14,7 @@
     "entry_points": {
 			"aiida.data": [
 				"cusp.kpoints = aiida_cusp.data.inputs.vasp_kpoint:VaspKpointData",
+				"cusp.incar = aiida_cusp.data.inputs.vasp_incar:VaspIncarData",
 				"cusp.potcar_file_node = aiida_cusp.data.inputs.vasp_potcar:VaspPotcarFile"
 			]
     },

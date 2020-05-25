@@ -62,6 +62,7 @@ class VaspKpointData(Dict):
 
         :param filename: destination for the output file
         :type filename: str
+        :return: None
         """
         kpoints = self.get_kpoints()
         kpoints.write_file(filename)
@@ -71,8 +72,7 @@ class VaspKpointData(Dict):
         Return a descriptive string of the stored k-point contents.
         """
         # simply use the representation defined by the kpoints object
-        # itself which will print the contents as stored to the VASP input
-        # files
+        # itself which will print the contents in VASP input format
         kpoints = self.get_kpoints()
         return kpoints.__str__()
 

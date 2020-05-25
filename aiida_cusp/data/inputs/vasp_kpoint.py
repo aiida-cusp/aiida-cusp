@@ -228,9 +228,14 @@ class KpointWrapper(object):
         if cls.kpoint_params['sympath'] is not None:
             warnings.warn("Explicit gamma grid mode: Ignoring defined high "
                           "symmetry path object")
-
         kpoints = cls.kpoint_params['kpoints']
+        if len(kpoints) != 3:
+            raise KpointWrapperError("Expected list of length 3 for explict "
+                                     "k-point grid input")
         shift = cls.kpoint_params['shift'] or [.0, .0, .0]
+        if len(shift) != 3:
+            raise KpointWrapperError("Expected list of length 3 for k-point "
+                                     "grid shift")
         return Kpoints.gamma_automatic(kpts=kpoints, shift=shift)
 
     @classmethod
@@ -249,7 +254,13 @@ class KpointWrapper(object):
             warnings.warn("Explicit monkhorst grid mode: Ignoring defined "
                           "high symmetry path object")
         kpoints = cls.kpoint_params['kpoints']
+        if len(kpoints) != 3:
+            raise KpointWrapperError("Expected list of length 3 for explict "
+                                     "k-point grid input")
         shift = cls.kpoint_params['shift'] or [.0, .0, .0]
+        if len(shift) != 3:
+            raise KpointWrapperError("Expected list of length 3 for k-point "
+                                     "grid shift")
         return Kpoints.monkhorst_automatic(kpts=kpoints, shift=shift)
 
     @classmethod

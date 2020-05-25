@@ -193,3 +193,29 @@ def test_init_from_kpoint_object():
     pmg_kpoints = Kpoints.automatic(100)
     wrapper_kpoints = KpointWrapper(kpoints=pmg_kpoints)
     assert pmg_kpoints.__str__ == wrapper_kpoints.__str__
+
+
+@pytest.mark.parametrize('explicit_grid_list',
+[   # noqa: E128
+    [1, 1], [1, 1, 1, 1],
+])
+@pytest.mark.parametrize('explicit_grid_shift',
+[   # noqa: E128
+    [.1, .1], [.1, .1, .1, .1], None,
+])
+@pytest.mark.parametrize('explicit_grid_mode',
+[   # noqa: E128
+    'monkhorst', 'gamma',
+])
+def test_explicit_mode_kpoint_list_length(explicit_grid_list,
+                                          explicit_grid_shift,
+                                          explicit_grid_mode):
+    # grid without shift
+    kpoint_params = {
+        'mode': explicit_grid_mode,
+        'kpoints': explicit_grid_list,
+        'shift': explicit_grid_shift,
+    }
+    with pytest.raises(KpointWrapperError) as exception:
+        kpoints = KpointWrapper(kpoints=kpoint_params)
+    assert "Expected list of length 3" in str(exception.value)

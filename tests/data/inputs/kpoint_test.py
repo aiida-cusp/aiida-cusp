@@ -8,17 +8,103 @@ utility
 
 
 import pytest
+import pathlib
 
 from pymatgen.io.vasp.inputs import Kpoints_supported_modes, Poscar, Kpoints
 from pymatgen.core import Structure, Lattice
 from pymatgen.symmetry.bandstructure import HighSymmKpath
 from aiida.orm import StructureData
 
-from aiida_cusp.data.inputs.vasp_kpoint import VaspKpointData
+from aiida_cusp.data import VaspKpointData
 from aiida_cusp.data.inputs.vasp_kpoint import KpointWrapper
 from aiida_cusp.data.inputs.vasp_kpoint import KpointWrapperError
 
 
+#
+# Tests for VaspKpointData
+#
+@pytest.mark.parametrize('kpoint_params,structure,sympath',
+[   # noqa: E128
+    ({'mode': 'auto', 'kpoints': 100}, False, False),
+    ({'mode': 'gamma', 'kpoints': [5, 5, 5]}, False, False),
+    ({'mode': 'gamma', 'kpoints': [5, 5, 5], 'shift': [.1, .2, .3]}, False,
+     False),
+    ({'mode': 'gamma', 'kpoints': 100.0}, True, False),
+    ({'mode': 'monkhorst', 'kpoints': [4, 4, 4]}, False, False),
+    ({'mode': 'monkhorst', 'kpoints': [4, 4, 4], 'shift': [.1, .2, .3]}, False,
+     False),
+    ({'mode': 'monkhorst', 'kpoints': 100.0}, True, False),
+    ({'mode': 'line', 'kpoints': 100}, False, True),
+])
+def test_store_and_load_kpoint_data_density(kpoint_params, structure,
+                                            sympath):
+    from aiida.plugins import DataFactory
+    from aiida.orm import load_node
+    # setup minimal structure and high symmetry path
+    lattice = Lattice.cubic(1.0)
+    species = ['H']
+    coords = [[.0, .0, .0]]
+    struct = Structure(lattice, species, coords)
+    path = HighSymmKpath(struct, path_type='sc')
+    # update kpoint parameters depending on set structure or high symmetry
+    # path requirements
+    if not structure:
+        struct = None
+    if sympath:
+        kpoint_params.update({'sympath': path})
+    # setup the kpoint data object
+    KpointData = DataFactory('cusp.kpoints')
+    kpoints_set = KpointData(kpoints=kpoint_params, structure=struct)
+    # store and reload the object and finally compare to original inputs
+    uuid = kpoints_set.store().uuid
+    kpoints_get = load_node(uuid)
+    assert str(kpoints_set.get_kpoints()) == str(kpoints_get.get_kpoints())
+
+
+@pytest.mark.parametrize('kpoint_params,structure,sympath',
+[   # noqa: E128
+    ({'mode': 'auto', 'kpoints': 100}, False, False),
+    ({'mode': 'gamma', 'kpoints': [5, 5, 5]}, False, False),
+    ({'mode': 'gamma', 'kpoints': [5, 5, 5], 'shift': [.1, .2, .3]}, False,
+     False),
+    ({'mode': 'gamma', 'kpoints': 100.0}, True, False),
+    ({'mode': 'monkhorst', 'kpoints': [4, 4, 4]}, False, False),
+    ({'mode': 'monkhorst', 'kpoints': [4, 4, 4], 'shift': [.1, .2, .3]}, False,
+     False),
+    ({'mode': 'monkhorst', 'kpoints': 100.0}, True, False),
+    ({'mode': 'line', 'kpoints': 100}, False, True),
+])
+def test_write_file_method(kpoint_params, structure, sympath, tmpdir):
+    from aiida.plugins import DataFactory
+    # setup minimal structure and high symmetry path
+    lattice = Lattice.cubic(1.0)
+    species = ['H']
+    coords = [[.0, .0, .0]]
+    struct = Structure(lattice, species, coords)
+    path = HighSymmKpath(struct, path_type='sc')
+    # update kpoint parameters depending on set structure or high symmetry
+    # path requirements
+    if not structure:
+        struct = None
+    if sympath:
+        kpoint_params.update({'sympath': path})
+    # setup the kpoint data object
+    KpointData = DataFactory('cusp.kpoints')
+    kpoints = KpointData(kpoints=kpoint_params, structure=struct)
+    # write node contents to file
+    filepath = pathlib.Path(tmpdir) / 'KPOINTS'
+    assert filepath.is_file() is False  # assert file is not there already
+    kpoints.write_file(filepath)
+    assert filepath.is_file() is True   # assert file has been written
+    # load contents from file and compare to node contents
+    with open(filepath, 'r') as stored_kpoints_file:
+        written_contents = stored_kpoints_file.read()
+    assert written_contents == str(kpoints.get_kpoints())
+
+
+#
+# Tests for KpointWrapper utility
+#
 def test_unknown_init_mode_raises():
     kpoint_params = {
         'mode': 'gamma',

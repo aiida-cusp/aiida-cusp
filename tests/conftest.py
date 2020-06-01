@@ -9,6 +9,8 @@ import pytest
 import pathlib
 import tempfile
 
+from pymatgen.core import Lattice, Structure
+
 
 # make fixtures defined by AiiDA available
 pytest_plugins = ['aiida.manage.tests.pytest_fixtures']
@@ -62,5 +64,20 @@ def interactive_potcar_file(tmpdir):
             if self._file is None:
                 raise Exception("Unable to write contents to file, currently "
                                 "no open file handle available.")
-
     return InteractivePotcar(tmpdir)
+
+
+@pytest.fixture(scope='function')
+def minimal_pymatgen_structure():
+    """
+    Create a minimal pymatgen structure object for a fictitious simple-cubic
+    structure with a lattice constant of length 1.0 containing a single
+    hydrogen atom located at the origin of the cell.
+    """
+    # setup the simple-cubic lattice with H at the origin
+    lattice = Lattice.cubic(1.0)
+    species = ['H']
+    coords = [[.0, .0, .0]]
+    # setup pymatgen structure and associated poscar object
+    pymatgen_structure = Structure(lattice, species, coords)
+    yield pymatgen_structure

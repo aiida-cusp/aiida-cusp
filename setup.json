@@ -14,6 +14,7 @@
     "entry_points": {
 			"aiida.data": [
 				"cusp.kpoints = aiida_cusp.data.inputs.vasp_kpoint:VaspKpointData",
+				"cusp.poscar = aiida_cusp.data.inputs.vasp_poscar:VaspPoscarData",
 				"cusp.incar = aiida_cusp.data.inputs.vasp_incar:VaspIncarData",
 				"cusp.potcar_file_node = aiida_cusp.data.inputs.vasp_potcar:VaspPotcarFile"
 			]
@@ -21,7 +22,8 @@
     "install_requires": [
       "aiida-core>=1.0.0a1,<2.0.0",
       "custodian",
-      "pymatgen"
+      "pymatgen",
+			"ase"
     ],
     "extras_require": {
       "docs": [

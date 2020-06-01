@@ -5,8 +5,11 @@ input data
 """
 
 
+import re
+
 from aiida.orm import Dict, StructureData
 from pymatgen.io.vasp.inputs import Poscar
+from pymatgen.io.ase import AseAtomsAdaptor
 from pymatgen.core import Structure
 
 
@@ -37,6 +40,65 @@ class VaspPoscarData(Dict):
                                    velocities=velocities,
                                    temperature=temperature)
             super(VaspPoscarData, self).__init__(dict=poscar.as_dict())
+
+    def get_poscar(self):
+        """
+        Create and return a :class:`pymatgen.io.vasp.inputs.Poscar` instance
+        initialized from the node's stored structure data contents.
+
+        :return: a pymatgen Poscar instance
+        :rtype: :class:`pymatgen.io.vasp.inputs.Poscar`
+        """
+        return Poscar.from_dict(self.get_dict())
+
+    def get_structure(self):
+        """
+        Create and return a :class:`pymatgen.core.structure.Structure`
+        instance from the node's stored structure data contents.
+
+        :return: a pymatgen Structure instance
+        :rtype: :class:`pymatgen.core.structure.Structure`
+        """
+        poscar = self.get_poscar()
+        return poscar.structure
+
+    def get_atoms(self):
+        """
+        Create and return a :class:`ase.atoms.Atoms` instance from the node's
+        stored structure data contents
+
+        :return: an ASE-Atoms instance
+        :rtype: :class:`ase.atoms.Atoms`
+        """
+        structure = self.get_structure()
+        return AseAtomsAdaptor.get_atoms(structure)
+
+    def write_file(self, filename):
+        """
+        Write the stored Poscar contents to VASP input file.
+
+        File creation is redirected to the :meth:`pymatgen.io.vasp.inputs.\
+        Poscar.write_file` method and the created output file will be
+        formatted as VASP input file (POSCAR)
+
+        :param filename: destination for the output file including the
+            desired output filename
+        :type filename: `str`
+        :return: None
+        """
+        poscar = self.get_poscar()
+        poscar.write_file(filename)
+
+    def get_description(self):
+        """
+        Return a short descriptive string for the stored structure data
+        contents containing the structural composition.
+        :return: structural composition of the stored structure
+        :rtype: `str`
+        """
+        # create composition formula and remove whitespaces
+        full_formula = self.get_structure().composition.formula
+        return re.sub(r' ', '', full_formula)
 
 
 class PoscarWrapper(object):
@@ -98,10 +160,24 @@ class PoscarWrapper(object):
             'predictor_corrector_preamble': None,
             'sort_structure': True,  # always sort structure
         }
-        # initilize the Poscar istance
+        # initilize the Poscar instance
         poscar_object = Poscar(**valid_poscar_kwargs)
         # if temperature is given initialize the atomic velocities accordingly
         if cls.input_temperature is not None:
+            # pymatgen initialization from temperature cannot handle structures
+            # with only one atom. Check structure length to avoid the AiiDA
+            # error triggered by the resulting `nan` values
+            if len(cls.structure_from_input()) <= 1:
+                raise PoscarWrapperError("Initialization of velocities from "
+                                         "temperature only possible for "
+                                         "structures containing at least two "
+                                         "atoms")
+            # pymatgen happily accepts any temperature value below 0.0 K and
+            # initialized to `nan`
+            if cls.input_temperature < 0.0:
+                raise PoscarWrapperError("Given temperature must not "
+                                         "be smaller than zero (set value: "
+                                         "'{}')".format(cls.input_temperature))
             poscar_object.set_temperature(cls.input_temperature)
         return poscar_object
 
@@ -111,6 +187,9 @@ class PoscarWrapper(object):
         Obtain a :class:`~pymatgen.core.structure.Structure` instance from the
         given input structure
         """
+        if cls.input_structure is None:
+            raise PoscarWrapperError("Missing non-optional parameter "
+                                     "'structure'")
         if isinstance(cls.input_structure, Structure):
             return cls.input_structure
         elif isinstance(cls.input_structure, StructureData):

@@ -53,8 +53,8 @@ def test_init_from_temperature(minimal_pymatgen_structure):
     kwargs = {
         # assure structure contains at least two atoms
         'structure': minimal_pymatgen_structure * (2, 1, 1),
-        # use initialization at zero kelvin to generate reproducible resuts
-        # since initialitatio at T =/= 0.0 K results in randomly drawn
+        # use initialization at zero kelvin to generate reproducible results
+        # since initialization at T =/= 0.0 K results in randomly drawn
         # velocities
         'temperature': 0.0,
     }

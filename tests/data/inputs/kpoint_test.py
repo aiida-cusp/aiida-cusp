@@ -11,7 +11,6 @@ import pytest
 import pathlib
 
 from pymatgen.io.vasp.inputs import Kpoints_supported_modes, Poscar, Kpoints
-from pymatgen.core import Structure, Lattice
 from pymatgen.symmetry.bandstructure import HighSymmKpath
 from aiida.orm import StructureData
 
@@ -37,14 +36,12 @@ from aiida_cusp.data.inputs.vasp_kpoint import KpointWrapperError
     ({'mode': 'line', 'kpoints': 100}, False, True),
 ])
 def test_store_and_load_kpoint_data_density(kpoint_params, structure,
-                                            sympath):
+                                            sympath,
+                                            minimal_pymatgen_structure):
     from aiida.plugins import DataFactory
     from aiida.orm import load_node
     # setup minimal structure and high symmetry path
-    lattice = Lattice.cubic(1.0)
-    species = ['H']
-    coords = [[.0, .0, .0]]
-    struct = Structure(lattice, species, coords)
+    struct = minimal_pymatgen_structure
     path = HighSymmKpath(struct, path_type='sc')
     # update kpoint parameters depending on set structure or high symmetry
     # path requirements
@@ -74,13 +71,11 @@ def test_store_and_load_kpoint_data_density(kpoint_params, structure,
     ({'mode': 'monkhorst', 'kpoints': 100.0}, True, False),
     ({'mode': 'line', 'kpoints': 100}, False, True),
 ])
-def test_write_file_method(kpoint_params, structure, sympath, tmpdir):
+def test_write_file_method(kpoint_params, structure, sympath, tmpdir,
+                           minimal_pymatgen_structure):
     from aiida.plugins import DataFactory
     # setup minimal structure and high symmetry path
-    lattice = Lattice.cubic(1.0)
-    species = ['H']
-    coords = [[.0, .0, .0]]
-    struct = Structure(lattice, species, coords)
+    struct = minimal_pymatgen_structure
     path = HighSymmKpath(struct, path_type='sc')
     # update kpoint parameters depending on set structure or high symmetry
     # path requirements
@@ -94,7 +89,7 @@ def test_write_file_method(kpoint_params, structure, sympath, tmpdir):
     # write node contents to file
     filepath = pathlib.Path(tmpdir) / 'KPOINTS'
     assert filepath.is_file() is False  # assert file is not there already
-    kpoints.write_file(filepath)
+    kpoints.write_file(str(filepath))
     assert filepath.is_file() is True   # assert file has been written
     # load contents from file and compare to node contents
     with open(filepath, 'r') as stored_kpoints_file:
@@ -175,12 +170,9 @@ def test_monkhorst_explicit_mode():
     assert kpoints.kpts_shift == [.1, .2, .3]
 
 
-def test_gamma_density_mode():
+def test_gamma_density_mode(minimal_pymatgen_structure):
     # setup minimal structure
-    lattice = Lattice.cubic(1.0)
-    species = ['H']
-    coords = [[.0, .0, .0]]
-    structure = Structure(lattice, species, coords)
+    structure = minimal_pymatgen_structure
     # kpoints
     kpoint_params = {
         'mode': 'gamma',
@@ -193,12 +185,9 @@ def test_gamma_density_mode():
     assert kpoints.kpts_shift == [.0, .0, .0]
 
 
-def test_monkhorst_density_mode():
+def test_monkhorst_density_mode(minimal_pymatgen_structure):
     # setup minimal structure
-    lattice = Lattice.cubic(1.0)
-    species = ['H']
-    coords = [[.0, .0, .0]]
-    structure = Structure(lattice, species, coords)
+    structure = minimal_pymatgen_structure
     # kpoints
     kpoint_params = {
         'mode': 'monkhorst',
@@ -211,12 +200,9 @@ def test_monkhorst_density_mode():
     assert kpoints.kpts_shift == [.0, .0, .0]
 
 
-def test_automatic_line_mode():
+def test_automatic_line_mode(minimal_pymatgen_structure):
     # setup minimal structure
-    lattice = Lattice.cubic(1.0)
-    species = ['H']
-    coords = [[.0, .0, .0]]
-    structure = Structure(lattice, species, coords)
+    structure = minimal_pymatgen_structure
     # build high symmetry path
     sympath = HighSymmKpath(structure, path_type='sc')
     generated_kpoints = [  # list of kpoints forming HighSymmKpath
@@ -251,18 +237,14 @@ def test_automatic_line_mode():
     assert kpoints.kpts_shift == (0., 0., 0.)
 
 
-def test_init_from_structure_types():
-    # setup minimal structure
-    lattice = Lattice.cubic(1.0)
-    species = ['H']
-    coords = [[.0, .0, .0]]
+def test_init_from_structure_types(minimal_pymatgen_structure):
     # kpoint setup
     kpoint_params = {
         'mode': 'gamma',
         'kpoints': 100.0,
     }
     # setup different structure types
-    pmg_structure = Structure(lattice, species, coords)
+    pmg_structure = minimal_pymatgen_structure
     pmg_poscar = Poscar(pmg_structure)
     aiida_structure = StructureData(pymatgen_structure=pmg_structure)
     # initialize kpoints from density for different structure types
@@ -278,7 +260,7 @@ def test_init_from_kpoint_object():
     # get kpoints object
     pmg_kpoints = Kpoints.automatic(100)
     wrapper_kpoints = KpointWrapper(kpoints=pmg_kpoints)
-    assert pmg_kpoints.__str__ == wrapper_kpoints.__str__
+    assert str(pmg_kpoints) == str(wrapper_kpoints)
 
 
 @pytest.mark.parametrize('explicit_grid_list',

@@ -140,7 +140,7 @@ def test_write_file_method(minimal_pymatgen_structure, tmpdir,
     # write node contents to file
     filepath = pathlib.Path(tmpdir) / 'POSCAR'
     assert filepath.is_file() is False  # assert file is not there already
-    poscar.write_file(filepath)
+    poscar.write_file(str(filepath))
     assert filepath.is_file() is True   # assert file has been written
     # load contents from file and compare to node contents
     with open(filepath, 'r') as stored_poscar_file:

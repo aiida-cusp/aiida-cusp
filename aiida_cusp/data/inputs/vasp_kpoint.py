@@ -63,7 +63,8 @@ class VaspKpointData(Dict):
         Kpoints.write_file` method and the created output file will be
         formatted as VASP input file (KPOINTS)
 
-        :param filename: destination for the output file
+        :param filename: destination for the output file including the
+            desired output filename
         :type filename: str
         :return: None
         """

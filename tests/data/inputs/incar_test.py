@@ -90,7 +90,7 @@ def test_write_file_method(tmpdir):
     incar = VaspIncarData(incar=incar_parameters)
     filepath = pathlib.Path(tmpdir) / 'INCAR'
     assert filepath.is_file() is False  # assert file is not already there
-    incar.write_file(filepath)
+    incar.write_file(str(filepath))
     assert filepath.is_file() is True  # assert file has been written
     # load contents from file and compare to node contents
     with open(filepath, 'r') as stored_incar_file:

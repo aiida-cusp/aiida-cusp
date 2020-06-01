@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+
 """
 Datatype and methods to initialize and interact with VASP specific INCAR
 input data

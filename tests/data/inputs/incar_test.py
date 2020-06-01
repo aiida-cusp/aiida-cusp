@@ -5,7 +5,6 @@ Test suite for the VaspIncarData and the related IncarWrapper utility
 
 
 import pytest
-
 import pathlib
 
 from pymatgen.io.vasp.inputs import Incar

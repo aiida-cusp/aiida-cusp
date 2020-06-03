@@ -66,8 +66,9 @@ def add_potcar_family(path):
       - Si_pv_GW
       - etc.
     """
-    # regex for matching pseudopotential functional folder
-    # (?i)(pot(?:uspp|paw)\_(?:lda|pbe|gga)*\.*(?:52|54)*)
+    # no need to check for valid functional and element since this will be
+    # checked by the VaspPotcarFile class anyways
+    # only check it's indeed a folder
     pass
 
 
@@ -107,6 +108,9 @@ def add_potcar_single(path, name, functional):
       - Si_pv_GW
       - etc.
     """
+    # no need to check for valid functional and element since this will be
+    # checked by the VaspPotcarFile class anyways
+    # only check if it is file and if it's named POTCAR
     pass
 
 

@@ -94,16 +94,6 @@ class VaspPotcarFile(SinglefileData):
             pbe, pbe_52, pbe_54, pw91 and pw91_us
         :type functional: str
         """
-        # check if path points to file
-        if not path_to_potcar.is_file():
-            raise VaspPotcarFileError("The passed path '{}' does not seem "
-                                      "to point to a valid POTCAR file"
-                                      .format(str(path_to_potcar)))
-        # check if file is named POTCAR
-        if not path_to_potcar.name == VaspDefaults.FNAMES['potcar']:
-            raise VaspPotcarFileError("Expected pseudo-potential file "
-                                      "named POTCAR, got '{}'"
-                                      .format(str(path_to_potcar.name)))
         # initialize the new VaspPotcarFile node
         parsed = PotcarParser(path_to_potcar, name=name, functional=functional)
         if cls.is_unique(parsed):  # this will raise if not unique!
@@ -208,7 +198,7 @@ class VaspPotcarFile(SinglefileData):
             database_potential_query = QueryBuilder()
             database_potential_query.append(cls, filters=filters)
         else:
-            raise VaspPotcarFileError("Database query for potcat file nodes "
+            raise VaspPotcarFileError("Database query for potcar file nodes "
                                       "failed because not tags were given")
         # return results obtained by the query builder
         return [_ for [_] in database_potential_query.all()]

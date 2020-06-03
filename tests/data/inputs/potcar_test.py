@@ -45,7 +45,7 @@ def test_store_and_load(interactive_potcar_file, clear_database):
     ('xy_abc', 'Ge', 10000101, 'lda_us', 'hash'),  # invalid element in name
     ('Ge_abc', 'Xy', 10000101, 'lda_us', 'hash'),  # invalid element
     ('Ge_abc', 'Ge', 10000000, 'lda_us', 'hash'),  # invalid version
-    ('Xy_abc', 'Ge', 10000101, 'abcdef', 'hash'),  # invalid functional
+    ('Ge_abc', 'Ge', 10000101, 'abcdef', 'hash'),  # invalid functional
 ])
 def test_invalid_attributes_raise(interactive_potcar_file, potential_attrs):
     interactive_potcar_file.open("POTCAR")
@@ -123,3 +123,27 @@ def test_potcar_is_unique_method(clear_database_before_test,
     with pytest.raises(MultiplePotcarError) as exception:
         VaspPotcarFile.is_unique(potcar_parser)
     assert "Potential with matching identifiers" in str(exception.value)
+
+
+def test_add_potential_classmethod(clear_database_before_test,
+                                   interactive_potcar_file):
+    # generate arbitrary potential and process it using the potcar parser
+    potential_contents = "\n".join([
+        "functional Si 01Jan2000",
+        "parameters from PSCTR are:",
+        "VRHFIN =Si: s100p100d100",
+        "TITEL  = functional Xy 01Jan1000"
+        "END of PSCTR-controll parameters",
+    ])
+    interactive_potcar_file.open("POTCAR")
+    interactive_potcar_file.write(potential_contents)
+    path_to_potcar = pathlib.Path(interactive_potcar_file.filepath)
+    potcar_parser = PotcarParser(path_to_potcar, functional='pbe',
+                                 name='Si_abc')
+    potcar_node = VaspPotcarFile.add_potential(path_to_potcar, name='Si_abc',
+                                               functional='pbe')
+    assert potcar_node.name == potcar_parser.name
+    assert potcar_node.element == potcar_parser.element
+    assert potcar_node.version == potcar_parser.version
+    assert potcar_node.hash == potcar_parser.hash
+    assert potcar_node.functional == potcar_parser.functional.lower()

@@ -36,6 +36,7 @@
       "develop": [
 				"pre-commit",
 				"pytest",
+				"pytest-cov",
 				"pgtest"
       ]
     },

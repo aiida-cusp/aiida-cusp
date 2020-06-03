@@ -12,14 +12,7 @@ import hashlib
 import warnings
 
 from aiida_cusp.utils.defaults import VaspDefaults
-
-
-# FIXME: move custom exceptions to a central module
-
-
-class PotcarParserError(Exception):
-    """Exception raised by the PotcarParser class."""
-    pass
+from aiida_cusp.utils.exceptions import PotcarParserError, PotcarPathError
 
 
 class PotcarParser(object):
@@ -294,35 +287,83 @@ class PotcarParser(object):
             else:
                 return None
 
-#
-# TODO: Decide if these methods should go in here or somewhere else
-#  @classmethod
-#  def name_from_path(cls, path_to_potcar):
-#      """
-#      Figure out the potentials name from the given file path.
-#
-#      Assumes that the given filepath corresponds to the organization in
-#      the pseudo-potential libraries distributed by VASP, i.e. the path is
-#      assumed to be of the form /.../functiona_folder/potential_name/POTCAR
-#      """
-#      # figure out the name
-#      pass
-#
-#  @classmethod
-#  def functional_from_path(cls, path_to_potcar):
-#      """
-#      Figure out the potential's functional group from the given filepath.
-#
-#      Assumes that the given filepath corresponds to the organization in
-#      the pseudo-potential libraries distributed by VASP, i.e. the path is
-#      assumed to be of the form /.../functiona_folder/potential_name/POTCAR
-#      """
-#      # figure out the functional
-#      functional_folder_names = VaspDefaults.FUNCTIONAL_MAP.keys()
-#      functional_folder = str(path_to_potcar.parent.parent.name)
-#      for folder_name, internal_name  in VaspDefaults.FUNCTIONAL_MAP.items():
-#          if folder_name.lower() == functional_folder.lower():
-#              return internal_name
-#      raise VaspPotcarFileError("Unable to determine the functional group "
-#                                "from the given filepath '{}'"
-#                                .format(path_to_potcar))
+
+class PotcarPathParser(object):
+    """
+    Utility class for parsing POTCAR file paths.
+
+    Assumes a POTCAR file path of the form /path/[FUNCTIONAL]/[NAME]/POTCAR
+    with [FUNCTIONAL] containing the archive name of the potential libraries
+    as shipped by VASP, i.e. one of potuspp_lda, potpaw_lda, potpaw_lda.52,
+    potpaw_lda.54, potpaw_pbe, potpaw_pbe.52, potpaw_pbe.54, potuspp_gga or
+    potpaw_gga. Tries to determine the potential's functional and name from
+    the given path and raises an exception if this fails.
+
+    :param potcar_file_path: file path pointing to a VASP pseudo-potential
+    :type potcar_file_path: pathlib.Path
+    :raises PotcarPathError: if the path does not point to a POTCAR file or
+        if the path does not contain a valid archive name to identify the
+        corresponding functional
+    """
+    def __init__(self, potcar_file_path):
+        # first check if the given path is a file and if the file name is
+        # POTCAR
+        self.validate_path_is_potcar_file(potcar_file_path)
+        self.functional = self.parse_functional(potcar_file_path)
+        self.name = self.parse_name(potcar_file_path)
+
+    def validate_path_is_potcar_file(self, path):
+        """
+        Check if the given path points to a file of type POTCAR .
+
+        :param path: file path pointing to a VASP pseudo-potential
+        :type path: pathlib.Path
+        :raises PotcarPathError: if the parser cannot extract the functional
+            from the path or if the path does not point to a potential
+        """
+        if not path.is_file():
+            raise PotcarPathError("Path '{}' does not point to a file"
+                                  .format(str(path.absolute())))
+        if not path.name == VaspDefaults.FNAMES['potcar']:
+            raise PotcarPathError("Potcar file must be named 'POTCAR'")
+
+    def parse_functional(self, path):
+        """
+        Parse the potential's functional type from the given path.
+
+        Search the given path for functional identifiers corresponding to the
+        archive names chosen by the pseudo-potential libraries shipped with
+        VASP.
+
+        :param path: file path pointing to a VASP pseudo-potential
+        :type path: pathlib.Path
+        :returns: plugin internal functional identifier
+        :rtype: str
+        :raises PotcarPathError: if no valid functional identifier can be
+            found in the given path.
+        """
+        # regex for matching pseudopotential functional folder
+        regex = r"(?i)(pot(?:uspp|paw)\_(?:lda|pbe|gga)(?:\.52|\.54)*)"
+        functional_match = re.search(regex, str(path))
+        if functional_match is None:
+            raise PotcarPathError("Unable to parse functional identifier "
+                                  "(i.e. potuspp_lda, potpaw_lda, "
+                                  "potpaw_lda.52, potpaw_lda.54, potpaw_pbe, "
+                                  "potpaw_pbe.52, potpaw_pbe.54, potuspp_gga "
+                                  "or potpaw_gga from the given path '{}'"
+                                  .format(str(path.absolute())))
+        return VaspDefaults.FUNCTIONAL_MAP[functional_match.group(0)]
+
+    def parse_name(self, path):
+        """
+        Parse the unique functional name from the path.
+
+        Simply returns the name of the parent folder containing the POTCAR
+        file.
+
+        :param path: file path pointing to a VASP pseudo-potential
+        :type path: pathlib.Path
+        :returns: the pseudo-potential's unique name
+        :rtype: str
+        """
+        return str(path.parent.name)

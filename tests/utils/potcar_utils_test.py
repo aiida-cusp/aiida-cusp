@@ -8,10 +8,14 @@ Test suite for POTCAR related utilities
 
 import pytest
 import string
+import pathlib
 
 from pymatgen.core import periodic_table
 
-from aiida_cusp.utils import PotcarParser, PotcarParserError
+from aiida_cusp.utils import PotcarParser
+from aiida_cusp.utils.exceptions import PotcarParserError, PotcarPathError
+from aiida_cusp.utils.potcar import PotcarPathParser
+from aiida_cusp.utils.defaults import VaspDefaults
 
 
 # ever growing list of sample cases testing the regular expression used
@@ -246,3 +250,67 @@ def test_unparseable_raises(interactive_potcar_file):
     with pytest.raises(PotcarParserError) as exception:
         parsed_potential.verify_parsed()
     assert "Error parsing creation date for file" in str(exception.value)
+
+
+@pytest.mark.parametrize('functional_in,expected_functional',
+[   # noqa: E128
+    ('potuspp_lda', 'lda_us'),
+    ('potpaw_lda', 'lda'),
+    ('potpaw_lda.52', 'lda_52'),
+    ('potpaw_lda.54', 'lda_54'),
+    ('potpaw_pbe', 'pbe'),
+    ('potpaw_pbe.52', 'pbe_52'),
+    ('potpaw_pbe.54', 'pbe_54'),
+    ('potuspp_gga', 'pw91_us'),
+    ('potpaw_gga', 'pw91'),
+])
+@pytest.mark.parametrize('suffix', ['', '.suffix', '.suffix1.suffix2'])
+@pytest.mark.parametrize('prefix', ['', 'prefix.'])
+def test_potcar_path_parser(tmpdir, functional_in, prefix, suffix,
+                            expected_functional):
+    # build the path and generate the directory
+    subfolder = '{}{}{}/potential_name'.format(prefix, functional_in, suffix)
+    path = pathlib.Path(tmpdir) / subfolder
+    path.mkdir(parents=True)
+    # create an empty POTCAR file
+    filepath = path / VaspDefaults.FNAMES['potcar']
+    filepath.touch()
+    # finally parse functional and name from the path
+    parsed = PotcarPathParser(filepath)
+    assert parsed.functional == expected_functional
+    assert parsed.name == 'potential_name'
+
+
+def test_potcar_path_parsers_raises_if_not_file(tmpdir):
+    path = pathlib.Path(tmpdir)
+    expected_error = ("Path '{}' does not point to a file"
+                      .format(str(path.absolute())))
+    with pytest.raises(PotcarPathError) as exception:
+        parsed = PotcarPathParser(path)
+    assert expected_error in str(exception.value)
+
+
+def test_potcar_path_parser_raises_on_wrong_filename(tmpdir):
+    # build the path and generate the directory
+    subfolder = "potpaw_gga/name"
+    path = pathlib.Path(tmpdir) / subfolder
+    path.mkdir(parents=True)
+    # create an empty POTCAR file
+    filepath = path / "NotNamedPOTCAR"
+    filepath.touch()
+    expected_error = "Potcar file must be named 'POTCAR'"
+    with pytest.raises(PotcarPathError) as exception:
+        parsed = PotcarPathParser(filepath)
+    assert expected_error in str(exception.value)
+
+
+def test_potcar_path_parses_raises_on_wrong_functional(tmpdir):
+    # build the path and generate the directory
+    path = pathlib.Path(tmpdir) / 'not_a_valid_functional' / 'name'
+    path.mkdir(parents=True)
+    # create an empty POTCAR file
+    filepath = path / VaspDefaults.FNAMES['potcar']
+    filepath.touch()
+    with pytest.raises(PotcarPathError) as exception:
+        parsed = PotcarPathParser(filepath)
+    assert "Unable to parse functional identifier" in str(exception.value)

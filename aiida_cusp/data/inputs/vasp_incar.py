@@ -10,10 +10,7 @@ input data
 from aiida.orm import Dict
 from pymatgen.io.vasp.inputs import Incar
 
-
-class IncarWrapperError(Exception):
-    """Exception raised by the Incar wrapper class."""
-    pass
+from aiida_cusp.utils.exceptions import IncarWrapperError
 
 
 class VaspIncarData(Dict):

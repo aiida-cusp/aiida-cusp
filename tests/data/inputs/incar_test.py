@@ -10,7 +10,7 @@ import pathlib
 from pymatgen.io.vasp.inputs import Incar
 
 from aiida_cusp.data.inputs.vasp_incar import IncarWrapper, VaspIncarData
-from aiida_cusp.data.inputs.vasp_incar import IncarWrapperError
+from aiida_cusp.utils.exceptions import IncarWrapperError
 
 
 #

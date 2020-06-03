@@ -13,10 +13,7 @@ from aiida.orm import StructureData, Dict
 from pymatgen.core import Structure
 from pymatgen.io.vasp.inputs import Kpoints, Poscar
 
-
-class KpointWrapperError(Exception):
-    """Exception raised by the KpointWrapper class."""
-    pass
+from aiida_cusp.utils.exceptions import KpointWrapperError
 
 
 class VaspKpointData(Dict):

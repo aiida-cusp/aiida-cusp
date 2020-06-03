@@ -16,7 +16,7 @@ from aiida.orm import StructureData
 
 from aiida_cusp.data import VaspKpointData
 from aiida_cusp.data.inputs.vasp_kpoint import KpointWrapper
-from aiida_cusp.data.inputs.vasp_kpoint import KpointWrapperError
+from aiida_cusp.utils.exceptions import KpointWrapperError
 
 
 #

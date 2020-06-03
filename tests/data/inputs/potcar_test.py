@@ -8,8 +8,8 @@ import pytest
 import pathlib
 
 from aiida_cusp.data.inputs.vasp_potcar import VaspPotcarFile
-from aiida_cusp.data.inputs.vasp_potcar import VaspPotcarFileError
-from aiida_cusp.data.inputs.vasp_potcar import MultiplePotcarError
+from aiida_cusp.utils.exceptions import VaspPotcarFileError
+from aiida_cusp.utils.exceptions import MultiplePotcarError
 from aiida_cusp.utils.defaults import VaspDefaults
 from aiida_cusp.utils import PotcarParser
 

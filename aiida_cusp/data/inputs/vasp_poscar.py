@@ -12,17 +12,14 @@ from pymatgen.io.vasp.inputs import Poscar
 from pymatgen.io.ase import AseAtomsAdaptor
 from pymatgen.core import Structure
 
+from aiida_cusp.utils.exceptions import PoscarWrapperError
+
 
 # FIXME: Only the basic inputs for the pymatgen Poscar class are made available
 #        in the Wrapper class (i.e. constraints, velocities and the setup of
 #        initial velocities from a Maxwell-Boltzmann distribution using a
 #        given temperature. If neccessary other inputs like the predictor-
 #        corrector stuff may also be made available.
-
-
-class PoscarWrapperError(Exception):
-    """Exception raised by the PoscarWrapper class."""
-    pass
 
 
 class VaspPoscarData(Dict):

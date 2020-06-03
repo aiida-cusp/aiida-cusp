@@ -14,16 +14,8 @@ from aiida.orm import SinglefileData, Dict, QueryBuilder
 
 from aiida_cusp.utils.defaults import VaspDefaults
 from aiida_cusp.utils import PotcarParser
-
-
-class VaspPotcarFileError(Exception):
-    """Exception raised by the VaspPotcarFile class."""
-    pass
-
-
-class MultiplePotcarError(Exception):
-    """Exception raised if POTCAR file is already stored in the database."""
-    pass
+from aiida_cusp.utils.exceptions import (VaspPotcarFileError,
+                                         MultiplePotcarError)
 
 
 class VaspPotcarFile(SinglefileData):

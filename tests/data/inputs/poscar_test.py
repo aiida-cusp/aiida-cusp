@@ -16,7 +16,7 @@ from pymatgen.io.vasp.inputs import Poscar
 
 from aiida_cusp.data.inputs.vasp_poscar import VaspPoscarData
 from aiida_cusp.data.inputs.vasp_poscar import PoscarWrapper
-from aiida_cusp.data.inputs.vasp_poscar import PoscarWrapperError
+from aiida_cusp.utils.exceptions import PoscarWrapperError
 
 
 #

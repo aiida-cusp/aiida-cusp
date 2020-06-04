@@ -22,8 +22,6 @@ from aiida_cusp.utils.exceptions import (VaspPotcarFileError,
                                          MultiplePotcarError)
 
 
-# FIXME: Override SinglefileData.store() method to avoid storing identical
-#        potentials twice!
 # FIXME: Add test for the potcar_from_linklist() classmethod of the
 #        VaspPotcarData-calss
 
@@ -32,6 +30,10 @@ class VaspPotcarFile(SinglefileData):
     """
     Datatype representing an actual POTCAR file object stored to
     the AiiDA database.
+
+    Note that this class should never be called directly to add any
+    pseudo-potentials to the database but always using the provided
+    add_potential()-classmethod.
 
     :param path_to_potcar: Absolute path pointing to the potcar file
     :type path_to_potcar: str

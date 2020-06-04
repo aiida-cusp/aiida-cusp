@@ -44,3 +44,8 @@ class VaspPotcarDataError(Exception):
 class MultiplePotcarError(Exception):
     """Exception raised if POTCAR file is already stored in the database."""
     pass
+
+
+class CommandLineError(Exception):
+    """Exception raised by CLI commands."""
+    pass

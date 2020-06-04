@@ -352,7 +352,8 @@ class PotcarPathParser(object):
                                   "potpaw_pbe.52, potpaw_pbe.54, potuspp_gga "
                                   "or potpaw_gga from the given path '{}'"
                                   .format(str(path.absolute())))
-        return VaspDefaults.FUNCTIONAL_MAP[functional_match.group(0)]
+        functional = functional_match.group(0).lower()
+        return VaspDefaults.FUNCTIONAL_MAP[functional]
 
     def parse_name(self, path):
         """

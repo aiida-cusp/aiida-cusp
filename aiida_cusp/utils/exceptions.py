@@ -36,6 +36,11 @@ class VaspPotcarFileError(Exception):
     pass
 
 
+class VaspPotcarDataError(Exception):
+    """Exception raised by the VaspPotcarData class."""
+    pass
+
+
 class MultiplePotcarError(Exception):
     """Exception raised if POTCAR file is already stored in the database."""
     pass

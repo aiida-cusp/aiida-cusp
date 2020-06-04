@@ -9,13 +9,23 @@ pseudo-potential files
 
 import re
 
-from pymatgen.core import periodic_table
-from aiida.orm import SinglefileData, Dict, QueryBuilder
+from pymatgen.core import Structure, periodic_table
+from pymatgen.io.vasp.inputs import Poscar, Potcar, PotcarSingle
+from aiida.orm import (SinglefileData, Dict, QueryBuilder, load_node,
+                       StructureData)
+from aiida.common.exceptions import NotExistent
 
 from aiida_cusp.utils.defaults import VaspDefaults
 from aiida_cusp.utils import PotcarParser
 from aiida_cusp.utils.exceptions import (VaspPotcarFileError,
+                                         VaspPotcarDataError,
                                          MultiplePotcarError)
+
+
+# FIXME: Override SinglefileData.store() method to avoid storing identical
+#        potentials twice!
+# FIXME: Add test for the potcar_from_linklist() classmethod of the
+#        VaspPotcarData-calss
 
 
 class VaspPotcarFile(SinglefileData):
@@ -260,7 +270,227 @@ class VaspPotcarData(Dict):
 
     Contrary to the related VaspPotcarFile class this object does **not**
     contain any proprietary potential information and only stores the
-    potential's hash value and the unique potential identifiers (name,
-    functional and version)
+    potential's uuid value and the unique potential identifiers (name,
+    functional, version and the content hash)
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        name = kwargs.pop('name', None)
+        version = kwargs.pop('version', None)
+        functional = kwargs.pop('functional', None)
+        if not any([name, version, functional]):
+            super(VaspPotcarData, self).__init__(*args, **kwargs)
+        else:  # redirect to initialization from tags
+            self.init_from_tags(name, version, functional)
+
+    def init_from_tags(self, name, version, functional):
+        """
+        Initialized VaspPotcarData node from given potential tags
+
+        :param name: name of the potential
+        :type name: `str`
+        :param version: version of the potential
+        :type version: `int`
+        :param functional: functional of the potential
+        :type functional: `str`
+        :raises VaspPotcarDataError: if one of the non-optional parameters
+            name, version or functional is missing
+        """
+        # check parameters are complete
+        if name is None:
+            raise VaspPotcarDataError("Missing non-optional argument "
+                                      "'name'")
+        if version is None:
+            raise VaspPotcarDataError("Missing non-optional argument "
+                                      "'version'")
+        if functional is None:
+            raise VaspPotcarDataError("Missing non-optional argument "
+                                      "'functional'")
+        potentials = VaspPotcarFile.from_tags(name=name, version=version,
+                                              functional=functional)
+        if len(potentials) == 0:
+            raise VaspPotcarDataError("Unable to initialize VaspPotcarData "
+                                      "since no potential was found for the "
+                                      "given identifiers (name: {}, version: "
+                                      "{}, functional: {})"
+                                      .format(name, version, functional))
+        # define potential contents to be stored with the VaspPotcarData node
+        contents = {
+            'name': potentials[0].name,
+            'version': potentials[0].version,
+            'element': potentials[0].element,
+            'functional': potentials[0].functional,
+            'filenode_uuid': potentials[0].uuid,
+            'hash': potentials[0].hash,
+        }
+        # add a label to the node
+        label = u'{} {} (v{})'.format(contents['name'], contents['functional'],
+                                      contents['version'])
+        super(VaspPotcarData, self).__init__(dict=contents, label=label)
+
+    @classmethod
+    def from_structure(cls, structure, functional, potcar_params={}):
+        """
+        Create potcar input data for a given structure and functional.
+
+        Reads elements present in the passed structure and builds the input
+        list of VaspPotcarData instances defining the potentials to be used
+        for each element. By default the potential names are assumed to equal
+        the corresponding element names and potentials of the latest version
+        are used. This default behavior can be changed on a per element basis
+        by using the `potcar_params` dictionary to explicitly define the
+        potential name and / or version to be used for a given element
+
+        Example:
+        --------
+        Assuming a structure containig elements 'A' and 'B'. For both elements
+        the potentials with name 'A_pv' and 'B_pv' should be used and
+        additionally element 'B' requires the use of a specific potential
+        version, i.e. version 10000101. This can be achived by passing the
+        following `potcar_params`:
+
+            potcar_params = {
+                'A': {'name': 'A_pv'},
+                'B': {'name': 'B_pv', 'version': 10000101},
+            }
+
+        :param structure: input structure for which the potential list is
+            generated
+        :type structure: :class:`~pymatgen.core.Structure`, :class:`~pymatgen.\
+            io.vasp.poscar.Poscar` or :class:`~aiida_core.data.StructureData`
+        :param functional: functional type of the used potentials
+        :type functional: `str`
+        :param potcar_params: optional dictionary overriding the default
+            potential name and version used for the element given as key
+        :type potcar_params: `dict`
+        """
+        # get pymatgen structure object
+        if isinstance(structure, Structure):
+            struct = structure
+        elif isinstance(structure, StructureData):
+            struct = structure.get_pymatgen_structure()
+        elif isinstance(structure, Poscar):
+            struct = structure.structure
+        else:
+            raise VaspPotcarDataError("Unsupported structure type '{}'"
+                                      .format(type(structure)))
+        # build list of species comprising the structure and create default
+        # potential properties based on the species list (use a set because
+        # of possibly non-ordered input structures)
+        symbols = list(set([str(element) for element in struct.species]))
+        potcar_props_defaults = {
+            symbol: {'name': symbol, 'version': None} for symbol in symbols
+        }
+        # update pot_props_defaults with potential settings defined by the user
+        # and query for matching potentials
+        element_potential_map = {}
+        for element, potcar_props in potcar_props_defaults.items():
+            user_props = potcar_params.get(element, {})
+            potcar_props.update(user_props, functional=functional)
+            potentials = VaspPotcarFile.from_tags(**potcar_props)
+            if len(potentials) == 0:
+                raise VaspPotcarDataError("No potential found for the given "
+                                          "identifiers (name: {}, version: "
+                                          "{}, functional: {})"
+                                          .format(*potcar_props.values()))
+            potential = sorted(potentials, key=lambda potcar: potcar.version,
+                               reverse=True)[0]
+            element_potential_map.update({element: potential})
+        return element_potential_map
+
+    @classmethod
+    def potcar_from_linklist(poscar_data, linklist):
+        """
+        Assemble pymatgen Potcar object from a list of VaspPotcarData instances
+
+        Reads pseudo-potential from the passed list connecting each element
+        with it's potential and creates the complete Potcar file according
+        to the element ordering fodun in the passed poscar data object.
+
+        :param poscar_data: input structure for VASP calculations
+        :type poscar: :class:`aiida_cusp.data.inputs.VaspPoscarData`
+        :param linklist: dictionary mapping element names to VaspPotcarData
+            instances
+        :type linklist: `dict`
+        :returns: pymatgen Potcar data instance with containing the
+            concatenated pseudo-potential information for all elements defined
+            in the linklist
+        :rtype: :class:`~pymatgen.io.vasp.inputs.Potcar`
+        """
+        # initialize empty Potcar object
+        complete_potcar = Potcar()
+        # file empty potcar with potential in order of elements found in the
+        # passed structure data
+        site_symbols = poscar_data.get_poscar().site_symbols
+        for site_symbol in site_symbols:
+            potential_pointer = linklist['site_symbol']
+            potential_file = potential_pointer.load_potential_file_node()
+            potential_contents = potential_file.get_content()
+            potcar_single = PotcarSingle(potential_contents)
+            complete_potcar.append(potcar_single)
+        return complete_potcar
+
+    @property
+    def name(self):
+        """Make associated potential name a property"""
+        return self.dict['name']
+
+    @property
+    def functional(self):
+        """Make associated potential functional a property"""
+        return self.dict['functional']
+
+    @property
+    def version(self):
+        """Make associated potential version a property"""
+        return self.dict['version']
+
+    @property
+    def filenode_uuid(self):
+        """Make associated potential UUID a property"""
+        return self.dict['filenode_uuid']
+
+    @property
+    def element(self):
+        """Make associated potential element a property"""
+        return self.dict['element']
+
+    @property
+    def hash(self):
+        """Make associated potential hash a property"""
+        return self.dict['hash']
+
+    def load_potential_file_node(self):
+        """
+        Load the actual potential node associated with the potential data node
+
+        First tries to load the potential file node from the given UUID. If
+        this fails (for instance because the VaspPotcarData node was imported
+        from some other database) a second attempt will try to load a potential
+        file node based on the stored content hash.
+
+        :returns: the associated VaspPotcarFile node
+        :rtype: :class:`~aiida_cusp.data.inputs.vasp_potcar.VaspPotcarFile`
+        :raises VaspPotcarDataError: if no corresponding potential file node
+            is found in the database
+        """
+        contents = self.get_dict()
+        try:
+            try:  # first attempt: try to load from uuid
+                uuid = contents['filenode_uuid']
+                loaded_file_node = load_node(uuid)
+            except NotExistent:  # second attemt: try to load from hash
+                chksum = contents['hash']
+                loaded_file_node = VaspPotcarFile.from_tags(checksum=chksum)[0]
+        except IndexError:
+            raise VaspPotcarDataError("Unable to discover associated "
+                                      "potential file node in the database "
+                                      "(tried UUID and HASH). Check if "
+                                      "potential is available!")
+        # sanity check if the loaded potential really matches
+        assert loaded_file_node.name == contents['name']
+        assert loaded_file_node.version == contents['version']
+        assert loaded_file_node.functional == contents['functional']
+        assert loaded_file_node.element == contents['element']
+        assert loaded_file_node.hash == contents['hash']
+        # return the discovered file
+        return loaded_file_node

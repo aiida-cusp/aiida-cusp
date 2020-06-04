@@ -16,6 +16,7 @@
 				"cusp.kpoints = aiida_cusp.data.inputs.vasp_kpoint:VaspKpointData",
 				"cusp.poscar = aiida_cusp.data.inputs.vasp_poscar:VaspPoscarData",
 				"cusp.incar = aiida_cusp.data.inputs.vasp_incar:VaspIncarData",
+				"cusp.potcar = aiida_cusp.data.inputs.vasp_potcar:VaspPotcarData",
 				"cusp.potcar_file_node = aiida_cusp.data.inputs.vasp_potcar:VaspPotcarFile"
 			],
 			"aiida.cmdline.data": [

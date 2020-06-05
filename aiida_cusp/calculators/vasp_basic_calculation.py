@@ -6,24 +6,24 @@ Calculator class performing regular VASP calculations
 
 from aiida.engine import CalcJob
 
-from aiida_cusp.calculators import VaspBaseCalculation
+from aiida_cusp.calculators import CalculationBase
 from aiida_cusp.data import (VaspIncarData, VaspPoscarData, VaspKpointData,
                              VaspPotcarData)
 
 
-class VaspCalculation(VaspBaseCalculation):
+class VaspBasicCalculation(CalculationBase):
     """
-    Calculator class for regular VASP calculations.
+    Calculator class for basic VASP calculations.
 
     This calculator implements the required features for setting up and
-    running a regular VASP calculations (i.e. all calculations that are
-    **not** if the kind NEB calculation, refer to the VaspNebCalculation
+    running basic VASP calculations (i.e. all calculations that are
+    **not** of the kind NEB calculation, refer to the VaspNebCalculation
     class for this kind of calculation) through the AiiDA framework.
     """
 
     @classmethod
     def define(cls, spec):
-        super(VaspCalculation, cls).define(spec)
+        super(VaspBasicCalculation, cls).define(spec)
         # define parser to be used with the calculation
         # FIXME: Enable this once parsers are implemented
         # spec.input('metadata.options.parser_name',

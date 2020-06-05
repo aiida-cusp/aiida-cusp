@@ -5,12 +5,12 @@ Calculator class performing VASP NEB calculations
 
 
 from aiida.engine import CalcJob
-from aiida_cusp.calculators import VaspBaseCalculation
+from aiida_cusp.calculators import CalculationBase
 from aiida_cusp.data import (VaspIncarData, VaspPoscarData, VaspKpointData,
                              VaspPotcarData)
 
 
-class VaspNebCalculation(VaspBaseCalculation):
+class VaspNebCalculation(CalculationBase):
     """
     Calculator class for VASP NEB calculations.
 

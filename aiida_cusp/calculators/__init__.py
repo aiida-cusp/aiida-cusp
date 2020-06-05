@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from .vasp_base_calculation import VaspBaseCalculation
+from .calculation_base import CalculationBase
 
 
-__all__ = ["VaspBaseCalculation"]
+__all__ = ["CalculationBase"]

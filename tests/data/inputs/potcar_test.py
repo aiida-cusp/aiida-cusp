@@ -338,3 +338,11 @@ def test_from_structure_classmethod(clear_database_before_test,
     assert potential_map['H'].name == expected_name
     assert potential_map['H'].version == expected_version
     assert potential_map['H'].functional == functional
+    # check that we indeed return a VaspPotcarData instance and nothing else
+    assert isinstance(potential_map['H'], VaspPotcarData) is True
+
+
+# FIXME: Add test for from_structure() method featuring multi-component
+#        structures
+# def test_from_structure_multi_element():
+#     pass

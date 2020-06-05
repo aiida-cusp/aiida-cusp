@@ -393,14 +393,15 @@ class VaspPotcarData(Dict):
             user_props = potcar_params.get(element, {})
             potcar_props.update(user_props, functional=functional)
             potentials = VaspPotcarFile.from_tags(**potcar_props)
-            if len(potentials) == 0:
-                raise VaspPotcarDataError("No potential found for the given "
-                                          "identifiers (name: {}, version: "
-                                          "{}, functional: {})"
-                                          .format(*potcar_props.values()))
+            # in case multiple potentials are found due to unset version
             potential = sorted(potentials, key=lambda potcar: potcar.version,
                                reverse=True)[0]
-            element_potential_map.update({element: potential})
+            identifiers = {
+                'name': potential.name,
+                'functional': potential.functional,
+                'version': potential.version,
+            }
+            element_potential_map.update({element: cls(**identifiers)})
         return element_potential_map
 
     @classmethod

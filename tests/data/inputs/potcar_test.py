@@ -10,6 +10,7 @@ from pymatgen.io.vasp.inputs import Poscar
 from aiida.orm import StructureData
 
 from aiida_cusp.data.inputs.vasp_potcar import VaspPotcarFile, VaspPotcarData
+from aiida_cusp.data.inputs.vasp_poscar import VaspPoscarData
 from aiida_cusp.utils.exceptions import VaspPotcarFileError
 from aiida_cusp.utils.exceptions import VaspPotcarDataError
 from aiida_cusp.utils.exceptions import MultiplePotcarError
@@ -286,7 +287,8 @@ def test_load_potential_file_node_properties_match(clear_database_before_test,
 @pytest.mark.parametrize('name', [None, 'H', 'H_pv'])
 @pytest.mark.parametrize('version', [None, 10000101, 10000102])
 @pytest.mark.parametrize('functional', ['pbe', 'pw91'])
-@pytest.mark.parametrize('structure_type', ['pymatgen', 'aiida', 'poscar'])
+@pytest.mark.parametrize('structure_type', ['pymatgen', 'aiida', 'poscar',
+                         'aiida_cusp_poscar'])
 def test_from_structure_classmethod(clear_database_before_test,
                                     interactive_potcar_file,
                                     minimal_pymatgen_structure, name, version,
@@ -299,6 +301,8 @@ def test_from_structure_classmethod(clear_database_before_test,
         structure = StructureData(pymatgen_structure=supercell)
     elif structure_type == 'poscar':
         structure = Poscar(supercell)
+    elif structure_type == 'aiida_cusp_poscar':
+        structure = VaspPoscarData(structure=supercell)
     # populate database with potentials
     potcar_args = [
         ['H', 'H', 10000101, 'pbe', 'hash1'],

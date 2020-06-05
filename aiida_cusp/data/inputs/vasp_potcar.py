@@ -16,6 +16,7 @@ from aiida.orm import (SinglefileData, Dict, QueryBuilder, load_node,
 from aiida.common.exceptions import NotExistent
 
 from aiida_cusp.utils.defaults import VaspDefaults
+from aiida_cusp.data.inputs.vasp_poscar import VaspPoscarData
 from aiida_cusp.utils import PotcarParser
 from aiida_cusp.utils.exceptions import (VaspPotcarFileError,
                                          VaspPotcarDataError,
@@ -358,7 +359,8 @@ class VaspPotcarData(Dict):
         :param structure: input structure for which the potential list is
             generated
         :type structure: :class:`~pymatgen.core.Structure`, :class:`~pymatgen.\
-            io.vasp.poscar.Poscar` or :class:`~aiida_core.data.StructureData`
+            io.vasp.poscar.Poscar`, :class:`~aiida_core.data.StructureData` or
+            :class:`aiida_cusp.data.inputs.vasp_poscar.VaspPoscarData`
         :param functional: functional type of the used potentials
         :type functional: `str`
         :param potcar_params: optional dictionary overriding the default
@@ -372,6 +374,8 @@ class VaspPotcarData(Dict):
             struct = structure.get_pymatgen_structure()
         elif isinstance(structure, Poscar):
             struct = structure.structure
+        elif isinstance(structure, VaspPoscarData):
+            struct = structure.get_poscar().structure
         else:
             raise VaspPotcarDataError("Unsupported structure type '{}'"
                                       .format(type(structure)))

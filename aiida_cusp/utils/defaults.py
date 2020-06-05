@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+
+
+# FIXME: Decide what to do with the screened exchange (WFULLxxxx.tmp) and the
+#        diagonal elements of the screened exchange (Wxxxx.tmp) output files
+#        written for BSE calculations
+
+
 class VaspDefaults(object):
     """
     Collection of default values for VASP
@@ -20,10 +27,40 @@ class VaspDefaults(object):
     }
     # filenames for VASP input and output files
     FNAMES = {
+        # inputs
         'potcar': 'POTCAR',
         'incar': 'INCAR',
         'poscar': 'POSCAR',
-        'contcar': 'CONTCAR',
-        'potcar': 'POTCAR',
         'kpoints': 'KPOINTS',
+        # outputs
+        'contcar': 'CONTCAR',
+        'chg': 'CHG',
+        'chgcar': 'CHGCAR',
+        'doscar': 'DOSCAR',
+        'eigenval': 'EIGENVAL',
+        'elfcar': 'ELFCAR',
+        'ibzkpt': 'IBZKPT',
+        'locpot': 'LOCPOT',
+        'oszicar': 'OSZICAR',
+        'outcar': 'OUTCAR',
+        'parchg': 'PARCHG',
+        'pcdat': 'PCDAT',
+        'procar': 'PROCAR',
+        'proout': 'PROOUT',
+        'report': 'REPORT',
+        'tmpcar': 'TMPCAR',
+        'vasprun': 'vasprun.xml',
+        'wavecar': 'WAVECAR',
+        'waveder': 'WAVEDER',
+        'xdatcar': 'XDATCAR',
+        'bsefatband': 'BSEFATBAND',
+        # outputs of bse-calculations
+        # 'Wxxxx.tmp',
+        # 'WFULLxxxx.tmp',
     }
+
+
+class PluginDefaults(object):
+    # filenames for logging of stdin and stderr during AiiDA VASP calculations
+    STDERR_FNAME = 'aiida.err'
+    STDOUT_FNAME = 'aiida.out'

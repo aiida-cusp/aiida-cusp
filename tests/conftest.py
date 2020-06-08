@@ -98,13 +98,26 @@ def minimal_pymatgen_structure():
 
 
 @pytest.fixture(scope='function')
-def code(computer):
+def vasp_code(computer):
     """
     Setup a new code object.
     """
     from aiida.orm import Code
-    code = Code(remote_computer_exec=(computer, '/bin/true'))
-    code.label = 'testcode'
+    code = Code(remote_computer_exec=(computer, '/path/to/vasp'))
+    code.label = 'vaspcode'
+    # do not store the code yet such that subsequent fixtures can use this
+    # code as base for different input plugins
+    yield code
+
+
+@pytest.fixture(scope='function')
+def cstdn_code(computer):
+    """
+    Setup a new code object.
+    """
+    from aiida.orm import Code
+    code = Code(remote_computer_exec=(computer, '/path/to/cstdn'))
+    code.label = 'cstdncode'
     # do not store the code yet such that subsequent fixtures can use this
     # code as base for different input plugins
     yield code
@@ -121,7 +134,7 @@ def computer(tmpdir):
     computer.set_transport_type('local')
     computer.set_workdir(str(tmpdir))
     computer.set_default_mpiprocs_per_machine(1)
-    computer.set_mpirun_command([])
+    computer.set_mpirun_command(['mpirun', '-np', '{tot_num_mpiprocs}'])
     computer.store()
     yield computer
 

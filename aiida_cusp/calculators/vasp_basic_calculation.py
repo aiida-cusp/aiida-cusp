@@ -6,6 +6,7 @@ Calculator class performing regular VASP calculations
 
 from aiida.engine import CalcJob
 
+from aiida_cusp.utils.defaults import VaspDefaults
 from aiida_cusp.calculators import CalculationBase
 from aiida_cusp.data import (VaspIncarData, VaspPoscarData, VaspKpointData,
                              VaspPotcarData)
@@ -64,9 +65,62 @@ class VaspBasicCalculation(CalculationBase):
                   "used for the VASP calculation")
         )
 
-    def prepare_for_submission(self, folder):
+#    def prepare_for_submission(self, folder):
+#        """
+#        Prepare the calculation and write the require inputs to the
+#        calculation folder.
+#        """
+#        pass
+
+    def create_inputs_for_regular_run(self, folder):
         """
-        Prepare the calculation and write the require inputs to the
-        calculation folder.
+        Write input files for a regular VASP calculation
         """
-        pass
+        self.write_incar(folder)
+        self.write_poscar(folder)
+        self.write_potcar(folder)
+        self.write_kpoints(folder)
+
+    def write_incar(self, folder):
+        """
+        Write INCAR file to calculation folder.
+        """
+        if 'incar' not in self.inputs:
+            raise
+        else:
+            incar_fname = folder.get_abs_path(VaspDefaults.FNAMES['incar'])
+            self.inputs.incar.write_file(incar_fname)
+
+    def write_kpoints(self, folder):
+        """
+        Write KPOINTS file to calculation folder.
+        """
+        if 'kpoints' not in self.inputs:
+            raise
+        else:
+            kpoints_fname = folder.get_abs_path(VaspDefaults.FNAMES['kpoints'])
+            self.inputs.kpoints.write_file(kpoints_fname)
+
+    def write_poscar(self, folder):
+        """
+        Write POSCAR file to calculation folder.
+        """
+        if 'poscar' not in self.inputs:
+            raise
+        else:
+            poscar_fname = folder.get_abs_path(VaspDefaults.FNAMES['poscar'])
+            self.inputs.poscar.write_file(poscar_fname)
+
+    def write_potcar(self, folder):
+        """
+        Write POTCAR file to calculation folder.
+        """
+        if 'potcar' not in self.inputs:
+            raise
+        else:
+            poscar = self.inputs.poscar
+            potcar = self.inputs.potcar
+            complete_potcar = VaspPotcarData.potcar_from_linklist(poscar,
+                                                                  potcar)
+            potcar_fname = folder.get_abs_path(VaspDefaults.FNAMES['potcar'])
+            complete_potcar.write_file(potcar_fname)

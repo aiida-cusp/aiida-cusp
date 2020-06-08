@@ -405,7 +405,7 @@ class VaspPotcarData(Dict):
         return element_potential_map
 
     @classmethod
-    def potcar_from_linklist(poscar_data, linklist):
+    def potcar_from_linklist(cls, poscar_data, linklist):
         """
         Assemble pymatgen Potcar object from a list of VaspPotcarData instances
 
@@ -429,7 +429,13 @@ class VaspPotcarData(Dict):
         # passed structure data
         site_symbols = poscar_data.get_poscar().site_symbols
         for site_symbol in site_symbols:
-            potential_pointer = linklist['site_symbol']
+            try:
+                potential_pointer = linklist[site_symbol]
+            except KeyError:
+                raise VaspPotcarDataError("Found no potential in passed "
+                                          "potential-element map for "
+                                          "site symbol '{}'"
+                                          .format(site_symbol))
             potential_file = potential_pointer.load_potential_file_node()
             potential_contents = potential_file.get_content()
             potcar_single = PotcarSingle(potential_contents)

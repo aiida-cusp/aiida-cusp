@@ -67,9 +67,9 @@ class VaspNebCalculation(CalculationBase):
                   "used for the VASP calculation")
         )
 
-    def prepare_for_submission(self, folder):
-        """
-        Prepare the calculation and write the required inputs to the
-        calculation folder.
-        """
-        pass
+#    def prepare_for_submission(self, folder):
+#        """
+#        Prepare the calculation and write the required inputs to the
+#        calculation folder.
+#        """
+#        pass

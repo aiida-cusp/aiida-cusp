@@ -64,8 +64,5 @@ class PluginDefaults(object):
     # filenames for logging of stdin and stderr during AiiDA VASP calculations
     STDERR_FNAME = 'aiida.err'
     STDOUT_FNAME = 'aiida.out'
-
-
-class CustodianDefaults(object):
     # default name used for the input file to the cstdn executable
-    SPEC_FNAME = 'cstdn_spec_file.yaml'
+    CSTDN_SPEC_FNAME = 'cstdn_spec.yaml'

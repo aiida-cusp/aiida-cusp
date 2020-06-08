@@ -49,3 +49,8 @@ class MultiplePotcarError(Exception):
 class CommandLineError(Exception):
     """Exception raised by CLI commands."""
     pass
+
+
+class CustodianSettingsError(Exception):
+    """Exception raised by the CustodianSettings class."""
+    pass

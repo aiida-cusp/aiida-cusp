@@ -66,3 +66,110 @@ class PluginDefaults(object):
     STDOUT_FNAME = 'aiida.out'
     # default name used for the input file to the cstdn executable
     CSTDN_SPEC_FNAME = 'cstdn_spec.yaml'
+
+
+class CustodianDefaults(object):
+    """
+    Collection of default values for the custodian calculator comprising
+    default job options, handlers and corresponding handler options.
+    """
+    # path prefix for handler imports
+    HANDLER_IMPORT_PATH = 'custodian.vasp.handlers'
+    # import paths for the custodian jobs running VASP and VASP Neb calcs
+    VASP_NEB_JOB_IMPORT_PATH = 'custodian.vasp.jobs.VaspNEBJob'
+    VASP_JOB_IMPORT_PATH = 'custodian.vasp.job.VaspJob'
+    # default settings controlling regular VASP jobs run through custodian
+    VASP_JOB_SETTINGS = {
+        'vasp_cmd': None,
+        'output_file': PluginDefaults.STDOUT_FNAME,
+        'stderr_file': PluginDefaults.STDERR_FNAME,
+        'suffix': "",
+        'final': True,
+        'backup': True,
+        'auto_npar': False,
+        'auto_gamma': False,
+        'settings_override': None,
+        'gamma_vasp_cmd': None,
+        'copy_magmom': False,
+        'auto_continue': False,
+    }
+    # default settings controlling NEB VASP jobs run through custodian
+    VASP_NEB_JOB_SETTINGS = {
+        'vasp_cmd': None,
+        'output_file': PluginDefaults.STDOUT_FNAME,
+        'stderr_file': PluginDefaults.STDERR_FNAME,
+        'suffix': "",
+        'final': True,
+        'backup': True,
+        'auto_npar': False,
+        'auto_gamma': False,
+        'half_kpts': False,
+        'settings_override': None,
+        'gamma_vasp_cmd': None,
+        'copy_magmom': False,
+        'auto_continue': False,
+    }
+    # default settings controlling the custodian executable
+    CUSTODIAN_SETTINGS = {
+        'max_errors_per_job': None,
+        'max_errors': 10,
+        'polling_time_step': 10,
+        'monitor_freq': 30,
+        'skip_over_errors': False,
+        'scratch_dir': None,
+        'gzipped_output': False,
+        'checkpoint': False,
+        'terminate_func': None,
+        'terminate_on_nonzero_returncode': False,
+    }
+    # dictionary of the used default settings for all VASP error handlers
+    # that may be used with this plugin
+    ERROR_HANDLER_SETTINGS = {
+        'AliasingErrorHandler': {
+            'output_filename': PluginDefaults.STDOUT_FNAME,
+        },
+        'DriftErrorHandler': {
+            'max_drift': None,
+            'to_average': 3,
+            'enaug_multiply': 2,
+        },
+        'FrozenJobErrorHandler': {
+            'output_filename': PluginDefaults.STDOUT_FNAME,
+            'timeout': 21600,
+        },
+        'LrfCommutatorHandler': {
+            'output_filename': PluginDefaults.STDERR_FNAME,
+        },
+        'MeshSymmetryErrorHandler': {
+            'output_filename': PluginDefaults.STDOUT_FNAME,
+            'output_vasprun': VaspDefaults.FNAMES['vasprun'],
+        },
+        'NonConvergingErrorHandler': {
+            'output_filename': VaspDefaults.FNAMES['oszicar'],
+            'nionic_steps': 10,
+        },
+        'PositiveEnergyErrorHandler': {
+            'output_filename': VaspDefaults.FNAMES['oszicar'],
+        },
+        'PotimErrorHandler': {
+            'input_filename': VaspDefaults.FNAMES['poscar'],
+            'output_filename': VaspDefaults.FNAMES['oszicar'],
+            'dE_threshold': 1.0,
+        },
+        'StdErrHandler': {
+            'output_filename': PluginDefaults.STDERR_FNAME,
+        },
+        'UnconvergedErrorHandler': {
+            'output_filename': VaspDefaults.FNAMES['vasprun'],
+        },
+        'VaspErrorHandler': {
+            'output_filename': PluginDefaults.STDOUT_FNAME,
+            'natoms_large_cell': 100,
+            'errors_subset_to_catch': None,
+        },
+        'WalltimeHandler': {
+            'wall_time': None,
+            'buffer_time': 300,
+            'electronic_step_stop': False,
+        },
+    }  # ERROR_HANDLER_SETTINGS

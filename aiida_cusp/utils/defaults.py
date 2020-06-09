@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
+from aiida_cusp.utils.decorators import classproperty
+
+
 # FIXME: Decide what to do with the screened exchange (WFULLxxxx.tmp) and the
 #        diagonal elements of the screened exchange (Wxxxx.tmp) output files
 #        written for BSE calculations
@@ -11,61 +14,74 @@ class VaspDefaults(object):
     Collection of default values for VASP
     """
     # map functionals contained in archive file names to internal string
-    FUNCTIONAL_MAP = {
-        # LDA type potentials
-        'potuspp_lda': 'lda_us',
-        'potpaw_lda': 'lda',
-        'potpaw_lda.52': 'lda_52',
-        'potpaw_lda.54': 'lda_54',
-        # PBE type potentials
-        'potpaw_pbe': 'pbe',
-        'potpaw_pbe.52': 'pbe_52',
-        'potpaw_pbe.54': 'pbe_54',
-        # PW91 type potentials
-        'potuspp_gga': 'pw91_us',
-        'potpaw_gga': 'pw91',
-    }
-    # filenames for VASP input and output files
-    FNAMES = {
-        # inputs
-        'potcar': 'POTCAR',
-        'incar': 'INCAR',
-        'poscar': 'POSCAR',
-        'kpoints': 'KPOINTS',
-        # outputs
-        'contcar': 'CONTCAR',
-        'chg': 'CHG',
-        'chgcar': 'CHGCAR',
-        'doscar': 'DOSCAR',
-        'eigenval': 'EIGENVAL',
-        'elfcar': 'ELFCAR',
-        'ibzkpt': 'IBZKPT',
-        'locpot': 'LOCPOT',
-        'oszicar': 'OSZICAR',
-        'outcar': 'OUTCAR',
-        'parchg': 'PARCHG',
-        'pcdat': 'PCDAT',
-        'procar': 'PROCAR',
-        'proout': 'PROOUT',
-        'report': 'REPORT',
-        'tmpcar': 'TMPCAR',
-        'vasprun': 'vasprun.xml',
-        'wavecar': 'WAVECAR',
-        'waveder': 'WAVEDER',
-        'xdatcar': 'XDATCAR',
-        'bsefatband': 'BSEFATBAND',
-        # outputs of bse-calculations
-        # 'Wxxxx.tmp',
-        # 'WFULLxxxx.tmp',
-    }
+    @classproperty
+    def FUNCTIONAL_MAP(cls):
+        return dict({
+            # LDA type potentials
+            'potuspp_lda': 'lda_us',
+            'potpaw_lda': 'lda',
+            'potpaw_lda.52': 'lda_52',
+            'potpaw_lda.54': 'lda_54',
+            # PBE type potentials
+            'potpaw_pbe': 'pbe',
+            'potpaw_pbe.52': 'pbe_52',
+            'potpaw_pbe.54': 'pbe_54',
+            # PW91 type potentials
+            'potuspp_gga': 'pw91_us',
+            'potpaw_gga': 'pw91',
+        })
+
+    @classproperty
+    def FNAMES(cls):
+        # filenames for VASP input and output files
+        return dict({
+            # inputs
+            'potcar': 'POTCAR',
+            'incar': 'INCAR',
+            'poscar': 'POSCAR',
+            'kpoints': 'KPOINTS',
+            # outputs
+            'contcar': 'CONTCAR',
+            'chg': 'CHG',
+            'chgcar': 'CHGCAR',
+            'doscar': 'DOSCAR',
+            'eigenval': 'EIGENVAL',
+            'elfcar': 'ELFCAR',
+            'ibzkpt': 'IBZKPT',
+            'locpot': 'LOCPOT',
+            'oszicar': 'OSZICAR',
+            'outcar': 'OUTCAR',
+            'parchg': 'PARCHG',
+            'pcdat': 'PCDAT',
+            'procar': 'PROCAR',
+            'proout': 'PROOUT',
+            'report': 'REPORT',
+            'tmpcar': 'TMPCAR',
+            'vasprun': 'vasprun.xml',
+            'wavecar': 'WAVECAR',
+            'waveder': 'WAVEDER',
+            'xdatcar': 'XDATCAR',
+            'bsefatband': 'BSEFATBAND',
+            # outpts of bse-calculations
+            # 'Wxxxx.tmp',
+            # 'WFULLxxxx.tmp',
+        })
 
 
 class PluginDefaults(object):
     # filenames for logging of stdin and stderr during AiiDA VASP calculations
-    STDERR_FNAME = 'aiida.err'
-    STDOUT_FNAME = 'aiida.out'
+    @classproperty
+    def STDERR_FNAME(cls):
+        return 'aiida.err'
+
+    @classproperty
+    def STDOUT_FNAME(cls):
+        return 'aiida.out'
+
     # default name used for the input file to the cstdn executable
-    CSTDN_SPEC_FNAME = 'cstdn_spec.yaml'
+    @classproperty
+    def CSTDN_SPEC_FNAME(cls):
+        return 'cstdn_spec.yaml'
 
 
 class CustodianDefaults(object):
@@ -74,102 +90,120 @@ class CustodianDefaults(object):
     default job options, handlers and corresponding handler options.
     """
     # path prefix for handler imports
-    HANDLER_IMPORT_PATH = 'custodian.vasp.handlers'
+    @classproperty
+    def HANDLER_IMPORT_PATH(cls):
+        return 'custodian.vasp.handlers'
+
     # import paths for the custodian jobs running VASP and VASP Neb calcs
-    VASP_NEB_JOB_IMPORT_PATH = 'custodian.vasp.jobs.VaspNEBJob'
-    VASP_JOB_IMPORT_PATH = 'custodian.vasp.job.VaspJob'
+    @classproperty
+    def VASP_NEB_JOB_IMPORT_PATH(cls):
+        return 'custodian.vasp.jobs.VaspNEBJob'
+
+    @classproperty
+    def VASP_JOB_IMPORT_PATH(cls):
+        return 'custodian.vasp.jobs.VaspJob'
+
     # default settings controlling regular VASP jobs run through custodian
-    VASP_JOB_SETTINGS = {
-        'vasp_cmd': None,
-        'output_file': PluginDefaults.STDOUT_FNAME,
-        'stderr_file': PluginDefaults.STDERR_FNAME,
-        'suffix': "",
-        'final': True,
-        'backup': True,
-        'auto_npar': False,
-        'auto_gamma': False,
-        'settings_override': None,
-        'gamma_vasp_cmd': None,
-        'copy_magmom': False,
-        'auto_continue': False,
-    }
+    @classproperty
+    def VASP_JOB_SETTINGS(cls):
+        return {
+            'vasp_cmd': None,
+            'output_file': PluginDefaults.STDOUT_FNAME,
+            'stderr_file': PluginDefaults.STDERR_FNAME,
+            'suffix': "",
+            'final': True,
+            'backup': True,
+            'auto_npar': False,
+            'auto_gamma': False,
+            'settings_override': None,
+            'auto_continue': False,
+        }
+
     # default settings controlling NEB VASP jobs run through custodian
-    VASP_NEB_JOB_SETTINGS = {
-        'vasp_cmd': None,
-        'output_file': PluginDefaults.STDOUT_FNAME,
-        'stderr_file': PluginDefaults.STDERR_FNAME,
-        'suffix': "",
-        'final': True,
-        'backup': True,
-        'auto_npar': False,
-        'auto_gamma': False,
-        'half_kpts': False,
-        'settings_override': None,
-        'gamma_vasp_cmd': None,
-        'copy_magmom': False,
-        'auto_continue': False,
-    }
+    @classproperty
+    def VASP_NEB_JOB_SETTINGS(cls):
+        return {
+            'vasp_cmd': None,
+            'output_file': PluginDefaults.STDOUT_FNAME,
+            'stderr_file': PluginDefaults.STDERR_FNAME,
+            'suffix': "",
+            'final': True,
+            'backup': True,
+            'auto_npar': False,
+            'auto_gamma': False,
+            'half_kpts': False,
+            'settings_override': None,
+            'gamma_vasp_cmd': None,
+            'copy_magmom': False,
+            'auto_continue': False,
+        }
+
     # default settings controlling the custodian executable
-    CUSTODIAN_SETTINGS = {
-        'max_errors_per_job': None,
-        'max_errors': 10,
-        'polling_time_step': 10,
-        'monitor_freq': 30,
-        'skip_over_errors': False,
-        'scratch_dir': None,
-        'gzipped_output': False,
-        'checkpoint': False,
-        'terminate_func': None,
-        'terminate_on_nonzero_returncode': False,
-    }
+    @classproperty
+    def CUSTODIAN_SETTINGS(cls):
+        return {
+            'max_errors_per_job': None,
+            'max_errors': 10,
+            'polling_time_step': 10,
+            'monitor_freq': 30,
+            'skip_over_errors': False,
+            'scratch_dir': None,
+            'gzipped_output': False,
+            'checkpoint': False,
+            'terminate_func': None,
+            'terminate_on_nonzero_returncode': False,
+        }
+
     # dictionary of the used default settings for all VASP error handlers
     # that may be used with this plugin
-    ERROR_HANDLER_SETTINGS = {
-        'AliasingErrorHandler': {
-            'output_filename': PluginDefaults.STDOUT_FNAME,
-        },
-        'DriftErrorHandler': {
-            'max_drift': None,
-            'to_average': 3,
-            'enaug_multiply': 2,
-        },
-        'FrozenJobErrorHandler': {
-            'output_filename': PluginDefaults.STDOUT_FNAME,
-            'timeout': 21600,
-        },
-        'LrfCommutatorHandler': {
-            'output_filename': PluginDefaults.STDERR_FNAME,
-        },
-        'MeshSymmetryErrorHandler': {
-            'output_filename': PluginDefaults.STDOUT_FNAME,
-            'output_vasprun': VaspDefaults.FNAMES['vasprun'],
-        },
-        'NonConvergingErrorHandler': {
-            'output_filename': VaspDefaults.FNAMES['oszicar'],
-            'nionic_steps': 10,
-        },
-        'PositiveEnergyErrorHandler': {
-            'output_filename': VaspDefaults.FNAMES['oszicar'],
-        },
-        'PotimErrorHandler': {
-            'input_filename': VaspDefaults.FNAMES['poscar'],
-            'output_filename': VaspDefaults.FNAMES['oszicar'],
-            'dE_threshold': 1.0,
-        },
-        'StdErrHandler': {
-            'output_filename': PluginDefaults.STDERR_FNAME,
-        },
-        'UnconvergedErrorHandler': {
-            'output_filename': VaspDefaults.FNAMES['vasprun'],
-        },
-        'VaspErrorHandler': {
-            'output_filename': PluginDefaults.STDOUT_FNAME,
-            'natoms_large_cell': 100,
-            'errors_subset_to_catch': None,
-        },
-        'WalltimeHandler': {
-            'wall_time': None,
-            'buffer_time': 300,
-            'electronic_step_stop': False,
-        },
-    }  # ERROR_HANDLER_SETTINGS
+    @classproperty
+    def ERROR_HANDLER_SETTINGS(cls):
+        return dict({
+            'AliasingErrorHandler': {
+                'output_filename': PluginDefaults.STDOUT_FNAME,
+            },
+            'DriftErrorHandler': {
+                'max_drift': None,
+                'to_average': 3,
+                'enaug_multiply': 2,
+            },
+            'FrozenJobErrorHandler': {
+                'output_filename': PluginDefaults.STDOUT_FNAME,
+                'timeout': 21600,
+            },
+            'LrfCommutatorHandler': {
+                'output_filename': PluginDefaults.STDERR_FNAME,
+            },
+            'MeshSymmetryErrorHandler': {
+                'output_filename': PluginDefaults.STDOUT_FNAME,
+                'output_vasprun': VaspDefaults.FNAMES['vasprun'],
+            },
+            'NonConvergingErrorHandler': {
+                'output_filename': VaspDefaults.FNAMES['oszicar'],
+                'nionic_steps': 10,
+            },
+            'PositiveEnergyErrorHandler': {
+                'output_filename': VaspDefaults.FNAMES['oszicar'],
+            },
+            'PotimErrorHandler': {
+                'input_filename': VaspDefaults.FNAMES['poscar'],
+                'output_filename': VaspDefaults.FNAMES['oszicar'],
+                'dE_threshold': 1.0,
+            },
+            'StdErrHandler': {
+                'output_filename': PluginDefaults.STDERR_FNAME,
+            },
+            'UnconvergedErrorHandler': {
+                'output_filename': VaspDefaults.FNAMES['vasprun'],
+            },
+            'VaspErrorHandler': {
+                'output_filename': PluginDefaults.STDOUT_FNAME,
+                'natoms_large_cell': 100,
+                'errors_subset_to_catch': None,
+            },
+            'WalltimeHandler': {
+                'wall_time': None,
+                'buffer_time': 300,
+                'electronic_step_stop': False,
+            },
+        })  # ERROR_HANDLER_SETTINGS

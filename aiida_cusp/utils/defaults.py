@@ -116,6 +116,8 @@ class CustodianDefaults(object):
             'auto_npar': False,
             'auto_gamma': False,
             'settings_override': None,
+            'gamma_vasp_cmd': None,
+            'copy_magmom': False,
             'auto_continue': False,
         }
 

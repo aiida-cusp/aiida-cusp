@@ -37,6 +37,9 @@ def test_input_port_availability(valid_input):
     (True, "'mpirun' '-np' '1' '/path/to/vasp'  > 'aiida.out' 2> 'aiida.err'"),
     (False, "'/path/to/vasp'  > 'aiida.out' 2> 'aiida.err'"),
 ])
+# ignore BadPotcarWarning raised by pymatgen. i don't care if pymatgen does
+# not like my test "potential"
+@pytest.mark.filterwarnings("ignore::UserWarning")
 def test_vasp_neb_no_custodian(code_cusp_vasp_neb, incar, kpoints, poscar,
                                with_H_PBE_potcar, temporary_cwd,
                                clear_database_after_test, with_mpi,
@@ -74,6 +77,9 @@ def test_vasp_neb_no_custodian(code_cusp_vasp_neb, incar, kpoints, poscar,
     (True, "'/path/to/cstdn' 'run' 'cstdn_spec.yaml'"),
     (False, "'/path/to/cstdn' 'run' 'cstdn_spec.yaml'"),
 ])
+# ignore BadPotcarWarning raised by pymatgen. i don't care if pymatgen does
+# not like my test "potential"
+@pytest.mark.filterwarnings("ignore::UserWarning")
 def test_vasp_neb_with_custodian(code_cusp_vasp_neb, code_cusp_cstdn_neb,
                                  incar, kpoints, poscar, with_H_PBE_potcar,
                                  temporary_cwd, clear_database_after_test,

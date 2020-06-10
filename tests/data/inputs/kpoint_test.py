@@ -14,7 +14,6 @@ from pymatgen.io.vasp.inputs import Kpoints_supported_modes, Poscar, Kpoints
 from pymatgen.symmetry.bandstructure import HighSymmKpath
 from aiida.orm import StructureData
 
-from aiida_cusp.data import VaspKpointData
 from aiida_cusp.data.inputs.vasp_kpoint import KpointWrapper
 from aiida_cusp.utils.exceptions import KpointWrapperError
 
@@ -95,6 +94,34 @@ def test_write_file_method(kpoint_params, structure, sympath, tmpdir,
     with open(filepath, 'r') as stored_kpoints_file:
         written_contents = stored_kpoints_file.read()
     assert written_contents == str(kpoints.get_kpoints())
+
+
+@pytest.mark.parametrize('mode,kpoints,expected_description',
+[   # noqa: E128
+    ('auto', 100, "Automatic (Subdivisions: 100)"),
+    ('monkhorst', [5, 5, 5], "Monkhorst (5x5x5)"),
+    ('gamma', [5, 5, 5], "Gamma (5x5x5)"),
+    ('line', 100, "Line-mode"),
+])
+# ignore the UserWarnings raised by the KpointWrapper due to some unused
+# input parameters
+@pytest.mark.filterwarnings("ignore::UserWarning")
+def test_description_method(mode, kpoints, expected_description,
+                            minimal_pymatgen_structure):
+    from pymatgen.symmetry.bandstructure import HighSymmKpath
+    from aiida_cusp.data import VaspKpointData
+    kpoint_params = {
+        'mode': mode,
+        'kpoints': kpoints,
+        'shift': None,
+        'sympath': HighSymmKpath(minimal_pymatgen_structure, path_type='sc'),
+    }
+    kwargs = {
+        'structure': minimal_pymatgen_structure,
+        'kpoints': kpoint_params,
+    }
+    kpoints = VaspKpointData(**kwargs)
+    assert kpoints.get_description() == expected_description
 
 
 #

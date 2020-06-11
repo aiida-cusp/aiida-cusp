@@ -81,6 +81,17 @@ def temporary_cwd(tmpdir):
 
 
 @pytest.fixture(scope='function')
+def aiida_sandbox():
+    """
+    Create and return an AiiDA sandbox folder (used for instance as argument
+    in the prepare_for_submission() calculator methods
+    """
+    from aiida.common.folders import SandboxFolder
+    with SandboxFolder() as sandbox:
+        yield sandbox
+
+
+@pytest.fixture(scope='function')
 def minimal_pymatgen_structure():
     """
     Create a minimal pymatgen structure object for a fictitious simple-cubic
@@ -128,7 +139,7 @@ def computer(tmpdir):
     """
     Setup a new computer object.
     """
-    from aiida.orm import Computer
+    from aiida.orm import Computer, User
     computer = Computer(name='local_computer', hostname='localhost')
     computer.set_scheduler_type('direct')
     computer.set_transport_type('local')
@@ -136,6 +147,7 @@ def computer(tmpdir):
     computer.set_default_mpiprocs_per_machine(1)
     computer.set_mpirun_command(['mpirun', '-np', '{tot_num_mpiprocs}'])
     computer.store()
+    computer.configure(user=User.objects.get_default())
     yield computer
 
 

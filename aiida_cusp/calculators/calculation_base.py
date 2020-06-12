@@ -12,6 +12,7 @@ from aiida.orm.nodes.data.base import to_aiida_type
 from aiida.common import (CalcInfo, CodeInfo, CodeRunMode)
 
 from aiida_cusp.utils.defaults import PluginDefaults
+from aiida_cusp.utils.custodian import CustodianSettings
 
 
 class CalculationBase(CalcJob):
@@ -226,6 +227,26 @@ class CalculationBase(CalcJob):
             'calcinfo.json',
         ]
         return exclude_files
+
+    def setup_custodian_settings(self, is_neb=False):
+        """
+        Create custodian settings instance from the given handlers and
+        settings.
+        """
+        # setup the inputs to create the custodian settings from the passed
+        # parameters
+        settings = self.inputs.custodian.get('settings')
+        handlers = self.inputs.custodian.get('handlers')
+        # get the vasp run command and the stdout / stderr files
+        vasp_cmd = self.vasp_run_line()
+        stdout = self._default_output_file
+        stderr = self._default_error_file
+        # setup custodian settings used to write the spec file
+        custodian_settings = CustodianSettings(vasp_cmd, stdout, stderr,
+                                               settings=settings,
+                                               handlers=handlers,
+                                               is_neb=is_neb)
+        return custodian_settings
 
     def create_inputs_for_restart_run(self, folder, calcinfo):
         """

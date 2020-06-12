@@ -21,7 +21,7 @@ import pytest
     (1, 1, ['-extra'], ['mpirun', '-np', '1', '-extra']),
 ])
 def test_vasp_run_line(vasp_code, procs, procs_per_machine, extraparams,
-                       expected, clear_database_after_test):
+                       expected):
     from aiida_cusp.calculators import CalculationBase
     vasp_code.computer.set_default_mpiprocs_per_machine(procs_per_machine)
     inputs = {
@@ -38,7 +38,7 @@ def test_vasp_run_line(vasp_code, procs, procs_per_machine, extraparams,
     assert Base.vasp_run_line() == expected_runline
 
 
-def test_vasp_run_line_no_mpi(vasp_code, clear_database_after_test):
+def test_vasp_run_line_no_mpi(vasp_code):
     from aiida_cusp.calculators import CalculationBase
     vasp_code.computer.set_default_mpiprocs_per_machine(100)
     inputs = {
@@ -58,8 +58,7 @@ def test_vasp_run_line_no_mpi(vasp_code, clear_database_after_test):
 @pytest.mark.parametrize('filename', ['MyFile', '.Hidden'])
 @pytest.mark.parametrize('relpath', ['.', '00', '01', '02', 'sub1',
                          'sub1/sub2', 'sub1/sub2/sub3', '.hidden1'])
-def test_remote_folder_filelist(vasp_code, filename, relpath, aiida_sandbox,
-                                clear_database_after_test):
+def test_remote_folder_filelist(vasp_code, filename, relpath, aiida_sandbox):
     import pathlib
     from aiida.orm import RemoteData
     from aiida.orm import load_computer
@@ -97,8 +96,7 @@ def test_remote_folder_filelist(vasp_code, filename, relpath, aiida_sandbox,
 
 
 @pytest.mark.parametrize('submit_script_name', [None, 'foo.bar'])
-def test_default_restart_exclude_files(submit_script_name, vasp_code,
-                                       clear_database_after_test):
+def test_default_restart_exclude_files(submit_script_name, vasp_code):
     from aiida_cusp.calculators import CalculationBase
     from aiida_cusp.utils.defaults import PluginDefaults
     # setup the calculator
@@ -127,8 +125,8 @@ def test_default_restart_exclude_files(submit_script_name, vasp_code,
 
 @pytest.mark.parametrize('method', ['create_inputs_for_restart_run',
                          'create_inputs_for_regular_run'])
-def test_undefined_create_input_methods_raise(vasp_code, method, aiida_sandbox,
-                                              clear_database_after_test):
+def test_undefined_create_input_methods_raise(vasp_code, method,
+                                              aiida_sandbox):
     from aiida.common import CalcInfo
     from aiida_cusp.calculators import CalculationBase
     # setup the calculator
@@ -149,8 +147,7 @@ def test_undefined_create_input_methods_raise(vasp_code, method, aiida_sandbox,
 # check submit-script if only a vasp code is available
 @pytest.mark.parametrize('withmpi', [True, False])
 def test_prepare_for_submission_base_vasp(withmpi, vasp_code, cstdn_code,
-                                          aiida_sandbox,
-                                          clear_database_after_test):
+                                          aiida_sandbox):
     from aiida_cusp.calculators import CalculationBase
     # setup the calculator
     inputs = {
@@ -189,8 +186,7 @@ def test_prepare_for_submission_base_vasp(withmpi, vasp_code, cstdn_code,
 # check submit-script if custodian code is available
 @pytest.mark.parametrize('withmpi', [True, False])
 def test_prepare_for_submission_base_cstdn(withmpi, vasp_code, cstdn_code,
-                                           aiida_sandbox,
-                                           clear_database_after_test):
+                                           aiida_sandbox):
     from aiida_cusp.calculators import CalculationBase
     # setup the calculator
     inputs = {

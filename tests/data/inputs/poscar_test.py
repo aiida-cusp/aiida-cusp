@@ -99,8 +99,7 @@ def test_poscar_velocities(minimal_pymatgen_structure, v1, v2, v3):
     (None, None, 300.0),
 ])
 def test_store_and_load_poscar_data(minimal_pymatgen_structure, constraints,
-                                    velocities, temperature,
-                                    clear_database_before_test):
+                                    velocities, temperature):
     from aiida.plugins import DataFactory
     from aiida.orm import load_node
     PoscarData = DataFactory('cusp.poscar')

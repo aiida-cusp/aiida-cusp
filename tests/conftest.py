@@ -11,6 +11,14 @@ import pytest
 pytest_plugins = ['aiida.manage.tests.pytest_fixtures']
 
 
+@pytest.fixture(scope='function', autouse=True)
+def auto_clear_aiidadb(clear_database):
+    """
+    Automatically run clear_database_after_test() after every test function
+    """
+    pass
+
+
 @pytest.fixture(scope='function')
 def interactive_potcar_file(tmpdir):
     """
@@ -109,6 +117,25 @@ def minimal_pymatgen_structure():
 
 
 @pytest.fixture(scope='function')
+def multi_component_structure():
+    """
+    Setup a complex pymatgen structure (i.e. Li6PS5Br) comprising multiple
+    different species.
+    """
+    from pymatgen import Lattice, Structure
+    lattice = Lattice.cubic(a=1.0E1)
+    species, positions = list(zip(*[
+        ('Li', [0.183, 0.183, 0.024]),
+        ('S', [0.250, 0.250, 0.250]),
+        ('S', [0.618, 0.618, 0.618]),
+        ('P', [0.500, 0.500, 0.500]),
+        ('Br', [0.000, 0.000, 0.000]),
+    ]))
+    structure = Structure.from_spacegroup(216, lattice, species, positions)
+    yield structure
+
+
+@pytest.fixture(scope='function')
 def vasp_code(computer):
     """
     Setup a new code object.
@@ -116,8 +143,9 @@ def vasp_code(computer):
     from aiida.orm import Code
     code = Code(remote_computer_exec=(computer, '/path/to/vasp'))
     code.label = 'vaspcode'
-    # do not store the code yet such that subsequent fixtures can use this
-    # code as base for different input plugins
+    code.set_prepend_text('vasp code prepend')
+    code.set_append_text('vasp code append')
+    # do not store the code yet such that the default plugin can be set later
     yield code
 
 
@@ -129,8 +157,9 @@ def cstdn_code(computer):
     from aiida.orm import Code
     code = Code(remote_computer_exec=(computer, '/path/to/cstdn'))
     code.label = 'cstdncode'
-    # do not store the code yet such that subsequent fixtures can use this
-    # code as base for different input plugins
+    code.set_prepend_text('custodian code prepend')
+    code.set_append_text('custodian code append')
+    # do not store the code yet such that the default plugin can be set later
     yield code
 
 
@@ -183,23 +212,79 @@ def kpoints():
 
 
 @pytest.fixture(scope='function')
-def with_H_PBE_potcar(interactive_potcar_file):
+def with_pbe_potcars(interactive_potcar_file):
     """
-    Create and store hydrogen potcar with PBE functional.
+    Create and store a set of (PBE) potcars used in the different tests
     """
     import pathlib
     from aiida_cusp.data.inputs.vasp_potcar import VaspPotcarFile
-    potcar_contents = "\n".join([
-        " PAW_PBE H 15Jun2001",
-        " 1.00000000000000000",
-        " parameters from PSCTR are:",
-        "   VRHFIN =H: ultrasoft test",
-        "   TITEL  = PAW_PBE H 15Jun2001",
-        "END of PSCTR-controll parameters",
-    ])
-    interactive_potcar_file.open("POTCAR")
-    interactive_potcar_file.write(potcar_contents)
-    path_to_potcar = pathlib.Path(interactive_potcar_file.filepath)
-    node = VaspPotcarFile.add_potential(path_to_potcar, name='H',
-                                        functional='pbe')
-    node.store()
+    # define the basic attributes of the potentials stored to the set
+    potcar_contents = [
+        (
+            "Li", "pbe",
+            "\n".join([
+                " PAW_PBE Li 17Jan2003",
+                " 1.00000000000000000",
+                " parameters from PSCTR are:",
+                "   VRHFIN =Li: s1p0",
+                "   TITEL  = PAW_PBE Li 17Jan2003",
+                "END of PSCTR-controll parameters",
+            ])
+        ),  # end entry: Li
+        (
+            "Br", "pbe",
+            "\n".join([
+                " PAW_PBE Br 06Sep2000",
+                " 7.00000000000000000",
+                " parameters from PSCTR are:",
+                "   VRHFIN =Br: s2p5",
+                "   TITEL  = PAW_PBE Br 06Sep2000",
+                "END of PSCTR-controll parameters",
+            ])
+        ),  # end entry: Br
+        (
+            "S", "pbe",
+            "\n".join([
+                " PAW_PBE S 17Jan2003",
+                " 6.00000000000000000",
+                " parameters from PSCTR are:",
+                "   VRHFIN =S : s2p4",
+                "   TITEL  = PAW_PBE S 17Jan2003",
+                "END of PSCTR-controll parameters",
+            ])
+        ),  # end entry: S
+        (
+            "P", "pbe",
+            "\n".join([
+                " PAW_PBE P 17Jan2003",
+                " 5.00000000000000000",
+                " parameters from PSCTR are:",
+                "   VRHFIN =P : s2p3",
+                "   TITEL  = PAW_PBE P 17Jan2003",
+                "END of PSCTR-controll parameters",
+            ])
+        ),  # end entry: P
+        (
+            "H", "pbe",
+            "\n".join([
+                " PAW_PBE H 15Jun2001",
+                " 1.00000000000000000",
+                " parameters from PSCTR are:",
+                "   VRHFIN =H: ultrasoft test",
+                "   TITEL  = PAW_PBE H 15Jun2001",
+                "END of PSCTR-controll parameters",
+            ])
+        ),  # end entry: H
+    ]  # end potcar_contents
+    # store defined potentials
+    for name, functional, potcar_content in potcar_contents:
+        # open interative potcar file and erase all possible contents
+        interactive_potcar_file.open("POTCAR")
+        interactive_potcar_file.erase()
+        # write the new pseudo-potential contents to the file and store it
+        # to the database
+        interactive_potcar_file.write(potcar_content)
+        path_to_potcar = pathlib.Path(interactive_potcar_file.filepath)
+        node = VaspPotcarFile.add_potential(path_to_potcar, name=name,
+                                            functional=functional)
+        node.store()

@@ -17,8 +17,7 @@ def test_input_port_availability(valid_input):
 # not like my test "potential"
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test_vasp_neb_calculation_setup(code_vasp, incar, kpoints, poscar,
-                                    with_pbe_potcars, temporary_cwd,
-                                    clear_database_after_test):
+                                    with_pbe_potcars, temporary_cwd):
     import pathlib
 
     from aiida.plugins import CalculationFactory

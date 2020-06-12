@@ -66,7 +66,7 @@ def test_get_incar_method():
     assert str(incar.get_incar()) == str(pmg_incar)
 
 
-def test_store_and_load_incar_data(clear_database_before_test):
+def test_store_and_load_incar_data():
     from aiida.orm import load_node
     incar_parameters = {
         'EDIFF': 1.0E-6,

@@ -21,7 +21,7 @@ from aiida_cusp.utils import PotcarParser
 #
 # Tests for VaspPotcarFile class
 #
-def test_store_and_load_potcar_file(interactive_potcar_file, clear_database):
+def test_store_and_load_potcar_file(interactive_potcar_file):
     from aiida.orm import load_node
     # potcar contents and attributes
     contents = "potcar file contents!"
@@ -76,8 +76,7 @@ def test_invalid_attributes_raise(interactive_potcar_file, potential_attrs):
     ({'checksum': 'hash5'}, 1),
 ])
 def test_get_potential_from_tags(query_args, num_match_expected,
-                                 interactive_potcar_file,
-                                 clear_database_before_test):
+                                 interactive_potcar_file):
     # build smalle potential database
     interactive_potcar_file.open("POTCAR")
     path_to_potcar = interactive_potcar_file.filepath
@@ -99,8 +98,7 @@ def test_get_potential_from_tags(query_args, num_match_expected,
     assert len(query_result) == num_match_expected
 
 
-def test_potcar_is_unique_method(clear_database_before_test,
-                                 interactive_potcar_file):
+def test_potcar_is_unique_method(interactive_potcar_file):
     # generate arbitrary potential and process it using the potcar parser
     potential_contents = "\n".join([
         "functional Si 01Jan2000",
@@ -132,8 +130,7 @@ def test_potcar_is_unique_method(clear_database_before_test,
     assert "Potential with matching identifiers" in str(exception.value)
 
 
-def test_add_potential_classmethod(clear_database_before_test,
-                                   interactive_potcar_file):
+def test_add_potential_classmethod(interactive_potcar_file):
     # generate arbitrary potential and process it using the potcar parser
     potential_contents = "\n".join([
         "functional Si 01Jan2000",
@@ -159,7 +156,7 @@ def test_add_potential_classmethod(clear_database_before_test,
 #
 # Tests for VaspPotcarData class
 #
-def test_store_and_load_potcar_data(interactive_potcar_file, clear_database):
+def test_store_and_load_potcar_data(interactive_potcar_file):
     from aiida.orm import load_node
     # generate arbitrary potential and process it using the potcar parser
     potential_contents = "\n".join([
@@ -201,7 +198,7 @@ def test_init_from_tags_rases_on_missing_parameters(missing_prop):
     assert str(exception.value) == expected_error
 
 
-def test_init_from_tags_raises_on_missing_node(clear_database_before_test):
+def test_init_from_tags_raises_on_missing_node():
     # try to initialize from non-existent potential
     with pytest.raises(VaspPotcarDataError) as exception:
         potcar_data = VaspPotcarData(name='Si', version=10000101,
@@ -209,8 +206,7 @@ def test_init_from_tags_raises_on_missing_node(clear_database_before_test):
     assert "Unable to initialize VaspPotcarData" in str(exception.value)
 
 
-def test_load_potential_file_node_from_uuid(clear_database_before_test,
-                                            interactive_potcar_file):
+def test_load_potential_file_node_from_uuid(interactive_potcar_file):
     # generate arbitrary potential and process it using the potcar parser
     interactive_potcar_file.open("POTCAR")
     path = pathlib.Path(interactive_potcar_file.filepath).absolute()
@@ -227,8 +223,7 @@ def test_load_potential_file_node_from_uuid(clear_database_before_test,
     assert potcar_file_get.name == potcar_file_set.name
 
 
-def test_load_potential_file_node_from_hash(clear_database_before_test,
-                                            interactive_potcar_file):
+def test_load_potential_file_node_from_hash(interactive_potcar_file):
     # generate arbitrary potential and process it using the potcar parser
     interactive_potcar_file.open("POTCAR")
     path = pathlib.Path(interactive_potcar_file.filepath).absolute()
@@ -267,8 +262,7 @@ def test_load_potential_file_raises_on_undiscoverable(interactive_potcar_file):
 
 @pytest.mark.parametrize('change_prop', ['name', 'version', 'functional',
                          'element', 'hash'])
-def test_load_potential_file_node_properties_match(clear_database_before_test,
-                                                   interactive_potcar_file,
+def test_load_potential_file_node_properties_match(interactive_potcar_file,
                                                    change_prop):
     interactive_potcar_file.open("POTCAR")
     path = pathlib.Path(interactive_potcar_file.filepath).absolute()
@@ -289,10 +283,9 @@ def test_load_potential_file_node_properties_match(clear_database_before_test,
 @pytest.mark.parametrize('functional', ['pbe', 'pw91'])
 @pytest.mark.parametrize('structure_type', ['pymatgen', 'aiida', 'poscar',
                          'aiida_cusp_poscar'])
-def test_from_structure_classmethod(clear_database_before_test,
-                                    interactive_potcar_file,
-                                    minimal_pymatgen_structure, name, version,
-                                    functional, structure_type):
+def test_from_structure_classmethod_single(name, interactive_potcar_file,
+                                           version, functional, structure_type,
+                                           minimal_pymatgen_structure):
     # create non-ordered structures of different types
     supercell = minimal_pymatgen_structure * (2, 2, 2)
     if structure_type == 'pymatgen':
@@ -342,7 +335,61 @@ def test_from_structure_classmethod(clear_database_before_test,
     assert isinstance(potential_map['H'], VaspPotcarData) is True
 
 
-# FIXME: Add test for from_structure() method featuring multi-component
-#        structures
-# def test_from_structure_multi_element():
-#     pass
+# check linklist generation from multi-component structure
+@pytest.mark.parametrize('structure_type', ['pymatgen', 'aiida', 'poscar',
+                         'aiida_cusp_poscar'])
+def test_from_structure_classmethod_multi(with_pbe_potcars, structure_type,
+                                          multi_component_structure):
+    from aiida_cusp.data.inputs.vasp_poscar import VaspPoscarData
+    if structure_type == 'pymatgen':
+        structure = multi_component_structure
+    elif structure_type == 'aiida':
+        structure = StructureData(pymatgen_structure=multi_component_structure)
+    elif structure_type == 'poscar':
+        structure = Poscar(multi_component_structure)
+    elif structure_type == 'aiida_cusp_poscar':
+        structure = VaspPoscarData(structure=multi_component_structure)
+    # generate potental map using the default potential settings (i.e.
+    # name == element, version == latest)
+    potential_map = VaspPotcarData.from_structure(structure, 'pbe')
+    all_elements = ['Li', 'S', 'P', 'Br']
+    def_elements = potential_map.keys()
+    assert set(def_elements) == set(all_elements)
+    # check potential names and functionals match
+    for element in all_elements:
+        assert potential_map[element].name == element
+        assert potential_map[element].functional == 'pbe'
+
+
+@pytest.mark.filterwarnings("ignore::UserWarning")
+def test_potcar_from_linklist(with_pbe_potcars, multi_component_structure):
+    from aiida_cusp.data.inputs.vasp_potcar import VaspPotcarFile
+    from aiida_cusp.data.inputs.vasp_poscar import VaspPoscarData
+    poscar = VaspPoscarData(structure=multi_component_structure)
+    potmap = VaspPotcarData.from_structure(multi_component_structure, 'pbe')
+    complete_potcar = VaspPotcarData.potcar_from_linklist(poscar, potmap)
+    # build the expected potcar
+    potcar_contents = []
+    for symbol in poscar.get_poscar().site_symbols:
+        potcar_file = VaspPotcarFile.from_tags(name=symbol)[0]
+        potcar_contents.append(potcar_file.get_content())
+    expected_potcar_contents = "\n".join(potcar_contents) + "\n"
+    assert str(complete_potcar) == expected_potcar_contents
+
+
+@pytest.mark.parametrize('symbol', ['Li', 'S', 'P', 'Br'])
+@pytest.mark.filterwarnings("ignore::UserWarning")
+def test_potcar_from_linklist_raises_on_missing(symbol, with_pbe_potcars,
+                                                multi_component_structure):
+    from aiida_cusp.data.inputs.vasp_potcar import VaspPotcarData
+    from aiida_cusp.utils.exceptions import VaspPotcarDataError
+    poscar = VaspPoscarData(structure=multi_component_structure)
+    potmap = VaspPotcarData.from_structure(multi_component_structure, 'pbe')
+    # pop an arbitrary potential from the map and check that the call to
+    # potcar_from_linklist() fails for the given structure
+    potmap.pop(symbol)
+    expected_error = ("Found no potential in passed potential-element map for "
+                      "site symbol '{}'".format(symbol))
+    with pytest.raises(VaspPotcarDataError) as exception:
+        _ = VaspPotcarData.potcar_from_linklist(poscar, potmap)
+    assert str(exception.value) == expected_error

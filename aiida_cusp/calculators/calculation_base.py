@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+
+
 """
 Base class serving as parent for other VASP calculator implementations
 """
 
 
 from aiida.engine import CalcJob
-from aiida.orm import RemoteData, Code
+from aiida.orm import RemoteData, Code, Bool, Dict, List
+from aiida.orm.nodes.data.base import to_aiida_type
 from aiida.common import (CalcInfo, CodeInfo, CodeRunMode)
 
 from aiida_cusp.utils.defaults import PluginDefaults
@@ -14,8 +17,8 @@ from aiida_cusp.utils.defaults import PluginDefaults
 class CalculationBase(CalcJob):
     """
     Base class implementing the basic inputs and features commond to all
-    kind of VASP calculations. Includes all available inputs available to
-    regular VASP calculations as well as NEB calculations.
+    kind of VASP calculations. Includes a list of available inputs common
+    to both basic VASP calculations as well as NEB calculations.
     """
 
     # default filenames used for the stderr/stdout logging of the calculation
@@ -40,76 +43,54 @@ class CalculationBase(CalcJob):
         # Setup settings and code used to run the VASP code through the
         # custodian error handler (if custodian remains undefined a simple
         # VASP calculation is run)
+        spec.input_namespace('custodian', required=False)
         spec.input(
             'custodian.code',
             valid_type=Code,
             required=False,
             help=("Code to use for the custodian executable")
         )
-        spec.input_namespace('custodian.settings', required=False, non_db=True)
+        # definition of vasp error handlers connected to the calculation
         spec.input(
-            'custodian.settings.max_errors_per_job',
-            valid_type=int,
-            help=("Maximum number of accepted errors before the calculation "
-                  "is terminated")
+            'custodian.handlers',
+            valid_type=(Dict, List),
+            default=lambda: Dict(dict={}),
+            serializer=to_aiida_type,
+            help=("Error handlers connected to the custodian executable")
         )
+        spec.input_namespace('custodian.settings', required=False, non_db=True)
+        # since custodian is exlusively used to run a VASP calculation with
+        # enabled error correction only the most basic custodian options
+        # affecting single runs are exposed here
         spec.input(
             'custodian.settings.max_errors',
             valid_type=int,
+            default=10,
             help=("Maximum number of accepted errors before the calculation "
                   "is terminated")
         )
         spec.input(
             'custodian.settings.polling_time_step',
             valid_type=int,
+            default=10,
             help=("Seconds between two consecutive checks for the calcualtion "
                   "being completed")
         )
         spec.input(
             'custodian.settings.monitor_freq',
             valid_type=int,
+            default=30,
             help=("Number of performed polling steps before the calculation "
                   "is checked for possible errors")
         )
         spec.input(
             'custodian.settings.skip_over_errors',
             valid_type=bool,
+            default=False,
             help=("If set to `True` failed error handlers will be skipped")
         )
-        # do we really want to make this option available? Because, the
-        # scratch dir is already set by AiiDA, i.e. the code
-        spec.input(
-            'custodian.settings.scratch_dir',
-            valid_type=str,
-            help=("Temporary directory used to execute the custodian job")
-        )
-        # certainly not needed because file compression is done after the
-        # calculation using the AiiDA repository framework
-        spec.input(
-            'custodian.settings.gzipped_output',
-            valid_type=bool,
-            help=("")
-        )
-        # not needed
-        spec.input(
-            'custodian.settings.checkpoint',
-            valid_type=int,
-            help=("")
-        )
-        # not needed
-        spec.input(
-            'custodian.settings.terminate_on_nonzero_returncode',
-            valid_type=int,
-            help=("")
-        )
-#        spec.input(
-#            'custodian.handlers',
-#            valid_type=(dict, list),
-#            default={},
-#            non_db=True,
-#            help=("Error handlers connected to the custodian executable")
-#        )
-        # TODO: Is from_scratch flag really neccessary?
+        # required inputs to restart a calculation
+        spec.input_namespace('restart', required=False)
         spec.input(
             'restart.folder',
             valid_type=RemoteData,
@@ -117,19 +98,19 @@ class CalculationBase(CalcJob):
             help=("Remotely located folder used to restart a calculation")
         )
         spec.input(
-            'restart.from_scratch',
-            valid_type=bool,
-            default=False,
+            'restart.contcar_to_poscar',
+            valid_type=Bool,
+            serializer=lambda val: Bool(val),
+            default=lambda: Bool(True),
             required=False,
-            non_db=True,
-            help=("If set to `True` calculation is restarted from scratch "
-                  "(i.e. POSCAR will not be replaced by CONTCAR)")
+            help=("If set to `False` POSCAR in the restarted calculation will "
+                  "not be replaced with CONTCAR form parent calculation")
         )
 
     def prepare_for_submission(self, folder):
         # if no custodian code is defined directly run the VASP calculation,
         # i.e. initialize the CodeInfo for the passed VASP code
-        if 'code' not in self.inputs.custodian:
+        if not self.inputs.custodian.get('code', False):
             codeinfo = CodeInfo()
             codeinfo.code_uuid = self.inputs.code.uuid
             codeinfo.stdout_name = self._default_output_file
@@ -140,9 +121,10 @@ class CalculationBase(CalcJob):
         else:
             codeinfo = CodeInfo()
             codeinfo.code_uuid = self.inputs.custodian.code.uuid
+            # define custodian-exe command line arguments
             codeinfo.cmdline_params = ['run', PluginDefaults.CSTDN_SPEC_FNAME]
-            # do not add the MPI command to custodian since it will call
-            # VASP using MPI
+            # never add the MPI command to custodian since it will call
+            # VASP using MPI itself
             codeinfo.withmpi = False
         calcinfo = CalcInfo()
         calcinfo.uuid = self.uuid
@@ -156,10 +138,10 @@ class CalculationBase(CalcJob):
         calcinfo.codes_run_mode = CodeRunMode.SERIAL
         # finally setup the regular VASP input files wither for a regular or
         # a restarted run
-        if 'parent_folder' in self.inputs:  # create a restarted calculation
-            self.create_inputs_for_restart_run(folder)
-        else:  # create a regular calculation
-            self.create_inputs_for_regular_run(folder)
+        if self.inputs.restart.get('folder', False):  # restart
+            self.create_inputs_for_restart_run(folder, calcinfo)
+        else:  # regular
+            self.create_inputs_for_regular_run(folder, calcinfo)
         return calcinfo
 
     def vasp_calc_mpi_args(self):
@@ -203,32 +185,58 @@ class CalculationBase(CalcJob):
             vasp_cmdline_params = mpicmd + mpiextra + vasp_exec
         else:
             vasp_cmdline_params = vasp_exec
+        # Custodian requires the vasp-cmd be a list of arguments. Since we
+        # also pass the stdout / stderr log-files directly to custodian we're
+        # done at this point
         return vasp_cmdline_params
-        # Custodian requires the vasp-cmd as list of arguments. Since we also
-        # pass the stdout / stderr files to custodian as files for the logging
-        # we're done here
-        # # assemble the corresponding CodeInfo
-        # codeinfo = CodeInfo()
-        # # redirect will be handled by the custodian executable
-        # #codeinfo.stdout_name = self._default_output_file
-        # #codeinfo.stderr_name = self._default_error_file
-        # codeinfo.cmdline_params = vasp_cmdline_params
-        # codeinfo.join_files = False  # do not combine stderr / stdout
-        # # use connected scheduler to obtain the explicit run line
-        # scheduler = self.inputs.code.computer.get_scheduler()
-        # run_line = scheduler._get_run_line([codeinfo], CodeRunMode.SERIAL)
-        # return run_line
 
-    def create_inputs_for_restart_run(self, folder):
+    def remote_filelist(self, remote_data, relpath='.'):
+        """
+        Recurse remote folder contents and return a list of all files found
+        on the remote with the list containing the files names, relative
+        paths and the absolute file path on the remote.
+        :returns: list of tuples of type (filename, absolut_path_on_remote,
+            relative_path (without the filename)
+        """
+        filelist = []
+        import pathlib
+        for path in remote_data.listdir(relpath=relpath):
+            subpath = relpath + '/' + path
+            try:  # call listdir() on the given path and recurse
+                files = self.remote_filelist(remote_data, relpath=subpath)
+                filelist.extend(files)
+            except OSError:  # cannot call listdir() because subpath is file
+                # absolute file path on remote including the file name
+                abspath = remote_data.get_remote_path() + '/' + subpath
+                abspath = str(pathlib.Path(abspath).absolute())
+                relpath = str(pathlib.Path(relpath))
+                filelist.append((path, abspath, relpath))
+        return filelist
+
+    def restart_exclude_files(self):
+        """
+        Create a list of files that will not be copied from the remote
+        restart folder to the current calculation folder.
+        """
+        # files never copied for restarted calculations
+        exclude_files = [
+            self.inputs.metadata.options.get('submit_script_filename'),
+            PluginDefaults.CSTDN_SPEC_FNAME,
+            'job_tmpl.json',
+            'calcinfo.json',
+        ]
+        return exclude_files
+
+    def create_inputs_for_restart_run(self, folder, calcinfo):
         """
         Methods to create the input files for a restarted calculation.
-        (This method has to be implemented by the parent class)
+        (This method has to be implemented by the inherited subclass)
         """
         raise NotImplementedError
 
-    def create_inputs_for_regular_run(self, folder):
+    def create_inputs_for_regular_run(self, folder, calcinfo):
         """
         Methods to create the inputs for a regular calculation.
-        (This method has to be implemented by the parent class)
+        (This method has to be implemented by the inherited subclass)
         """
         raise NotImplementedError

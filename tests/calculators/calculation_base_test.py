@@ -144,3 +144,82 @@ def test_undefined_create_input_methods_raise(vasp_code, method, aiida_sandbox,
     calcinfo = CalcInfo()
     with pytest.raises(NotImplementedError) as exception:
         assert getattr(Base, method)(aiida_sandbox, calcinfo)
+
+
+# check submit-script if only a vasp code is available
+@pytest.mark.parametrize('withmpi', [True, False])
+def test_prepare_for_submission_base_vasp(withmpi, vasp_code, cstdn_code,
+                                          aiida_sandbox,
+                                          clear_database_after_test):
+    from aiida_cusp.calculators import CalculationBase
+    # setup the calculator
+    inputs = {
+        'code': vasp_code,
+        'metadata': {
+            'options': {
+                'resources': {'num_machines': 1},
+                'withmpi': withmpi,
+            },
+        },
+    }
+    Base = CalculationBase(inputs=inputs)
+    # silence the NotImplementedError (we do not need these methods here)
+    Base.create_inputs_for_regular_run = lambda folder, calcinfo: None
+    Base.create_inputs_for_restart_run = lambda folder, calcinfo: None
+    # run prepare_for_submission() to write the submit script to the
+    # sandbox folder
+    calcinfo = Base.presubmit(aiida_sandbox)
+    script = Base.inputs.metadata.options.submit_script_filename
+    with open(aiida_sandbox.abspath + '/' + script, 'r') as script_file:
+        script_file_contents = script_file.read()
+    if withmpi:
+        expected_runline = ("'mpirun' '-np' '1' '/path/to/vasp'  > "
+                            "'aiida.out' 2> 'aiida.err'")
+    else:
+        expected_runline = "'/path/to/vasp'  > 'aiida.out' 2> 'aiida.err'"
+    # assert vasp related runline and prepends/appends are set
+    assert expected_runline in script_file_contents
+    assert vasp_code.get_prepend_text() in script_file_contents
+    assert vasp_code.get_append_text() in script_file_contents
+    # assert no custodian related stuff is present in the script
+    assert cstdn_code.get_prepend_text() not in script_file_contents
+    assert cstdn_code.get_append_text() not in script_file_contents
+
+
+# check submit-script if custodian code is available
+@pytest.mark.parametrize('withmpi', [True, False])
+def test_prepare_for_submission_base_cstdn(withmpi, vasp_code, cstdn_code,
+                                           aiida_sandbox,
+                                           clear_database_after_test):
+    from aiida_cusp.calculators import CalculationBase
+    # setup the calculator
+    inputs = {
+        'code': vasp_code,
+        'custodian': {'code': cstdn_code},
+        'metadata': {
+            'options': {
+                'resources': {'num_machines': 1},
+                'withmpi': withmpi,
+            },
+        },
+    }
+    Base = CalculationBase(inputs=inputs)
+    # silence the NotImplementedError (we do not need these methods here)
+    Base.create_inputs_for_regular_run = lambda folder, calcinfo: None
+    Base.create_inputs_for_restart_run = lambda folder, calcinfo: None
+    # run prepare_for_submission() to write the submit script to the
+    # sandbox folder
+    calcinfo = Base.presubmit(aiida_sandbox)
+    script = Base.inputs.metadata.options.submit_script_filename
+    with open(aiida_sandbox.abspath + '/' + script, 'r') as script_file:
+        script_file_contents = script_file.read()
+    # `withmpi` only affects the contents of the cstdn_spec.yaml and thus the
+    # runline should stay the same in case a custodian code is present
+    expected_runline = "'/path/to/cstdn' 'run' 'cstdn_spec.yaml'"
+    # assert vasp related runline and prepends/appends are set
+    assert expected_runline in script_file_contents
+    assert vasp_code.get_prepend_text() in script_file_contents
+    assert vasp_code.get_append_text() in script_file_contents
+    # assert custodian related stuff is present in the script
+    assert cstdn_code.get_prepend_text() in script_file_contents
+    assert cstdn_code.get_append_text() in script_file_contents

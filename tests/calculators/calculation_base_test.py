@@ -12,6 +12,8 @@ calculator tests
 
 import pytest
 
+from aiida_cusp.utils.defaults import PluginDefaults
+
 
 @pytest.mark.parametrize('procs,procs_per_machine,extraparams,expected',
 [   # noqa: E128
@@ -96,7 +98,7 @@ def test_remote_folder_filelist(vasp_code, filename, relpath, aiida_sandbox):
 
 
 @pytest.mark.parametrize('submit_script_name', [None, 'foo.bar'])
-def test_default_restart_exclude_files(submit_script_name, vasp_code):
+def test_default_restart_files_exclude(submit_script_name, vasp_code):
     from aiida_cusp.calculators import CalculationBase
     from aiida_cusp.utils.defaults import PluginDefaults
     # setup the calculator
@@ -116,7 +118,7 @@ def test_default_restart_exclude_files(submit_script_name, vasp_code):
     script_name = submit_script_name or '_aiidasubmit.sh'
     expected_list = ['job_tmpl.json', 'calcinfo.json', script_name,
                      PluginDefaults.CSTDN_SPEC_FNAME]
-    excluded_list = Base.restart_exclude_files()
+    excluded_list = Base.restart_files_exclude()
     # capture if something went wrong and we have duplicate files in here
     assert len(set(excluded_list)) == len(excluded_list)
     # assert that both list contain the same elements (ignoring their index)
@@ -219,3 +221,85 @@ def test_prepare_for_submission_base_cstdn(withmpi, vasp_code, cstdn_code,
     # assert custodian related stuff is present in the script
     assert cstdn_code.get_prepend_text() in script_file_contents
     assert cstdn_code.get_append_text() in script_file_contents
+
+
+# test remote copying of files works as expected (each entry is defined
+# as relative_path_in_remote/filename with from_remote defining if the
+# file is expected to be replaced with the remote version or not)
+@pytest.mark.parametrize('testfile,from_remote',
+[   # noqa: E128
+    # some files that are never copied from the remote
+    ('.aiida/calcinfo.json', False),
+    ('.aiida/job_tmpl.json', False),
+    ('_aiidasubmit.sh', False),
+    (PluginDefaults.CSTDN_SPEC_FNAME, False),
+    # other files that **should** be copied from the remote
+    ('SomeFile', True),
+    ('sub/AnotherFile', True),
+    ('deeply/nested/folder/structure/MoreFiles', True),
+])
+def test_vasp_calculation_restart_copy_remote(vasp_code, cstdn_code, tmpdir,
+                                              testfile, from_remote):
+    import pathlib
+    import shutil
+    from aiida.orm import RemoteData
+    from aiida.engine import run_get_node
+    from aiida_cusp.utils.defaults import PluginDefaults
+    from aiida_cusp.calculators import CalculationBase
+    Base = CalculationBase.get_builder()
+
+    # mock the create_inputs_for_restart_run() method which is undefined on
+    # the CalculationBase class and simply replace it with a call to the
+    # the restart_copy_remote() function (without any checks). Additionally
+    # write the custodian spec to check if this file is accidentally copied
+    # to the working directory
+    def mock(self, folder, calcinfo):
+        self.restart_copy_remote(folder, calcinfo)
+        custodian_settings = self.setup_custodian_settings(is_neb=False)
+        spec_fname = folder.get_abs_path(PluginDefaults.CSTDN_SPEC_FNAME)
+        custodian_settings.write_custodian_spec(pathlib.Path(spec_fname))
+
+    Base.process_class.create_inputs_for_restart_run = mock
+    # set the input plugin for code
+    vasp_code.set_attribute('input_plugin', 'cusp.vasp')
+    cstdn_code.set_attribute('input_plugin', 'cusp.vasp')
+    # configure computer
+    computer = vasp_code.computer
+    # create a clean workdir used by the computer
+    workdir = pathlib.Path(tmpdir) / 'workdir'
+    if workdir.exists():
+        shutil.rmtree(workdir)
+    workdir.mkdir(parents=True)
+    computer.set_workdir(str(workdir.absolute()))
+    # create a clean remote dir and populate it with the testfile
+    remote_path = pathlib.Path(tmpdir) / 'remote_dir'
+    if remote_path.exists():
+        shutil.rmtree(remote_path)
+    remote_path.mkdir(parents=True)
+    # full path to the file of the remote (also create any subdirs inside
+    # the remote folder if necessary)
+    fpath = remote_path / testfile
+    if not fpath.parent.exists():
+        fpath.parent.mkdir(parents=True)
+    # write some unique content to the file which allows it to be
+    # identifies as file copied in from remote
+    remote_content = "{} remote file of parent calculation".format(fpath.name)
+    with open(fpath, 'w') as remote_file:
+        remote_file.write(remote_content)
+    remote_data = RemoteData(computer=computer, remote_path=str(remote_path))
+    # connect the created remote folder to the calculation to simulate a
+    # restarted calculation
+    Base.code = vasp_code
+    Base.custodian.code = cstdn_code
+    Base.restart.folder = remote_data
+    Base.metadata.options.resources = {'num_machines': 1}
+    calc_node = run_get_node(Base)
+    # inspect files
+    calc_workdir = pathlib.Path(calc_node.node.get_remote_workdir())
+    calc_file_name = calc_workdir / testfile
+    with open(calc_file_name, 'r') as calc_input_file:
+        calc_file_content = calc_input_file.read()
+    if from_remote:
+        assert calc_file_content == remote_content
+    else:
+        assert calc_file_content != remote_content

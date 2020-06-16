@@ -16,6 +16,9 @@ from aiida_cusp.data import (VaspIncarData, VaspPoscarData, VaspKpointData,
                              VaspPotcarData)
 
 
+# TODO: Replace plain exceptions with calculator specific exceptions
+
+
 class VaspBasicCalculation(CalculationBase):
     """
     Calculator class for basic VASP calculations.
@@ -118,7 +121,7 @@ class VaspBasicCalculation(CalculationBase):
 
     def verify_regular_inputs(self):
         """
-        Verify the inputs for a regulat VASP calculation
+        Verify the inputs for a regular VASP calculation
         """
         # for a new calclation all input files are required
         missing_inputs = []
@@ -143,7 +146,7 @@ class VaspBasicCalculation(CalculationBase):
         if self.inputs.get('poscar', False):
             forbidden_inputs += ['poscar']
         if self.inputs.get('potcar', False):
-            forbidden_inputs += ['poscar']
+            forbidden_inputs += ['potcar']
         if forbidden_inputs:
             raise Exception("the following defined inputs are not allowed "
                             "in a restarted calculation: {}"

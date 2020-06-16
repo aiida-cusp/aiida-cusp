@@ -20,7 +20,6 @@ def test_input_port_availability(valid_input):
 def test_missing_input_raises(incar, kpoints, poscar, with_pbe_potcars,
                               vasp_code, aiida_sandbox, use_incar,
                               use_poscar, use_potcar, use_kpoints):
-    import pathlib
     from aiida.plugins import CalculationFactory
     from aiida_cusp.data import VaspPotcarData
     # set the input plugin for code

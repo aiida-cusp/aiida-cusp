@@ -83,6 +83,18 @@ class PluginDefaults(object):
     def CSTDN_SPEC_FNAME(cls):
         return 'cstdn_spec.yaml'
 
+    # default identifier prefix for neb-path node inputs
+    @classproperty
+    def NEB_NODE_PREFIX(cls):
+        return 'node_'
+
+    # expected format for neb-path node identifiers
+    @classproperty
+    def NEB_NODE_REGEX(cls):
+        import re
+        identifier = r"^{}[0-9]{{2}}$".format(cls.NEB_NODE_PREFIX)
+        return re.compile(identifier)
+
 
 class CustodianDefaults(object):
     """

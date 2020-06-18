@@ -27,6 +27,7 @@ class CalculationBase(CalcJob):
     # default filenames used for the stderr/stdout logging of the calculation
     _default_error_file = PluginDefaults.STDERR_FNAME
     _default_output_file = PluginDefaults.STDOUT_FNAME
+    # FIXME: Set retrieve list to retrieve all non Vasp files
 
     @classmethod
     def define(cls, spec):
@@ -111,6 +112,11 @@ class CalculationBase(CalcJob):
         )
 
     def prepare_for_submission(self, folder):
+        """
+        The baseclass will only setup the basic calcinfo arguments but will
+        not write **any** files which has to be implemented in the subclassed
+        prepare_for_submission() method
+        """
         # if no custodian code is defined directly run the VASP calculation,
         # i.e. initialize the CodeInfo for the passed VASP code
         if not self.inputs.custodian.get('code', False):
@@ -139,12 +145,9 @@ class CalculationBase(CalcJob):
         # need to set run mode since presubmit() takes all code inputs into
         # account and would complain if both vasp and custodian codes are set
         calcinfo.codes_run_mode = CodeRunMode.SERIAL
-        # finally setup the regular VASP input files wither for a regular or
-        # a restarted run
-        if self.inputs.restart.get('folder', False):  # restart
-            self.create_inputs_for_restart_run(folder, calcinfo)
-        else:  # regular
-            self.create_inputs_for_regular_run(folder, calcinfo)
+        # finally write the neccessary calculation inputs to the calculation's
+        # input folder
+        calcinfo = self.create_calculation_inputs(folder, calcinfo)
         return calcinfo
 
     def vasp_calc_mpi_args(self):
@@ -228,6 +231,9 @@ class CalculationBase(CalcJob):
             'job_tmpl.json',
             'calcinfo.json',
         ]
+        # do not copy POSCAR if replaced with CONTCAR
+        if self.inputs.restart.get('contcar_to_poscar', False):
+            exclude_files += [VaspDefaults.FNAMES['poscar']]
         return exclude_files
 
     def setup_custodian_settings(self, is_neb=False):
@@ -283,16 +289,9 @@ class CalculationBase(CalcJob):
             if not file_parent_folder.exists():
                 file_parent_folder.mkdir(parents=True)
 
-    def create_inputs_for_restart_run(self, folder, calcinfo):
+    def create_calculation_inputs(self, folder, calcinfo):
         """
-        Methods to create the input files for a restarted calculation.
-        (This method has to be implemented by the inherited subclass)
-        """
-        raise NotImplementedError
-
-    def create_inputs_for_regular_run(self, folder, calcinfo):
-        """
-        Methods to create the inputs for a regular calculation.
+        Write the calculation inputs and set the rerieve lists
         (This method has to be implemented by the inherited subclass)
         """
         raise NotImplementedError

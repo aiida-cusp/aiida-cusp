@@ -8,15 +8,14 @@ Calculator class performing regular VASP calculations
 
 import pathlib
 
-from aiida.engine import CalcJob
-
 from aiida_cusp.utils.defaults import VaspDefaults, PluginDefaults
-from aiida_cusp.calculators import CalculationBase
-from aiida_cusp.data import (VaspIncarData, VaspPoscarData, VaspKpointData,
-                             VaspPotcarData)
+from aiida_cusp.calculators.calculation_base import CalculationBase
+from aiida_cusp.data import VaspPoscarData, VaspPotcarData
 
 
 # TODO: Replace plain exceptions with calculator specific exceptions
+# FIXME: Replace defined methods with private class methods by prefixing
+#        all private methods with __ (Avoid name clashing)
 
 
 class VaspBasicCalculation(CalculationBase):
@@ -44,26 +43,6 @@ class VaspBasicCalculation(CalculationBase):
         # inputs marked as optional so that a restart can be performed solely
         # based on the outputs stored in a remote folder location)
         spec.input(
-            'incar',
-            valid_type=VaspIncarData,
-            required=False,
-            help=("INCAR parameters for a VASP calculation")
-        )
-        spec.input(
-            'kpoints',
-            valid_type=VaspKpointData,
-            required=False,
-            help=("KPOINTS parameters for a VASP calculation")
-        )
-        spec.input_namespace(
-            'potcar',
-            valid_type=VaspPotcarData,
-            dynamic=True,
-            required=False,
-            help=("Pseudo-potentials for each element present in the input "
-                  "structure (POSCAR) used for the VASP calculation")
-        )
-        spec.input(
             'poscar',
             valid_type=VaspPoscarData,
             required=False,
@@ -71,24 +50,36 @@ class VaspBasicCalculation(CalculationBase):
                   "structure data")
         )
 
-    def create_inputs_for_regular_run(self, folder, calcinfo):
+    def create_calculation_inputs(self, folder, calcinfo):
+        """
+        Write the calcultion inputs and setup the retrieve lists for a
+        regular VASP calculation that is not of type NEB
+        """
+        restart = self.inputs.restart.get('folder', False)
+        if restart:
+            self.__create_inputs_for_restart_run(folder, calcinfo)
+        else:
+            self.__create_inputs_for_regular_run(folder, calcinfo)
+        return calcinfo
+
+    def __create_inputs_for_regular_run(self, folder, calcinfo):
         """
         Write input files for a regular VASP calculation
         """
-        self.verify_regular_inputs()
-        self.write_incar(folder)
-        self.write_poscar(folder)
-        self.write_potcar(folder)
-        self.write_kpoints(folder)
+        self.__verify_regular_inputs()
+        self.__write_incar(folder)
+        self.__write_poscar(folder)
+        self.__write_potcar(folder)
+        self.__write_kpoints(folder)
         # write custodian spec file (only writes if custodian.code is set)
-        self.write_custodian_spec(folder)
+        self.__write_custodian_spec(folder)
 
-    def create_inputs_for_restart_run(self, folder, calcinfo):
+    def __create_inputs_for_restart_run(self, folder, calcinfo):
         """
         Copy and write input fils for a restarted VASP calculation
         """
         # verify and copy remote contents
-        self.verify_restart_inputs()
+        self.__verify_restart_inputs()
         self.restart_copy_remote(folder, calcinfo)
         # finally write updated INCAR and KPOINTS to the sandbox folder if
         # defined as inputs to the restarted calculation
@@ -96,30 +87,13 @@ class VaspBasicCalculation(CalculationBase):
         #       and / or POTCAR but I do not see the point in doing this
         #       for a restarted calculation
         if self.inputs.get('incar', False):
-            self.write_incar(folder)
+            self.__write_incar(folder)
         if self.inputs.get('kpoints', False):
-            self.write_kpoints(folder)
+            self.__write_kpoints(folder)
         # write custodian spec file (only writes if custodian.code is set)
-        self.write_custodian_spec(folder)
+        self.__write_custodian_spec(folder)
 
-    def restart_files_exclude(self):
-        """
-        Extend the default list of excluded files defined by the parent class
-        if neccessary.
-        """
-        exclude = super(VaspBasicCalculation, self).restart_files_exclude()
-        # additionally excluded files if defined as inputs for the restarted
-        # calculation
-        if self.inputs.get('incar', False):
-            exclude += [VaspDefaults.FNAMES['incar']]
-        if self.inputs.get('kpoints', False):
-            exclude += [VaspDefaults.FNAMES['kpoints']]
-        # do not copy POSCAR if replaced with CONTCAR
-        if self.inputs.restart.get('contcar_to_poscar'):
-            exclude += [VaspDefaults.FNAMES['poscar']]
-        return exclude
-
-    def verify_regular_inputs(self):
+    def __verify_regular_inputs(self):
         """
         Verify the inputs for a regular VASP calculation
         """
@@ -138,7 +112,7 @@ class VaspBasicCalculation(CalculationBase):
                             "following, non-optional inputs are missing: {}"
                             .format(", ".join(missing_inputs)))
 
-    def verify_restart_inputs(self):
+    def __verify_restart_inputs(self):
         """
         Verify the inputs for a restarted VASP calculation
         """
@@ -152,28 +126,28 @@ class VaspBasicCalculation(CalculationBase):
                             "in a restarted calculation: {}"
                             .format(", ".join(forbidden_inputs)))
 
-    def write_incar(self, folder):
+    def __write_incar(self, folder):
         """
         Write INCAR file to calculation folder.
         """
         incar_fname = folder.get_abs_path(VaspDefaults.FNAMES['incar'])
         self.inputs.incar.write_file(incar_fname)
 
-    def write_kpoints(self, folder):
+    def __write_kpoints(self, folder):
         """
         Write KPOINTS file to calculation folder.
         """
         kpoints_fname = folder.get_abs_path(VaspDefaults.FNAMES['kpoints'])
         self.inputs.kpoints.write_file(kpoints_fname)
 
-    def write_poscar(self, folder):
+    def __write_poscar(self, folder):
         """
         Write POSCAR file to calculation folder.
         """
         poscar_fname = folder.get_abs_path(VaspDefaults.FNAMES['poscar'])
         self.inputs.poscar.write_file(poscar_fname)
 
-    def write_potcar(self, folder):
+    def __write_potcar(self, folder):
         """
         Write POTCAR file to calculation folder.
         """
@@ -184,7 +158,7 @@ class VaspBasicCalculation(CalculationBase):
         potcar_fname = folder.get_abs_path(VaspDefaults.FNAMES['potcar'])
         complete_potcar.write_file(potcar_fname)
 
-    def write_custodian_spec(self, folder):
+    def __write_custodian_spec(self, folder):
         """
         Write the custodian input file to the calculation folder if a
         custodian code is defined.

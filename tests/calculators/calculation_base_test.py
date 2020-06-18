@@ -24,7 +24,7 @@ from aiida_cusp.utils.defaults import PluginDefaults
 ])
 def test_vasp_run_line(vasp_code, procs, procs_per_machine, extraparams,
                        expected):
-    from aiida_cusp.calculators import CalculationBase
+    from aiida_cusp.calculators.calculation_base import CalculationBase
     vasp_code.computer.set_default_mpiprocs_per_machine(procs_per_machine)
     inputs = {
         'code': vasp_code,
@@ -41,7 +41,7 @@ def test_vasp_run_line(vasp_code, procs, procs_per_machine, extraparams,
 
 
 def test_vasp_run_line_no_mpi(vasp_code):
-    from aiida_cusp.calculators import CalculationBase
+    from aiida_cusp.calculators.calculation_base import CalculationBase
     vasp_code.computer.set_default_mpiprocs_per_machine(100)
     inputs = {
         'code': vasp_code,
@@ -64,7 +64,7 @@ def test_remote_folder_filelist(vasp_code, filename, relpath, aiida_sandbox):
     import pathlib
     from aiida.orm import RemoteData
     from aiida.orm import load_computer
-    from aiida_cusp.calculators import CalculationBase
+    from aiida_cusp.calculators.calculation_base import CalculationBase
     sandbox = pathlib.Path(aiida_sandbox.abspath).absolute()
     remote = RemoteData(computer=vasp_code.computer, remote_path=str(sandbox))
     sandbox = pathlib.Path(aiida_sandbox.abspath).absolute()
@@ -81,11 +81,7 @@ def test_remote_folder_filelist(vasp_code, filename, relpath, aiida_sandbox):
     inputs = {
         'code': vasp_code,
         'restart': {'folder': remote},
-        'metadata': {
-            'options': {
-                'resources': {'num_machines': 1},
-            },
-        },
+        'metadata': {'options': {'resources': {'num_machines': 1}}},
     }
     Base = CalculationBase(inputs=inputs)
     remote_filelist = Base.remote_filelist(remote)
@@ -98,12 +94,15 @@ def test_remote_folder_filelist(vasp_code, filename, relpath, aiida_sandbox):
 
 
 @pytest.mark.parametrize('submit_script_name', [None, 'foo.bar'])
-def test_default_restart_files_exclude(submit_script_name, vasp_code):
-    from aiida_cusp.calculators import CalculationBase
-    from aiida_cusp.utils.defaults import PluginDefaults
+@pytest.mark.parametrize('contcar_to_poscar', [True, False])
+def test_default_restart_files_exclude(submit_script_name, contcar_to_poscar,
+                                       vasp_code):
+    from aiida_cusp.calculators.calculation_base import CalculationBase
+    from aiida_cusp.utils.defaults import PluginDefaults, VaspDefaults
     # setup the calculator
     inputs = {
         'code': vasp_code,
+        'restart': {'contcar_to_poscar': contcar_to_poscar},
         'metadata': {
             'options': {
                 'resources': {'num_machines': 1},
@@ -118,6 +117,8 @@ def test_default_restart_files_exclude(submit_script_name, vasp_code):
     script_name = submit_script_name or '_aiidasubmit.sh'
     expected_list = ['job_tmpl.json', 'calcinfo.json', script_name,
                      PluginDefaults.CSTDN_SPEC_FNAME]
+    if contcar_to_poscar:  # add POSCAR to expected list
+        expected_list += [VaspDefaults.FNAMES['poscar']]
     excluded_list = Base.restart_files_exclude()
     # capture if something went wrong and we have duplicate files in here
     assert len(set(excluded_list)) == len(excluded_list)
@@ -125,32 +126,25 @@ def test_default_restart_files_exclude(submit_script_name, vasp_code):
     assert set(excluded_list) == set(expected_list)
 
 
-@pytest.mark.parametrize('method', ['create_inputs_for_restart_run',
-                         'create_inputs_for_regular_run'])
-def test_undefined_create_input_methods_raise(vasp_code, method,
-                                              aiida_sandbox):
+def test_undefined_create_calculation_inputs_raise(vasp_code, aiida_sandbox):
     from aiida.common import CalcInfo
-    from aiida_cusp.calculators import CalculationBase
+    from aiida_cusp.calculators.calculation_base import CalculationBase
     # setup the calculator
     inputs = {
         'code': vasp_code,
-        'metadata': {
-            'options': {
-                'resources': {'num_machines': 1},
-            },
-        },
+        'metadata': {'options': {'resources': {'num_machines': 1}}},
     }
     Base = CalculationBase(inputs=inputs)
     calcinfo = CalcInfo()
     with pytest.raises(NotImplementedError) as exception:
-        assert getattr(Base, method)(aiida_sandbox, calcinfo)
+        assert Base.create_calculation_inputs(aiida_sandbox, calcinfo)
 
 
 # check submit-script if only a vasp code is available
 @pytest.mark.parametrize('withmpi', [True, False])
 def test_prepare_for_submission_base_vasp(withmpi, vasp_code, cstdn_code,
                                           aiida_sandbox):
-    from aiida_cusp.calculators import CalculationBase
+    from aiida_cusp.calculators.calculation_base import CalculationBase
     # setup the calculator
     inputs = {
         'code': vasp_code,
@@ -163,8 +157,7 @@ def test_prepare_for_submission_base_vasp(withmpi, vasp_code, cstdn_code,
     }
     Base = CalculationBase(inputs=inputs)
     # silence the NotImplementedError (we do not need these methods here)
-    Base.create_inputs_for_regular_run = lambda folder, calcinfo: None
-    Base.create_inputs_for_restart_run = lambda folder, calcinfo: None
+    Base.create_calculation_inputs = lambda folder, calcinfo: calcinfo
     # run prepare_for_submission() to write the submit script to the
     # sandbox folder
     calcinfo = Base.presubmit(aiida_sandbox)
@@ -189,7 +182,7 @@ def test_prepare_for_submission_base_vasp(withmpi, vasp_code, cstdn_code,
 @pytest.mark.parametrize('withmpi', [True, False])
 def test_prepare_for_submission_base_cstdn(withmpi, vasp_code, cstdn_code,
                                            aiida_sandbox):
-    from aiida_cusp.calculators import CalculationBase
+    from aiida_cusp.calculators.calculation_base import CalculationBase
     # setup the calculator
     inputs = {
         'code': vasp_code,
@@ -203,8 +196,7 @@ def test_prepare_for_submission_base_cstdn(withmpi, vasp_code, cstdn_code,
     }
     Base = CalculationBase(inputs=inputs)
     # silence the NotImplementedError (we do not need these methods here)
-    Base.create_inputs_for_regular_run = lambda folder, calcinfo: None
-    Base.create_inputs_for_restart_run = lambda folder, calcinfo: None
+    Base.create_calculation_inputs = lambda folder, calcinfo: calcinfo
     # run prepare_for_submission() to write the submit script to the
     # sandbox folder
     calcinfo = Base.presubmit(aiida_sandbox)
@@ -238,28 +230,14 @@ def test_prepare_for_submission_base_cstdn(withmpi, vasp_code, cstdn_code,
     ('sub/AnotherFile', True),
     ('deeply/nested/folder/structure/MoreFiles', True),
 ])
-def test_vasp_calculation_restart_copy_remote(vasp_code, cstdn_code, tmpdir,
-                                              testfile, from_remote):
+def test_calculation_restart_copy_remote(vasp_code, cstdn_code, tmpdir,
+                                         testfile, from_remote, monkeypatch):
     import pathlib
     import shutil
     from aiida.orm import RemoteData
     from aiida.engine import run_get_node
     from aiida_cusp.utils.defaults import PluginDefaults
-    from aiida_cusp.calculators import CalculationBase
-    Base = CalculationBase.get_builder()
-
-    # mock the create_inputs_for_restart_run() method which is undefined on
-    # the CalculationBase class and simply replace it with a call to the
-    # the restart_copy_remote() function (without any checks). Additionally
-    # write the custodian spec to check if this file is accidentally copied
-    # to the working directory
-    def mock(self, folder, calcinfo):
-        self.restart_copy_remote(folder, calcinfo)
-        custodian_settings = self.setup_custodian_settings(is_neb=False)
-        spec_fname = folder.get_abs_path(PluginDefaults.CSTDN_SPEC_FNAME)
-        custodian_settings.write_custodian_spec(pathlib.Path(spec_fname))
-
-    Base.process_class.create_inputs_for_restart_run = mock
+    from aiida_cusp.calculators.calculation_base import CalculationBase
     # set the input plugin for code
     vasp_code.set_attribute('input_plugin', 'cusp.vasp')
     cstdn_code.set_attribute('input_plugin', 'cusp.vasp')
@@ -289,12 +267,29 @@ def test_vasp_calculation_restart_copy_remote(vasp_code, cstdn_code, tmpdir,
     remote_data = RemoteData(computer=computer, remote_path=str(remote_path))
     # connect the created remote folder to the calculation to simulate a
     # restarted calculation
-    Base.code = vasp_code
-    Base.custodian.code = cstdn_code
-    Base.restart.folder = remote_data
-    Base.metadata.options.resources = {'num_machines': 1}
-    calc_node = run_get_node(Base)
-    # inspect files
+    inputs = {
+        'code': vasp_code,
+        'custodian': {'code': cstdn_code},
+        'restart': {'folder': remote_data},
+        'metadata': {'options': {'resources': {'num_machines': 1}}},
+    }
+
+    # mock the central create_calculation_inputs() method which is defined
+    # on the corresponding subclasses. here we simply replace it with a
+    # a call to the restart_copy_remote() method (without any checks).
+    # additionally the custodian spec file is wriiten to check if it gets
+    # accidentially copied to the working directory
+    def mock(self, folder, calcinfo):
+        self.restart_copy_remote(folder, calcinfo)
+        spec_fname = folder.get_abs_path(PluginDefaults.CSTDN_SPEC_FNAME)
+        pathlib.Path(spec_fname).touch()
+        return calcinfo
+
+    monkeypatch.setattr(CalculationBase, 'create_calculation_inputs', mock)
+    # actually submit the calculation to check that remote contents are
+    # indeed copied to the working directory
+    calc_node = run_get_node(CalculationBase, **inputs)
+    # inspect working directory files
     calc_workdir = pathlib.Path(calc_node.node.get_remote_workdir())
     calc_file_name = calc_workdir / testfile
     with open(calc_file_name, 'r') as calc_input_file:

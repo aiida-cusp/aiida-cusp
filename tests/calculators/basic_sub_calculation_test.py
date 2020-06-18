@@ -12,14 +12,15 @@ def test_input_port_availability(valid_input):
     assert valid_input in inputs
 
 
+# No check for missing POSCAR as structure check is already performed
+# in the VaspCalculation class
 @pytest.mark.parametrize('use_incar', [True, False])
 @pytest.mark.parametrize('use_kpoints', [True, False])
-@pytest.mark.parametrize('use_poscar', [True, False])
 @pytest.mark.parametrize('use_potcar', [True, False])
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test_missing_input_raises(incar, kpoints, poscar, with_pbe_potcars,
-                              vasp_code, aiida_sandbox, use_incar,
-                              use_poscar, use_potcar, use_kpoints):
+                              vasp_code, aiida_sandbox, use_incar, use_potcar,
+                              use_kpoints):
     from aiida.plugins import CalculationFactory
     from aiida_cusp.data import VaspPotcarData
     # set the input plugin for code
@@ -27,23 +28,18 @@ def test_missing_input_raises(incar, kpoints, poscar, with_pbe_potcars,
     # setup calculation inputs
     inputs = {
         'code': vasp_code,
-        'metadata': {
-            'options': {
-                'resources': {'num_machines': 1},
-            },
-        },
+        'poscar': poscar,
+        'metadata': {'options': {'resources': {'num_machines': 1}}},
     }
     if use_incar:
         inputs.update({'incar': incar})
     if use_kpoints:
         inputs.update({'kpoints': kpoints})
-    if use_poscar:
-        inputs.update({'poscar': poscar})
     if use_potcar:
         inputs.update({'potcar': VaspPotcarData.from_structure(poscar, 'pbe')})
-    VaspBasicCalculation = CalculationFactory('cusp.vasp')
-    vasp_calc = VaspBasicCalculation(inputs=inputs)
-    if all([use_incar, use_kpoints, use_poscar, use_potcar]):
+    VaspCalculation = CalculationFactory('cusp.vasp')
+    vasp_calc = VaspCalculation(inputs=inputs)
+    if all([use_incar, use_kpoints, use_potcar]):
         vasp_calc.prepare_for_submission(aiida_sandbox)
     else:
         with pytest.raises(Exception) as exception:
@@ -70,11 +66,7 @@ def test_vasp_calculation_setup(vasp_code, cstdn_code, incar, kpoints, poscar,
         'kpoints': kpoints,
         'poscar': poscar,
         'potcar': potcar_linklist,
-        'metadata': {
-            'options': {
-                'resources': {'num_machines': 1},
-            },
-        },
+        'metadata': {'options': {'resources': {'num_machines': 1}}},
     }
     VaspBasicCalculation = CalculationFactory('cusp.vasp')
     vasp_calc = VaspBasicCalculation(inputs=inputs)
@@ -102,7 +94,7 @@ def test_invalid_restart_inputs_raise(vasp_code, poscar, with_pbe_potcars,
                                       invalid_input):
     from aiida.plugins import CalculationFactory
     from aiida_cusp.data import VaspPotcarData
-    VaspBasicCalculation = CalculationFactory('cusp.vasp')
+    VaspCalculation = CalculationFactory('cusp.vasp')
     inputs = {
         'code': vasp_code,
         'metadata': {
@@ -116,15 +108,17 @@ def test_invalid_restart_inputs_raise(vasp_code, poscar, with_pbe_potcars,
     if invalid_input == 'potcar':
         potcar = VaspPotcarData.from_structure(poscar, 'pbe')
         inputs.update({'potcar': potcar})
-    vasp_basic_calculation = VaspBasicCalculation(inputs=inputs)
+    vasp_basic_calculation = VaspCalculation(inputs=inputs)
     with pytest.raises(Exception) as exception:
-        vasp_basic_calculation.verify_restart_inputs()
+        # need to call the name mangeled protected method explicitly
+        vasp_basic_calculation._VaspBasicCalculation__verify_restart_inputs()
     err_msg = "the following defined inputs are not allowed in a restarted"
     assert err_msg in str(exception.value)
 
 
 @pytest.mark.parametrize('switch', [True, False])
-def test_poscar_overwrite_switch(switch, tmpdir, vasp_code, aiida_sandbox):
+def test_poscar_overwrite_switch(switch, tmpdir, vasp_code, aiida_sandbox,
+                                 monkeypatch):
     import pathlib
     from aiida.orm import RemoteData
     from aiida.plugins import CalculationFactory
@@ -136,22 +130,17 @@ def test_poscar_overwrite_switch(switch, tmpdir, vasp_code, aiida_sandbox):
     pathlib.Path(tmpdir / 'POSCAR').touch()
     pathlib.Path(tmpdir / 'CONTCAR').touch()
     remote_path = str(tmpdir)
-
     remote_data = RemoteData(computer=computer, remote_path=remote_path)
-    VaspBasicCalculation = CalculationFactory('cusp.vasp')
     inputs = {
         'code': vasp_code,
-        'restart': {
-            'folder': remote_data,
-            'contcar_to_poscar': switch,
-        },
-        'metadata': {
-            'options': {
-                'resources': {'num_machines': 1},
-            },
-        },
+        'restart': {'folder': remote_data, 'contcar_to_poscar': switch},
+        'metadata': {'options': {'resources': {'num_machines': 1}}},
     }
-    vasp_basic_calculation = VaspBasicCalculation(inputs=inputs)
+    VaspCalculation = CalculationFactory('cusp.vasp')
+    # mock the is_neb() method to avoid the search of the remote_folders
+    # parent CalcJobNode (we know it's **not** a NEB calculation!)
+    monkeypatch.setattr(VaspCalculation, 'is_neb', lambda self: False)
+    vasp_basic_calculation = VaspCalculation(inputs=inputs)
     calcinfo = vasp_basic_calculation.prepare_for_submission(aiida_sandbox)
     remote_copy_list = calcinfo.remote_copy_list
     copied_files = [pathlib.Path(f).name for (_, f, _) in remote_copy_list]
@@ -175,11 +164,12 @@ def test_poscar_overwrite_switch(switch, tmpdir, vasp_code, aiida_sandbox):
 @pytest.mark.parametrize('use_kpoints', [False, True])
 def test_defined_inputs_are_preferred(use_incar, use_kpoints, tmpdir,
                                       vasp_code, aiida_sandbox, incar,
-                                      kpoints):
+                                      kpoints, monkeypatch):
     import pathlib
     from aiida.orm import RemoteData
     from aiida.plugins import CalculationFactory
     from aiida_cusp.data import VaspPotcarData
+
     # set the input plugin for code
     vasp_code.set_attribute('input_plugin', 'cusp.vasp')
     # setup a remote restart directory with POSCAR and CONTCAR
@@ -188,23 +178,20 @@ def test_defined_inputs_are_preferred(use_incar, use_kpoints, tmpdir,
     pathlib.Path(tmpdir / 'KPOINTS').touch()
     remote_path = str(tmpdir)
     remote_data = RemoteData(computer=computer, remote_path=remote_path)
-    VaspBasicCalculation = CalculationFactory('cusp.vasp')
     inputs = {
         'code': vasp_code,
-        'restart': {
-            'folder': remote_data,
-        },
-        'metadata': {
-            'options': {
-                'resources': {'num_machines': 1},
-            },
-        },
+        'restart': {'folder': remote_data},
+        'metadata': {'options': {'resources': {'num_machines': 1}}},
     }
     if use_incar:
         inputs.update({'incar': incar})
     if use_kpoints:
         inputs.update({'kpoints': kpoints})
-    vasp_basic_calculation = VaspBasicCalculation(inputs=inputs)
+    VaspCalculation = CalculationFactory('cusp.vasp')
+    # mock the is_neb() method to avoid the search of the remote_folders
+    # parent CalcJobNode (we know it's **not** a NEB calculation!)
+    monkeypatch.setattr(VaspCalculation, 'is_neb', lambda self: False)
+    vasp_basic_calculation = VaspCalculation(inputs=inputs)
     calcinfo = vasp_basic_calculation.prepare_for_submission(aiida_sandbox)
     remote_copy_list = calcinfo.remote_copy_list
     files_to_copy = [pathlib.Path(f).name for (_, f, _) in remote_copy_list]

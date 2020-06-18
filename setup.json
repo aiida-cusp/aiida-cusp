@@ -20,8 +20,7 @@
 				"cusp.potcarfile = aiida_cusp.data.inputs.vasp_potcar:VaspPotcarFile"
 			],
 			"aiida.calculations": [
-				"cusp.vasp = aiida_cusp.calculators.vasp_basic_calculation:VaspBasicCalculation",
-				"cusp.vasp_neb = aiida_cusp.calculators.vasp_neb_calculation:VaspNebCalculation"
+				"cusp.vasp = aiida_cusp.calculators.vasp_calculation:VaspCalculation"
 			],
 			"aiida.cmdline.data": [
 				"potcar = aiida_cusp.cli.potcar_cmd:potcar"

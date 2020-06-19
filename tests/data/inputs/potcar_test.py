@@ -280,7 +280,9 @@ def test_load_potential_file_node_properties_match(interactive_potcar_file,
 
 @pytest.mark.parametrize('name', [None, 'H', 'H_pv'])
 @pytest.mark.parametrize('version', [None, 10000101, 10000102])
-@pytest.mark.parametrize('functional', ['pbe', 'pw91'])
+# this is a user-space method: also check that the passed functionals are not
+# treated case-sensitive!
+@pytest.mark.parametrize('functional', ['pbe', 'pw91', 'PBE', 'PW91'])
 @pytest.mark.parametrize('structure_type', ['pymatgen', 'aiida', 'poscar',
                          'aiida_cusp_poscar'])
 def test_from_structure_classmethod_single(name, interactive_potcar_file,
@@ -330,7 +332,7 @@ def test_from_structure_classmethod_single(name, interactive_potcar_file,
     expected_version = version or 10000102
     assert potential_map['H'].name == expected_name
     assert potential_map['H'].version == expected_version
-    assert potential_map['H'].functional == functional
+    assert potential_map['H'].functional == functional.lower()
     # check that we indeed return a VaspPotcarData instance and nothing else
     assert isinstance(potential_map['H'], VaspPotcarData) is True
 
@@ -393,3 +395,43 @@ def test_potcar_from_linklist_raises_on_missing(symbol, with_pbe_potcars,
     with pytest.raises(VaspPotcarDataError) as exception:
         _ = VaspPotcarData.potcar_from_linklist(poscar, potmap)
     assert str(exception.value) == expected_error
+
+
+# check for a set of potential names used by VASP
+@pytest.mark.parametrize('element,potential_name',
+[   # noqa: E128
+    ('S', 'S'),
+    ('H', 'H1.25'),
+    ('H', 'H.5'),
+    ('H', 'H_200eV'),
+    ('Eu', 'Eu'),
+    ('Li', 'Li'),
+    ('Li', 'Li_sv'),
+    ('Li', 'Li_sv2'),
+    ('Ce', 'Ce3'),
+    ('Pt', 'Pt_ZORA'),
+    ('Rh', 'Rh_pv_new'),
+    ('Pb', 'Pb_d_rel2'),
+    ('Yb', 'Yb_2'),
+    ('Mg', 'Mg_pv.old'),
+])
+def test_potcar_props_from_name_list(element, potential_name):
+    from aiida_cusp.data import VaspPotcarData
+    potcar_name_list = [potential_name]
+    potcar_props = VaspPotcarData.potcar_props_from_name_list(potcar_name_list)
+    assert potcar_props[element]['name'] == potential_name
+
+
+@pytest.mark.parametrize('inputlist,expected_error',
+[   # noqa: E128
+    (['Aa', 'Li_sv', 'Rh_pv_new'], "Parsed element 'Aa' is not in the list"),
+    (['Cus', 'Li_sv', 'Rh_pv_new'], "Parsed element 'Cus' is not in the list"),
+    (['_Li_sv', 'Rh_pv_new'], "Couldn't parse the element name for"),
+    (['Li', 'Li_sv', 'Rh_pv_new'], "Multiple potential names given for "),
+])
+def test_potcar_props_from_name_raises(inputlist, expected_error):
+    from aiida_cusp.data import VaspPotcarData
+    from aiida_cusp.utils.exceptions import VaspPotcarDataError
+    with pytest.raises(VaspPotcarDataError) as exception:
+        _ = VaspPotcarData.potcar_props_from_name_list(inputlist)
+    assert expected_error in str(exception.value)

@@ -211,7 +211,7 @@ def add_potcar_single(path, name, functional):
     tab_entries = []
     try:
         potential_file_node = VaspPotcarFile.add_potential(
-            path, name=name, functional=functional, return_duplicate=True)
+            path, name=name, functional=functional)
         potentials_to_store.append(potential_file_node)
         tab_entries.append([
             potential_file_node.name,
@@ -298,7 +298,7 @@ def list_potcar(name, element, functional):
         click.echo("No pseudo-potentials found for the given identifiers")
         return
     click.echo("")
-    click.echo("Showing potentials for")
+    click.echo("Showing available pseudo-potentials for")
     click.echo("\tname:       {}".format(name or 'all'))
     click.echo("\telement:    {}".format(element or 'all'))
     click.echo("\tfunctional: {}".format(functional or 'all'))

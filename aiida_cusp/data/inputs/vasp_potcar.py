@@ -25,6 +25,10 @@ from aiida_cusp.utils.exceptions import (VaspPotcarFileError,
 
 # FIXME: Add test for the potcar_from_linklist() classmethod of the
 #        VaspPotcarData-calss
+# FIXME: Allow the user defined potcar_props to be of type list containing
+#        the potential names only. this would make the method fully compatible
+#        with pymatgen sets (but first check if we can uniquely identify the
+#        element name from the given potential name
 
 
 class VaspPotcarFile(SinglefileData):
@@ -356,6 +360,11 @@ class VaspPotcarData(Dict):
                 'B': {'name': 'B_pv', 'version': 10000101},
             }
 
+        Alertantively it is also possible to simply pass in a simple list
+        defining the potential names (i.e. A_pv, B_pv, ...) to be used.
+        However, be sure that the given names start with the corresponding
+        element name separated from the rest by any non-letter character
+
         :param structure: input structure for which the potential list is
             generated
         :type structure: :class:`~pymatgen.core.Structure`, :class:`~pymatgen.\
@@ -364,8 +373,9 @@ class VaspPotcarData(Dict):
         :param functional: functional type of the used potentials
         :type functional: `str`
         :param potcar_params: optional dictionary overriding the default
-            potential name and version used for the element given as key
-        :type potcar_params: `dict`
+            potential name and version used for the element given as key or
+            a list of potential names to be used for the calculation
+        :type potcar_params: `dict` or `list`
         """
         # get pymatgen structure object
         if isinstance(structure, Structure):
@@ -379,6 +389,10 @@ class VaspPotcarData(Dict):
         else:
             raise VaspPotcarDataError("Unsupported structure type '{}'"
                                       .format(type(structure)))
+        # transform list of potential names to valid potential params
+        # dictionary
+        if isinstance(potcar_params, (list, tuple)):
+            potcar_params = cls.potcar_props_from_name_list(potcar_params)
         # build list of species comprising the structure and create default
         # potential properties based on the species list (use a set because
         # of possibly non-ordered input structures)
@@ -391,7 +405,7 @@ class VaspPotcarData(Dict):
         element_potential_map = {}
         for element, potcar_props in potcar_props_defaults.items():
             user_props = potcar_params.get(element, {})
-            potcar_props.update(user_props, functional=functional)
+            potcar_props.update(user_props, functional=functional.lower())
             potentials = VaspPotcarFile.from_tags(**potcar_props)
             # in case multiple potentials are found due to unset version
             potential = sorted(potentials, key=lambda potcar: potcar.version,
@@ -403,6 +417,34 @@ class VaspPotcarData(Dict):
             }
             element_potential_map.update({element: cls(**identifiers)})
         return element_potential_map
+
+    @classmethod
+    def potcar_props_from_name_list(cls, potcar_name_list):
+        """
+        Create a valid potcar properties dictionary from a list of given
+        potential names
+        """
+        valid_elements = [e.name for e in periodic_table.Element]
+        element_regex = r"^([A-Z]{1}[a-z]*)(?=[^A-Za-z]*)"
+        elements, names = [], []
+        for potential_name in potcar_name_list:
+            element_match = re.match(element_regex, potential_name)
+            if element_match is None:
+                raise VaspPotcarDataError("Couldn't parse the element name "
+                                          "for the passed potential name '{}'"
+                                          .format(potential_name))
+            parsed_element = element_match.group(0)
+            if parsed_element not in valid_elements:
+                raise VaspPotcarDataError("Parsed element '{}' is not in the "
+                                          "list of valid elements"
+                                          .format(parsed_element))
+            elements.append(parsed_element)
+            names.append({'name': potential_name})
+        # finally check that potentials for each element are only defined once
+        if len(elements) != len(set(elements)):
+            raise VaspPotcarDataError("Multiple potential names given for the "
+                                      "same element")
+        return dict(zip(elements, names))
 
     @classmethod
     def potcar_from_linklist(cls, poscar_data, linklist):

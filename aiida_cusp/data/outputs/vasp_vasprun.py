@@ -7,6 +7,12 @@ vasprun.xml output data
 """
 
 
+# TODO: Possibly add some of the interesting vasprun.xml values (i.e.
+#       final energy, is the run converged, etc..) to the class
+#       as class-attributes to avoid the necessity of always loading the
+#       vasprun file contents stored by the node
+
+
 from pymatgen.io.vasp.outputs import Vasprun
 
 from aiida_cusp.utils.single_archive_data import SingleArchiveData

@@ -82,6 +82,23 @@ class SingleArchiveData(SinglefileData):
         else:
             return archive_contents
 
+    def write_file(self, filepath, decompress=True):
+        """
+        Write the node's contents to a file
+
+        :params filepath: path to the output file to which the stored
+            contents will be written
+        :type filepath: str or pathlib.Path
+        :params decompress: write the decompressed or the archive contents
+            to the file
+        :type decompress: bool
+        """
+        filepath = pathlib.Path(filepath)
+        if filepath.is_dir():
+            raise ValueError("invalid filename (not a file)")
+        with open(filepath, 'wb') as outfile:
+            outfile.write(self.get_content(decompress=decompress))
+
     # TODO: Considering the repository redesign I have no idead if this will
     #       continiue to work in the future (Although only Repository internal
     #       and no external methods are applied to get the file path

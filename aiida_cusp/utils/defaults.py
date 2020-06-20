@@ -226,3 +226,22 @@ class CustodianDefaults(object):
                 'electronic_step_stop': False,
             },
         })  # ERROR_HANDLER_SETTINGS
+
+
+class VasprunParsingDefaults:
+    """
+    Default settings used to parse vasprun.xml files
+    """
+
+    # Defaults passed to the pymatgen.io.vasp.outputs.Vasprun parser
+    @classproperty
+    def PARSER_ARGS(cls):
+        return dict({
+            'ionic_step_skip': None,
+            'ionic_step_offset': 0,
+            'parse_dos': False,
+            'parse_eigen': False,
+            'parse_projected_eigen': False,
+            'occu_tol': 1.0E-8,
+            'exception_on_bad_xml': False,
+        })

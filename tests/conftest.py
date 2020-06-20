@@ -20,6 +20,19 @@ def auto_clear_aiidadb(clear_database):
 
 
 @pytest.fixture(scope='function')
+def testdata(request):
+    """
+    If expected data is required for a test this fixture returns the path
+    to a folder with name '.testdata' located in the same director as the
+    calling test module
+    """
+    import pathlib
+    testdata_dir = '.testdata'
+    module_dir = pathlib.Path(request.fspath).parent
+    return module_dir / testdata_dir
+
+
+@pytest.fixture(scope='function')
 def interactive_potcar_file(tmpdir):
     """
     Opens a variably named POTCAR file with interactive access to it's

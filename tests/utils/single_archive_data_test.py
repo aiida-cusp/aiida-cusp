@@ -39,7 +39,7 @@ def test_single_archive_node_contents(tmpdir):
     # init SingleArchiveData from the testfile and check contents are stored
     # in compressed format
     single_archive = SingleArchiveData(file=testfile)
-    with open(single_archive.get_file_path(), 'rb') as filehandle:
+    with open(single_archive.filepath, 'rb') as filehandle:
         node_contents = filehandle.read()
     assert node_contents == testcontent_compressed
 
@@ -69,7 +69,7 @@ def test_get_repository_file_path(tmpdir):
     with open(testfile, 'wb') as filehandle:
         filehandle.write(testcontent)
     single_archive = SingleArchiveData(file=testfile)
-    node_path = single_archive.get_file_path()
+    node_path = single_archive.filepath
     with open(node_path, 'rb') as filehandle:
         content_at_path = filehandle.read()
     assert content_at_path == testcontent_compressed

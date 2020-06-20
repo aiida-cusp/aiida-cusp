@@ -85,7 +85,8 @@ class SingleArchiveData(SinglefileData):
     # TODO: Considering the repository redesign I have no idead if this will
     #       continiue to work in the future (Although only Repository internal
     #       and no external methods are applied to get the file path
-    def get_file_path(self):
+    @property
+    def filepath(self):
         """
         Return the path of the object in the repository.
 

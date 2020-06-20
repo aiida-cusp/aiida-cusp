@@ -298,3 +298,40 @@ def test_calculation_restart_copy_remote(vasp_code, cstdn_code, tmpdir,
         assert calc_file_content == remote_content
     else:
         assert calc_file_content != remote_content
+
+
+def test_temporary_retrieve_list(vasp_code):
+    from aiida_cusp.calculators.calculation_base import CalculationBase
+    # the expected retrieve list
+    expected_list = set([('*', '.', 0)])
+    inputs = {
+        'code': vasp_code,
+        'metadata': {'options': {'resources': {'num_machines': 1}}},
+    }
+    calc_base = CalculationBase(inputs=inputs)
+    calc_temp_list = calc_base.retrieve_temporary_list()
+    assert len(calc_temp_list) == len(set(calc_temp_list))
+    assert set(calc_temp_list) == set(expected_list)
+
+
+def test_permanent_retrieve_list(vasp_code):
+    from aiida_cusp.calculators.calculation_base import CalculationBase
+    from aiida_cusp.utils.defaults import PluginDefaults, CustodianDefaults
+    # the expected retrieve list
+    expected_list = [
+        '_scheduler-stderr.txt',  # default AiiDA file for scheduler stderr
+        '_scheduler-stdout.txt',  # default AiiDA file for scheduler stdout
+        PluginDefaults.STDOUT_FNAME,  # aiida.out
+        PluginDefaults.STDERR_FNAME,  # aiida.err
+        '_aiidasubmit.sh',  # AiiDA's default submit script name
+        PluginDefaults.CSTDN_SPEC_FNAME,  # cstdn_spec.yaml
+        CustodianDefaults.RUN_LOG_FNAME,  # run.log
+    ]
+    inputs = {
+        'code': vasp_code,
+        'metadata': {'options': {'resources': {'num_machines': 1}}},
+    }
+    calc_base = CalculationBase(inputs=inputs)
+    calc_perm_list = calc_base.retrieve_permanent_list()
+    assert len(calc_perm_list) == len(set(calc_perm_list))
+    assert set(calc_perm_list) == set(expected_list)

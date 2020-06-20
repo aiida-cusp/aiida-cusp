@@ -73,3 +73,26 @@ def test_get_repository_file_path(tmpdir):
     with open(node_path, 'rb') as filehandle:
         content_at_path = filehandle.read()
     assert content_at_path == testcontent_compressed
+
+
+@pytest.mark.parametrize('decompress', [True, False])
+def test_write_file_method(tmpdir, decompress):
+    from aiida_cusp.utils.single_archive_data import SingleArchiveData
+    # init the SingleArchiveData node
+    testfile = pathlib.Path(tmpdir / 'testfile.txt')
+    testcontent = "Test file contents".encode()
+    testcontent_compressed = gzip.compress(testcontent)
+    with open(testfile, 'wb') as filehandle:
+        filehandle.write(testcontent)
+    single_archive = SingleArchiveData(file=testfile)
+    # write the file using the write-file method and read back
+    outfile = pathlib.Path(tmpdir) / 'outfile.txt'
+    assert outfile.exists() is False
+    single_archive.write_file(outfile, decompress=decompress)
+    assert outfile.exists() is True
+    with open(outfile, 'rb') as fh:
+        written_contents = fh.read()
+    if decompress:
+        assert written_contents == testcontent
+    else:
+        assert written_contents == testcontent_compressed

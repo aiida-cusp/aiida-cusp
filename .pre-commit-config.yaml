@@ -10,4 +10,8 @@ repos:
   rev: 3.8.1
   hooks:
   - id: flake8
+    exclude: '^.*(\.testdata\/).*$'
     args: ['--ignore=F401,F841,W503,E402']
+# do not apply the pre-commit hooks to all files that are found under folders
+# or located at paths containing .testdata
+exclude: '^.*(\.testdata\/).*$'

@@ -13,7 +13,8 @@ from aiida.orm import RemoteData, Code, Bool, Dict, List
 from aiida.orm.nodes.data.base import to_aiida_type
 from aiida.common import (CalcInfo, CodeInfo, CodeRunMode)
 
-from aiida_cusp.utils.defaults import PluginDefaults, VaspDefaults
+from aiida_cusp.utils.defaults import (PluginDefaults, VaspDefaults,
+                                       CustodianDefaults)
 from aiida_cusp.utils.custodian import CustodianSettings
 
 
@@ -138,10 +139,13 @@ class CalculationBase(CalcJob):
         calcinfo = CalcInfo()
         calcinfo.uuid = self.uuid
         calcinfo.codes_info = [codeinfo]
+        # those list are set defined in the inherited classes
         calcinfo.local_copy_list = []
         calcinfo.remote_copy_list = []
         calcinfo.remote_symlink_list = []
-        calcinfo.retrieve_temporary_list = []
+        # retrieve lists are defined on the base class
+        calcinfo.retrieve_temporary_list = self.retrieve_temporary_list()
+        calcinfo.retrieve_list = self.retrieve_permanent_list()
         # need to set run mode since presubmit() takes all code inputs into
         # account and would complain if both vasp and custodian codes are set
         calcinfo.codes_run_mode = CodeRunMode.SERIAL
@@ -288,6 +292,41 @@ class CalculationBase(CalcJob):
             file_parent_folder = pathlib.Path(folder.abspath) / relpath
             if not file_parent_folder.exists():
                 file_parent_folder.mkdir(parents=True)
+
+    def retrieve_temporary_list(self):
+        """
+        Defines the list of files marked for temporary retrieval.
+
+        By default each calculaltion will retrieve **all** available files
+        created by the calculation and store them to a temporary folder.
+        Which of the files are actually kept is then decided by the
+        subsequently running parser.
+        """
+        # simply retrieve everything in the calculation folder
+        retrieve_temporary = [('*', '.', 0)]
+        return retrieve_temporary
+
+    def retrieve_permanent_list(self):
+        """
+        Define the list of files marked for permanent retrieval.
+
+        Here only calculation independent files are marked for retrieval,
+        i.e. files like the submit-script, scheduler outputs, etc.
+        Retrieval of calculation files is the responsibility of the connected
+        parser.
+        """
+        retrieve_permanent = [
+            # submit script and custodian logfiles
+            self.inputs.metadata.options.get('submit_script_filename'),
+            PluginDefaults.CSTDN_SPEC_FNAME,
+            CustodianDefaults.RUN_LOG_FNAME,
+            # other logfiles, i.e. scheduler as well as stdout / stderr
+            self.inputs.metadata.options.get('scheduler_stdout'),
+            self.inputs.metadata.options.get('scheduler_stderr'),
+            PluginDefaults.STDOUT_FNAME,
+            PluginDefaults.STDERR_FNAME,
+        ]
+        return retrieve_permanent
 
     def create_calculation_inputs(self, folder, calcinfo):
         """

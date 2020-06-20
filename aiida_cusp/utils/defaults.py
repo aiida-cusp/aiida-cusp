@@ -101,6 +101,11 @@ class CustodianDefaults(object):
     Collection of default values for the custodian calculator comprising
     default job options, handlers and corresponding handler options.
     """
+    # default name of the custodian logfile
+    @classproperty
+    def RUN_LOG_FNAME(cls):
+        return "run.log"
+
     # path prefix for handler imports
     @classproperty
     def HANDLER_IMPORT_PATH(cls):

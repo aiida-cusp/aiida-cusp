@@ -19,6 +19,9 @@
 				"cusp.potcar = aiida_cusp.data.inputs.vasp_potcar:VaspPotcarData",
 				"cusp.vasprun = aiida_cusp.data.outputs.vasp_vasprun:VaspVasprunData",
 				"cusp.outcar = aiida_cusp.data.outputs.vasp_outcar:VaspOutcarData",
+				"cusp.contcar = aiida_cusp.data.outputs.vasp_contcar:VaspContcarData",
+				"cusp.chgcar = aiida_cusp.data.outputs.vasp_chgcar:VaspChgcarData",
+				"cusp.wavecar = aiida_cusp.data.outputs.vasp_wavecar:VaspWavecarData",
 				"cusp.potcarfile = aiida_cusp.data.inputs.vasp_potcar:VaspPotcarFile",
 			  "cusp.singlearchive = aiida_cusp.utils.single_archive_data:SingleArchiveData"
 			],

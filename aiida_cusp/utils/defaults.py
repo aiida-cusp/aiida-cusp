@@ -63,8 +63,8 @@ class VaspDefaults(object):
             'xdatcar': 'XDATCAR',
             'bsefatband': 'BSEFATBAND',
             # outpts of bse-calculations
-            # 'Wxxxx.tmp',
-            # 'WFULLxxxx.tmp',
+            # 'W*.tmp',
+            # 'WFULL*.tmp',
         })
 
 

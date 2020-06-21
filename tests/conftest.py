@@ -82,7 +82,7 @@ def interactive_potcar_file(tmpdir):
             if self._file is None:
                 raise Exception("Unable to write contents to file, currently "
                                 "no open file handle available.")
-    return InteractivePotcar(tmpdir)
+    yield InteractivePotcar(tmpdir)
 
 
 @pytest.fixture(scope='function')
@@ -301,3 +301,22 @@ def with_pbe_potcars(interactive_potcar_file):
         node = VaspPotcarFile.add_potential(path_to_potcar, name=name,
                                             functional=functional)
         node.store()
+
+
+@pytest.fixture(scope='function')
+def vasp_file_parser(vasp_code):
+    """
+    Define VaspFileParser initialized with calculation node
+    """
+    from aiida.plugins import CalculationFactory
+    from aiida_cusp.parsers.vasp_file_parser import VaspFileParser
+    # define code
+    vasp_code.set_attribute('input_plugin', 'cusp.vasp')
+    # setup calculator
+    inputs = {
+        'code': vasp_code,
+        'metadata': {'options': {'resources': {'num_machines': 1}}},
+    }
+    VaspCalculation = CalculationFactory('cusp.vasp')
+    vasp_calc_node = VaspCalculation(inputs=inputs).node
+    yield VaspFileParser(vasp_calc_node)

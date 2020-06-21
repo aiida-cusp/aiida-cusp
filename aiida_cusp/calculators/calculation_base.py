@@ -28,7 +28,6 @@ class CalculationBase(CalcJob):
     # default filenames used for the stderr/stdout logging of the calculation
     _default_error_file = PluginDefaults.STDERR_FNAME
     _default_output_file = PluginDefaults.STDOUT_FNAME
-    # FIXME: Set retrieve list to retrieve all non Vasp files
 
     @classmethod
     def define(cls, spec):
@@ -111,6 +110,10 @@ class CalculationBase(CalcJob):
             help=("If set to `False` POSCAR in the restarted calculation will "
                   "not be replaced with CONTCAR form parent calculation")
         )
+        # extend the metadata.options namespace with an additional
+        # option to specify optional parser settings
+        spec.input_namespace('metadata.options.parser_settings',
+                             required=False, non_db=True, dynamic=True)
 
     def prepare_for_submission(self, folder):
         """

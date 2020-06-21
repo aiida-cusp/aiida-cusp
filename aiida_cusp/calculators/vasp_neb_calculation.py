@@ -15,8 +15,6 @@ from aiida_cusp.data import VaspPoscarData, VaspPotcarData
 
 
 # TODO: Replace plain exceptions with calculator specific exceptions
-# FIXME: Replace defined methods with private class methods by prefixing
-#        all private methods with __ (Avoid name clashing)
 
 
 class VaspNebCalculation(CalculationBase):

@@ -40,6 +40,29 @@ class VaspCalculation(VaspBasicCalculation, VaspNebCalculation):
             help=("Pseudo-potentials for each element present in the input "
                   "structure (POSCAR) used for the VASP calculation")
         )
+        # exit codes for parsing errors
+        spec.exit_code(
+            300,
+            'ERRNO_TEMPORARY_RETRIEVE_FOLDER',
+            message=("the temporary retrieved folder is not available")
+        )
+        spec.exit_code(
+            301,
+            'ERRNO_UNKNOWN_PARSER_SETTING',
+            message=("unknown parser setting")
+        )
+        spec.exit_code(
+            302,
+            'ERRNO_PARSING_LIST_EMPTY',
+            message=("requested output files not found among the "
+                     "retrieved files")
+        )
+        spec.exit_code(
+            303,
+            'ERRNO_DUPLICATE_LINKNAME',
+            message=("parser tried to register two output nodes using "
+                     "identical linknames")
+        )
 
     def create_calculation_inputs(self, folder, calcinfo):
         """

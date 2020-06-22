@@ -11,8 +11,8 @@ import pytest
 
 @pytest.mark.parametrize('filename,expected_normalized',
 [   # noqa: E128
-    ('vasprun.xml', 'vasprun'),
-    ('W92932.tmp', 'w92932'),
+    ('vasprun.xml', 'vasprun_xml'),
+    ('W92932.tmp', 'w92932_tmp'),
     ('CONTCAR', 'contcar'),
 ])
 @pytest.mark.parametrize('subfolder', ['sub', '05', ''])
@@ -27,8 +27,8 @@ def test_normalize_filename(vasp_file_parser, filename, subfolder,
 
 @pytest.mark.parametrize('filename,expected_linkname',
 [   # noqa: E128
-    ('vasprun.xml', 'vasprun'),
-    ('W288292.tmp', 'w288292'),
+    ('vasprun.xml', 'vasprun_xml'),
+    ('W288292.tmp', 'w288292_tmp'),
     ('/some/folder/File', 'file'),
     ('67/NebFile', 'node_67.nebfile'),
     ('00/NebFile', 'node_00.nebfile'),
@@ -154,15 +154,15 @@ def test_empty_parsing_list_fails(vasp_file_parser, file_exists,
 @pytest.mark.parametrize('neb_subfolder', ['', '00', '52', '99'])
 @pytest.mark.parametrize('outfile,base_linkname,entrypoint',
 [   # noqa: E128
-    ('vasprun.xml', 'vasprun', 'cusp.vasprun'),
+    ('vasprun.xml', 'vasprun_xml', 'cusp.vasprun'),
     ('OUTCAR', 'outcar', 'cusp.outcar'),
     ('CONTCAR', 'contcar', 'cusp.contcar'),
     ('WAVECAR', 'wavecar', 'cusp.wavecar'),
     ('CHGCAR', 'chgcar', 'cusp.chgcar'),
     ('PROCAR', 'procar', 'cusp.singlearchive'),
 ])
-def test_parsing_for_neb_calcs(vasp_file_parser, tmpdir, outfile, poscar,
-                               base_linkname, entrypoint, neb_subfolder):
+def test_parsing_for_calcs(vasp_file_parser, tmpdir, outfile, poscar,
+                           base_linkname, entrypoint, neb_subfolder):
     import pathlib
     from aiida.plugins import DataFactory
     from aiida_cusp.utils.defaults import PluginDefaults

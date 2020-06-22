@@ -31,11 +31,11 @@ class VaspFileParser(ParserBase):
 
     All discovered files present in the retrieve list defined by the parser
     settings will be added to the calculation with the filename as linkname
-    (neglecting file suffixes, i.e. the vasprun.xml would be stored under the
-    vasprun linkname) If files are found to be located in a subfolder (this
-    is only the case for instance in NEB calculations) an additional
-    namespace with linkname 'node_{foldername}' under which the files will be
-    added.
+    with .suffix replaced by _suffix, i.e. the vasprun.xml would be stored
+    under the vasprun_xml linkname) If files are found to be located in a
+    subfolder (this is only the case for instance in NEB calculations) an
+    additional namespace with linkname 'node_{foldername}' under which the
+    files will be added.
 
     Accepted options set by the metadata.options.parser_settings:
 
@@ -75,9 +75,9 @@ class VaspFileParser(ParserBase):
     def normalized_filename(self, filepath):
         """
         Return a normalized version of the filename, i.e. lower case and
-        without suffix
+        .suffix replace with _suffix
         """
-        return str(filepath.with_suffix('').name.lower())
+        return str(filepath.name.lower()).replace(".", "_")
 
     def parsing_hook(self, filepath):
         return "parse_{}".format(self.normalized_filename(filepath))
@@ -132,7 +132,7 @@ class VaspFileParser(ParserBase):
         else:
             return 0
 
-    def parse_vasprun(self, filepath):
+    def parse_vasprun_xml(self, filepath):
         """
         Parsing hook triggered files of type vasprun.xml
         """

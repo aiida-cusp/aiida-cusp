@@ -27,11 +27,11 @@ The dictionary thereby accepts the settings show in the following.
      Mixing filenames and wildcards is allowed, i.e. `['\*CAR', 'vasprun.xml', ...]` is perfectly fine.
 
   By default (i.e. if unset) only the files `'CONTCAR'`, `'OUTCAR'` and `'vasprun.xml'` are added to the outputs.
-  (default `['CONTCAR', 'OUTCAR', 'vasprun.xml'`)
+  (default: `['CONTCAR', 'OUTCAR', 'vasprun.xml'`)
 
 * **fail_on_missing_files** (:class:`bool`, optional) --
   Set this flag to :class:`True` if the parsing should fail if a file defined in the ``parse_files`` list cannot be found in the retrieved outputs.
-  (default :class:`False`)
+  (default: :class:`False`)
 
 Parser Outputs
 --------------
@@ -40,8 +40,8 @@ All files defined by the ``parse_files`` options are added to the calculation as
 
 .. note::
 
-   Note that only the files *vasprun.xml*, *OUTCAR*, *WAVECAR*, *CHGCAR*  and *CONTCAR*  are added using their corresponding datatypes.
-   All other files will be added using the generic datatype
+   Note that only the files *vasprun.xml*, *OUTCAR*, *WAVECAR*, *CHGCAR*  and *CONTCAR*  are added using their corresponding :ref:`output datatype<user-guide-datatypes-outputs>`.
+   All other files will be added using the :class:`~aiida_cusp.data.outputs.vasp_generic.VaspGenericData` class (see also :ref:`generic datatype<user-guide-datatypes-outputs-generic>`).
 
 Parsed files are registered in the output namespace using the corresponding lower case filename neglecting any suffixes.
 Thus, after parsing a stored *CONTCAR* file can be accessed from the stored calculation node via

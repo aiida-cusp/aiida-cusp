@@ -13,8 +13,7 @@ from pymatgen.io.vasp.inputs import Poscar
 
 from aiida_cusp.parsers.parser_base import ParserBase
 from aiida_cusp.data import (VaspVasprunData, VaspOutcarData, VaspContcarData,
-                             VaspWavecarData, VaspChgcarData)
-from aiida_cusp.utils.single_archive_data import SingleArchiveData
+                             VaspWavecarData, VaspChgcarData, VaspGenericData)
 from aiida_cusp.utils.defaults import PluginDefaults, VaspDefaults
 
 
@@ -179,6 +178,6 @@ class VaspFileParser(ParserBase):
         Generic parsing hook trigger for all files not featuring a specific
         parsing hook
         """
-        node = SingleArchiveData(file=filepath)
+        node = VaspGenericData(file=filepath)
         linkname = self.linkname(filepath)
         return (linkname, node)

@@ -159,7 +159,7 @@ def test_empty_parsing_list_fails(vasp_file_parser, file_exists,
     ('CONTCAR', 'contcar', 'cusp.contcar'),
     ('WAVECAR', 'wavecar', 'cusp.wavecar'),
     ('CHGCAR', 'chgcar', 'cusp.chgcar'),
-    ('PROCAR', 'procar', 'cusp.singlearchive'),
+    ('PROCAR', 'procar', 'cusp.generic'),
 ])
 def test_parsing_for_calcs(vasp_file_parser, tmpdir, outfile, poscar,
                            base_linkname, entrypoint, neb_subfolder):

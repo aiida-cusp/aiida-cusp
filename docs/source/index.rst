@@ -35,10 +35,13 @@ analysis tools.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Datatypes and Commands
+   :caption: User Guide
 
-   datatypes_and_commands/datatypes.rst
-   datatypes_and_commands/cli.rst
+   user_guide/calculators.rst
+   user_guide/custodian.rst
+   user_guide/parsers.rst
+   user_guide/datatypes.rst
+   user_guide/commands.rst
 
 
 .. toctree::

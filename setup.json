@@ -22,8 +22,8 @@
 				"cusp.contcar = aiida_cusp.data.outputs.vasp_contcar:VaspContcarData",
 				"cusp.chgcar = aiida_cusp.data.outputs.vasp_chgcar:VaspChgcarData",
 				"cusp.wavecar = aiida_cusp.data.outputs.vasp_wavecar:VaspWavecarData",
-				"cusp.potcarfile = aiida_cusp.data.inputs.vasp_potcar:VaspPotcarFile",
-			  "cusp.singlearchive = aiida_cusp.utils.single_archive_data:SingleArchiveData"
+				"cusp.generic = aiida_cusp.data.outputs.vasp_generic:VaspGenericData",
+				"cusp.potcarfile = aiida_cusp.data.inputs.vasp_potcar:VaspPotcarFile"
 			],
 			"aiida.calculations": [
 				"cusp.vasp = aiida_cusp.calculators.vasp_calculation:VaspCalculation"

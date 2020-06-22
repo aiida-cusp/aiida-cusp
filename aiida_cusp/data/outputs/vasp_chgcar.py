@@ -8,7 +8,6 @@ CHGCAR output data
 
 
 from aiida_cusp.utils.single_archive_data import SingleArchiveData
-from aiida_cusp.utils.defaults import VaspDefaults
 
 
 class VaspChgcarData(SingleArchiveData):

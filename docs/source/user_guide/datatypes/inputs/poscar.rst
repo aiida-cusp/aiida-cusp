@@ -45,6 +45,8 @@ Recovering the stored structure data
 In order to further analyze or re-use structures the :class:`~aiida_cusp.data.VaspPoscarData` class offers several methods to retrieve the stored structure.
 In particular, three different methods are available to recover the stored structure data in different formats:
 
+.. automethod:: aiida_cusp.data.VaspPoscarData.get_poscar
+
 .. automethod:: aiida_cusp.data.VaspPoscarData.get_structure
 
 .. automethod:: aiida_cusp.data.VaspPoscarData.get_atoms

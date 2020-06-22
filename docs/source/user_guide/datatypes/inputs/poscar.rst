@@ -1,3 +1,5 @@
+.. _user-guide-datatypes-inputs-poscar:
+
 POSCAR (``cusp.poscar``)
 ------------------------
 

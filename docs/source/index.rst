@@ -21,20 +21,21 @@ Pymatgen framework mainting direct access to the rich set of implemented
 analysis tools.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Installation
 
    installation/installation.rst
    installation/get_plugin_ready.rst
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Tutorials
 
-   tutorials/tutorials.rst
+   tutorials/calculations.rst
+   tutorials/workflows.rst
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: User Guide
 
    user_guide/calculators.rst
@@ -45,7 +46,7 @@ analysis tools.
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Development
 
    development/development.rst

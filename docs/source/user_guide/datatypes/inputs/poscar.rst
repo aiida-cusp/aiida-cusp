@@ -3,7 +3,10 @@
 POSCAR (``cusp.poscar``)
 ------------------------
 
-Contrary to a plain structure data type the VaspPoscarData class offers multiple additional attributes like constraints or  atomic velocities
+Input data type for structure inputs passed to VASP calculations.
+Contrary to a plain structure data type the :class:`~aiida_cusp.data.VaspPoscarData` class offers multiple additional attributes like constraints or atomic velocities
+
+.. _user-guide-datatypes-inputs-poscar-initializing:
 
 Initializing  the class
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -34,6 +37,7 @@ In general the constructor of the :class:`~aiida_cusp.data.VaspPoscarData` class
 
   Hello
 
+.. _user-guide-datatypes-inputs-poscar-recovering-data:
 
 Recovering the stored structure data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -41,14 +45,8 @@ Recovering the stored structure data
 In order to further analyze or re-use structures the :class:`~aiida_cusp.data.VaspPoscarData` class offers several methods to retrieve the stored structure.
 In particular, three different methods are available to recover the stored structure data in different formats:
 
-:func:`~aiida_cusp.data.VaspPoscarData.get_structure()`
+.. automethod:: aiida_cusp.data.VaspPoscarData.get_structure
 
-  Returns the stored structure data as :class:`pymatgen.core.Structure`
+.. automethod:: aiida_cusp.data.VaspPoscarData.get_atoms
 
-:func:`~aiida_cusp.data.VaspPoscarData.get_atoms()`
-
-  Returns the stored structure data as :class:`ase.Atoms`
-
-:func:`~aiida_cusp.data.VaspPoscarData.get_aiida_structure()`
-
-  Returns the stored structure data as :class:`aiida_core.orm.StructureData`
+.. automethod:: aiida_cusp.data.VaspPoscarData.get_aiida_structure

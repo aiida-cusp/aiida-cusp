@@ -28,19 +28,23 @@ class VaspVasprunData(SingleArchiveData):
     def get_vasprun(self, **kwargs):
         """
         Return a :class:`pymatgen.io.vasp.outputs.Vasprun` instance
-        initialized from vasprun.xml data stored by the node
+        initialized from *vasprun.xml* data stored by the node
 
         Given arguments are directly passed on to pymatgen's Vasprun
         constructor. By default, a minimal setup is used to parse the
-        vasprun.xml contents, i.e.
+        *vasprun.xml* contents:
 
-            ionic_step_skip: None,
-            ionic_step_offset: 0,
-            parse_dos: False,
-            parse_eigen: False,
-            parse_projected_eigen: False
-            occu_tol: 1.0E-8
-            exception_on_bad_xml: True
+        .. code-block:: python
+
+            kwargs_default = {
+                ionic_step_skip: None,
+                ionic_step_offset: 0,
+                parse_dos: False,
+                parse_eigen: False,
+                parse_projected_eigen: False,
+                occu_tol: 1.0E-8,
+                exception_on_bad_xml: True,
+            }
 
         However, note that the default parameters may be overridden at any
         time by passing the desired values when calling this function.

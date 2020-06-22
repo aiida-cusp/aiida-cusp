@@ -8,6 +8,8 @@ It is made available by the plugin using the ``cusp.incar`` entry point and can 
 Note that the class cannot be used directly as input for VASP calculations but has to be first initialized with the desired input parameters.
 As discussed in the following, the parameters may be passed directly (i.e. as dictionary) or indirect via a pymatgen :class:`~pymatgen.io.vasp.inputs.Incar` instance.
 
+.. _user-guide-datatypes-inputs-incar-initializing:
+
 Initializing the class
 ^^^^^^^^^^^^^^^^^^^^^^
 

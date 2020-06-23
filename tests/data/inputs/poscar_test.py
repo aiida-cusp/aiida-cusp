@@ -10,7 +10,6 @@ import pytest
 import pathlib
 
 from aiida.orm import StructureData
-from pymatgen.core import Lattice, Structure
 from pymatgen.io.ase import AseAtomsAdaptor
 from pymatgen.io.vasp.inputs import Poscar
 
@@ -148,27 +147,45 @@ def test_write_file_method(minimal_pymatgen_structure, tmpdir,
 
 
 def test_get_poscar_method(minimal_pymatgen_structure):
+    from pymatgen.io.vasp.inputs import Poscar
     poscar = VaspPoscarData(structure=minimal_pymatgen_structure)
     # assert retrieved poscar equals reference
     reference_poscar = Poscar(structure=minimal_pymatgen_structure)
     retrieved_poscar = poscar.get_poscar()
+    assert isinstance(retrieved_poscar, Poscar) is True
     assert str(retrieved_poscar) == str(reference_poscar)
 
 
 def test_get_structure_method(minimal_pymatgen_structure):
+    from pymatgen import Structure
     poscar = VaspPoscarData(structure=minimal_pymatgen_structure)
     # assert retrieved structure equals reference
     reference_structure = minimal_pymatgen_structure
     retrieved_structure = poscar.get_structure()
+    assert isinstance(retrieved_structure, Structure) is True
     assert str(retrieved_structure) == str(reference_structure)
 
 
 def test_get_atoms_method(minimal_pymatgen_structure):
+    from ase.atoms import Atoms
     poscar = VaspPoscarData(structure=minimal_pymatgen_structure)
     # assert retrieved atoms equal reference
     reference_atoms = AseAtomsAdaptor.get_atoms(minimal_pymatgen_structure)
     retrieved_atoms = poscar.get_atoms()
+    assert isinstance(retrieved_atoms, Atoms) is True
     assert str(retrieved_atoms) == str(reference_atoms)
+
+
+def test_get_aiida_structure_method(minimal_pymatgen_structure):
+    from aiida.orm import StructureData
+    poscar = VaspPoscarData(structure=minimal_pymatgen_structure)
+    # assert retrieved atoms equal reference
+    reference_structure = minimal_pymatgen_structure
+    retrieved_structure = poscar.get_aiida_structure()
+    assert isinstance(retrieved_structure, StructureData) is True
+    # cannot directly compare the structure due to the __repr__
+    retrieved_pmg = retrieved_structure.get_pymatgen_structure()
+    assert str(retrieved_pmg) == str(reference_structure)
 
 
 def test_init_from_structure_types(minimal_pymatgen_structure):

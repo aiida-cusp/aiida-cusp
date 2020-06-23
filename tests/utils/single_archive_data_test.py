@@ -12,22 +12,6 @@ import pathlib
 import gzip
 
 
-def test_store_and_load_archive_data(tmpdir):
-    from aiida_cusp.utils.single_archive_data import SingleArchiveData
-    from aiida.orm import load_node
-    testfile = pathlib.Path(tmpdir / 'testfile.txt')
-    testcontent = "Test file contents".encode()
-    # write contents to the testfile
-    with open(testfile, 'wb') as filehandle:
-        filehandle.write(testcontent)
-    # store and re-load SingleArchiveData and compare the contents
-    # in compressed format
-    single_archive = SingleArchiveData(file=testfile)
-    uuid = single_archive.store().uuid
-    loaded_single_archive = load_node(uuid)
-    assert single_archive.get_content() == loaded_single_archive.get_content()
-
-
 def test_single_archive_node_contents(tmpdir):
     from aiida_cusp.utils.single_archive_data import SingleArchiveData
     testfile = pathlib.Path(tmpdir / 'testfile.txt')

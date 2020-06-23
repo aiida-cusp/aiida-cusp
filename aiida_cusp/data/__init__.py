@@ -10,8 +10,10 @@ from .outputs.vasp_contcar import VaspContcarData
 from .outputs.vasp_outcar import VaspOutcarData
 from .outputs.vasp_chgcar import VaspChgcarData
 from .outputs.vasp_wavecar import VaspWavecarData
+from .outputs.vasp_generic import VaspGenericData
 
 
 __all__ = ["VaspKpointData", "VaspPoscarData", "VaspIncarData",
            "VaspPotcarData", "VaspVasprunData", "VaspContcarData",
-           "VaspOutcarData", "VaspChgcarData", "VaspWavecarData"]
+           "VaspOutcarData", "VaspChgcarData", "VaspWavecarData",
+           "VaspGenericData"]

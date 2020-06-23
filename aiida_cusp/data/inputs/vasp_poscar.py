@@ -70,6 +70,17 @@ class VaspPoscarData(Dict):
         structure = self.get_structure()
         return AseAtomsAdaptor.get_atoms(structure)
 
+    def get_aiida_structure(self):
+        """
+        Create and return a :class:`aiida.orm.StructureData` instance from
+        the node's stored structure data contents
+
+        :return: an AiiDA :class:`~aiida.orm.StructureData` instance
+        :rtype: :class:`aiida.orm.StructureData`
+        """
+        structure = self.get_structure()
+        return StructureData(pymatgen_structure=structure)
+
     def write_file(self, filename):
         """
         Write the stored Poscar contents to VASP input file.

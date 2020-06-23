@@ -22,7 +22,7 @@ In the following all available options that may be defined and the corresponding
 
 * **max_errors** (:class:`int`) --
   This sets the maximum number of errors that may occur for a single
-  calculation before terminating the calculation (default: `3`)
+  calculation before terminating the calculation (default: `10`)
 * **polling_time_step** (:class:`int`) --
   Seconds between two consecutive checks for the calculation being completed
   (default: `10`)

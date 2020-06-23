@@ -31,11 +31,43 @@ In general the constructor of the :class:`~aiida_cusp.data.VaspPoscarData` class
 
 **Example plain structure:** ::
 
-  Hello
+  >>> from aiida.plugins import DataFactory
+  >>> from pymatgen import Lattice, Structure
+  >>> lattice = Lattice.cubic(3.359)
+  >>> structure = Structure(lattice, ["Po"], [.0, .0, .0])
+  >>> VaspPoscarData = DataFactory('cusp.poscar')
+  >>> cusp_poscar = VaspPoscarData(structure=structure)
+  >>> print(cusp_poscar.get_poscar())
+  Po1
+  1.0
+  3.359000 0.000000 0.000000
+  0.000000 3.359000 0.000000
+  0.000000 0.000000 3.359000
+  Po
+  1
+  direct
+  0.000000 0.000000 0.000000 Po
+
 
 **Example with constraints:** ::
 
-  Hello
+  >>> from aiida.plugins import DataFactory
+  >>> from pymatgen import Lattice, Structure
+  >>> lattice = Lattice.cubic(3.359)
+  >>> structure = Structure(lattice, ["Po"], [.0, .0, .0])
+  >>> VaspPoscarData = DataFactory('cusp.poscar')
+  >>> cusp_poscar = VaspPoscarData(structure=structure, constraints=[[True, False, True]])
+  >>> print(cusp_poscar.get_poscar())
+  Po1
+  1.0
+  3.359000 0.000000 0.000000
+  0.000000 3.359000 0.000000
+  0.000000 0.000000 3.359000
+  Po
+  1
+  Selective dynamics
+  direct
+  0.000000 0.000000 0.000000 T F T Po
 
 .. _user-guide-datatypes-inputs-poscar-recovering-data:
 
@@ -43,7 +75,7 @@ Recovering the stored structure data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In order to further analyze or re-use structures the :class:`~aiida_cusp.data.VaspPoscarData` class offers several methods to retrieve the stored structure.
-In particular, three different methods are available to recover the stored structure data in different formats:
+In particular, four different methods are available to recover the stored structure data in different formats:
 
 .. automethod:: aiida_cusp.data.VaspPoscarData.get_poscar
 

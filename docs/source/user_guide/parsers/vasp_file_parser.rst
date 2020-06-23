@@ -1,5 +1,7 @@
-Vasp File Parser (``cusp.parser.default``)
-==========================================
+.. _user-guide-parsers-vaspfileparser:
+
+Vasp File Parser (``cusp.default``)
+===================================
 
 The :class:`~aiida_cusp.parsers.vasp_file_parser.VaspFileParser` class is the default class used by each calculation if no other parser is set through the ``metadata.options.parser_name`` option.
 This parser does not apply any parser magic but simply checks the output files and adds them as gzip-compressed archives to the repository.

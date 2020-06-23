@@ -17,4 +17,15 @@ class VaspContcarData(VaspPoscarData):
     Added as separate output node for easier access when used as calculation
     input for restarted VASP calculations.
     """
-    pass
+
+    def get_contcar(self):
+        """
+        Create and return a :class:`pymatgen.io.vasp.inputs.Poscar` instance
+        initialized from the node's stored output structure data content.
+
+        :return: a pymatgen Poscar instance
+        :rtype: :class:`pymatgen.io.vasp.inputs.Poscar`
+        """
+        # be consistent and simply relabel the method, pretty sure
+        # VaspContcarData.get_poscar() gets annoying quickly :)
+        return super(VaspContcarData, self).get_poscar()

@@ -68,8 +68,8 @@ class SingleArchiveData(SinglefileData):
 
     def get_content(self, decompress=True):
         """
-        Load the node and return a either the archive or decompressed contents
-        stored in the node.
+        Load the node and return either the archive (i.e. compressed) or the
+        file (i.e. the decompressed) contents stored in the node.
 
         :param decompress: Indicate wether comressed or uncompressed contents
             are returned

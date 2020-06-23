@@ -1,3 +1,5 @@
+.. _user-guide-commands-potcar:
+
 ``verdi data potcar``
 *********************
 

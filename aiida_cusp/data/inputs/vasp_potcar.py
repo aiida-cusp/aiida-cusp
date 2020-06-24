@@ -347,36 +347,49 @@ class VaspPotcarData(Dict):
         by using the `potcar_params` dictionary to explicitly define the
         potential name and / or version to be used for a given element
 
-        Example:
-        --------
-        Assuming a structure containig elements 'A' and 'B'. For both elements
+        Assume a structure containig elements 'A' and 'B'. For both elements
         the potentials with name 'A_pv' and 'B_pv' should be used and
         additionally element 'B' requires the use of a specific potential
-        version, i.e. version 10000101. This can be achived by passing the
-        following `potcar_params`:
+        version, i.e. version 10000101 (Note that the version number is simply
+        an integer representation of the creation date found in the potcar
+        files title in the format YYYYMMDD) The above can be achived by
+        passing the following `potcar_params` to the method:
+
+        .. code-block:: python
 
             potcar_params = {
                 'A': {'name': 'A_pv'},
                 'B': {'name': 'B_pv', 'version': 10000101},
             }
 
-        Alertantively it is also possible to simply pass in a simple list
-        defining the potential names (i.e. A_pv, B_pv, ...) to be used.
-        However, be sure that the given names start with the corresponding
-        element name separated from the rest by any non-letter character
+        .. note::
+
+           Alternatively it is also possible to use the `potcar_params` to
+           pass a simple list defining the potential names (i.e. A_pv, B_pv,
+           ...) to be used for the calculation (for all elements in the
+           structure not defined by the passed list the default potentials
+           will be used!) In that case potentials of the latest version are
+           used and the method tries to figure out the elements corresponding
+           to the potential name automatically. Because of that: make sure
+           that each potential name starts with the corresponding element name
+           (**case sensitive!**) followed by any non-letter character,
+           for instance:
+           **Ge**\ _d_GW, **Li**\ _sv, **Cu**, **H**\ 1.75, etc...
 
         :param structure: input structure for which the potential list is
             generated
         :type structure: :class:`~pymatgen.core.Structure`, :class:`~pymatgen.\
             io.vasp.poscar.Poscar`, :class:`~aiida_core.data.StructureData` or
-            :class:`aiida_cusp.data.inputs.vasp_poscar.VaspPoscarData`
-        :param functional: functional type of the used potentials
+            :class:`~aiida_cusp.data.inputs.vasp_poscar.VaspPoscarData`
+        :param functional: functional type of the used potentials, accepted
+            functionals inputs are: `'lda_us'`, `'lda'`, `'lda_52'`, `'pbe'`,
+            `'pbe_52'`, `'pbe_54'`, `'pw91_us'` and `'pw91'`.
         :type functional: `str`
         :param potcar_params: optional dictionary overriding the default
             potential name and version used for the element given as key or
             a list of potential names to be used for the calculation
         :type potcar_params: `dict` or `list`
-        """
+        """  # noqa: W605
         # get pymatgen structure object
         if isinstance(structure, Structure):
             struct = structure

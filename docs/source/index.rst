@@ -22,14 +22,18 @@ analysis tools.
 
 .. toctree::
    :maxdepth: 1
+   :titlesonly:
    :caption: Installation
+   :name: installation
 
    installation/installation.rst
    installation/get_plugin_ready.rst
+   installation/next_steps.rst
 
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials
+   :name: tutorials
 
    tutorials/calculations.rst
    tutorials/workflows.rst
@@ -37,6 +41,7 @@ analysis tools.
 .. toctree::
    :maxdepth: 1
    :caption: User Guide
+   :name: user-guide
 
    user_guide/calculators.rst
    user_guide/custodian.rst
@@ -48,6 +53,7 @@ analysis tools.
 .. toctree::
    :maxdepth: 1
    :caption: Development
+   :name: development
 
    development/development.rst
 

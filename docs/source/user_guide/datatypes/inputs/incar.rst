@@ -40,7 +40,9 @@ In general the constructor of the :class:`~aiida_cusp.data.VaspIncarData` class 
 Example
 ^^^^^^^
 
-The following example illustrates how to initialize the :class:`aiida_cusp.data.VaspIncarData` object from an INCAR parameter :class:`dict`::
+The following example illustrates how to initialize the :class:`aiida_cusp.data.VaspIncarData` object from an INCAR parameter :class:`dict`
+
+.. code-block:: python
 
    >>> from aiida.plugins import DataFactory
    >>> IncarData = DataFactory('cusp.incar')

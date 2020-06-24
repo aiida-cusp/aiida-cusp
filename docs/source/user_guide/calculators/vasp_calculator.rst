@@ -10,25 +10,27 @@ Whether a simple calculation or complex NEB calculation is run is decided by the
 Note that by default the output files containing calculation results are parsed using the :ref:`VaspFileParser class<user-guide-parsers-vaspfileparser>`.
 Of course the default parser may be changed to a different parser class using the calculation's `metadata.options.parser_class` option with corresponding parser options passed to the parser through the `metadata.options.parser_settings` option.
 For an overview of the available parsers and the accepted settings please refer to the :ref:`Parser section<user-guide-parsers>`.
-Despite the already mentioned parser options the calculator accepts several addtional inputs required to setup the calculation.
-The calculation inputs are discussed and divided into three main group of inputs that can be set for the calculation class:
+Despite the already mentioned, optional parser options the calculator accepts several other (non-)optional inputs that are used to setup the actual VASP calculation.
+In the following these calculation inputs are discussed and, for clarity, have been clustered into three main input groups that can be set with the calculation class:
 
-* **Vasp Calculation Inputs:**
-  These are the inputs that are used to setup the VASP calculation, i.e. `KPOINTS`, `INCAR`, etc.
-* **Custodian Inputs:**
-  Completely optional set of input parameters for the Custodian executable need to run VASP through the Custodian framework.
+* :ref:`Vasp Calculation Inputs:<user-guide-calculators-vaspcalculator-inputs-vasp>`
+  All inputs found in this group are the direct VASP inputs that are used to setup the VASP calculation, i.e. `KPOINTS`, `INCAR`, etc.
+* :ref:`Custodian Inputs:<user-guide-calculators-vaspcalculator-inputs-custodian>`
+  Set of input parameters for the Custodian executable needed to run an error corrected VASP calculation through the Custodian framework.
   If a Custodian code and corresponding error handlers are defined error correction is enabled by wrapping the previously defined VASP calculation in Custodian.
-* **Restart Options:**
+  However, note that all inputs listed in this group are completely optional!
+* :ref:`Restart Options:<user-guide-calculators-vaspcalculator-inputs-restart>`
   Available options when a calculation is restarted from a prevoius run using the remote folder of the parent calculation.
+
+.. _user-guide-calculators-vaspcalculator-inputs:
 
 Calculator Inputs
 -----------------
 
-vasp options are for ?
-custodian options are for ?
-restart options are for ?
+.. _user-guide-calculators-vaspcalculator-inputs-vasp:
 
-**VASP Calculation Inputs:**
+VASP Calculation Inputs:
+""""""""""""""""""""""""
 
   .. note::
 
@@ -36,6 +38,7 @@ restart options are for ?
      If both are set at the same time an error will be raised and the calculation will fail!
 
 * **code** (:class:`aiida.orm.Code`) --
+  VASP code used to run the calculation.
 * **incar** (:class:`aiida_cusp.data.VaspIncarData`) -- i
   INCAR data input defining the calculation parameters for the VASP calculation (see :ref:`INCAR<user-guide-datatypes-inputs-incar>`)
 * **kpoints** (:class:`aiida_cusp.data.VaspKpointData`) --
@@ -58,8 +61,18 @@ restart options are for ?
      Then, upon submission of the calculation the contents of `poscar_1` are written to the calculation's `'00'` subfolder, the contents of `poscar_2` to the `'01'` subfolder and so on.
 
 * **potcar** (:class:`dict`) --
+  The VASP pseudo-potentials to be used for the calculation.
+  Potentials are expected to be defined as dictionary containing the structure's elements as keys and the :class:`aiida_cusp.data.VaspPotcarData` of the potential to be used for that eleme
 
-**Custodian Settings:**
+  .. note::
+
+     There is no need to build this dictionary manually and it is highly recommended to setup the `options.potcar` inputs using the :meth:`aiida_cusp.data.VaspPotcarData.from_structure` method.
+     Please refer to the :ref:`VaspPotcarData documentation<user-guide-datatypes-inputs-potcar>` for more details in how this method is used to generate the appropriate inputs.
+
+.. _user-guide-calculators-vaspcalculator-inputs-custodian:
+
+Custodian Settings:
+"""""""""""""""""""
 
 Options passed to the Custodian executable if a custodian code is set for the `custodian.code` option.
 (Also refer to the :ref:`Custodian section<user-guide-custodian>` for more details on the available settings)
@@ -91,20 +104,30 @@ Options passed to the Custodian executable if a custodian code is set for the `c
   Set this option to :class:`True` to skip over any failed error handler
   (optional, default: `False`)
 
-**Restart Options:**
+.. _user-guide-calculators-vaspcalculator-inputs-restart:
+
+Restart Options:
+""""""""""""""""
 
 * **restart.folder** (:class:`aiida.orm.RemoteData`) --
+  Remote folder of the parent calculation from which the calculation is restarted.
+  All files in the remote folder will be copied to the restarted calculation's folder and are used as input to the new calculation.
+
+  .. note::
+
+     For restarted calculations the previous used `INCAR` and `KPOINTS` data can be ignored by setting new parameters through the `inputs.incar` and `inputs.kpoints` options.
+     Note, however, that setting an alternative structure or using different pseudo-potentials is not allowed for a restarted calculation which will raise an error.
+
 * **restart.contcar_to_poscar** (:class:`bool`) --
+  If this option is set to `True` the `POSCAR` file of the restarted calculations will be replaced with the parent calculation's `CONTAR` contents.
   (optional, default: `True`)
 
+.. _user-guide-calculators-vaspcalculator-outputs:
 
-Calculator Outputs
-------------------
+Default Calculator Outputs
+---------------------------
 
-After the calculation has finished parsed outputs are available via the calculation nodes `outputs` key.
+After the calculation has finished, parsed outputs are available via the calculation nodes `outputs` key.
 Note that the contents stored as calculation outputs of course depend the parser plugin used for the calculation (see the :ref:`Parsers section<user-guide-parsers>`).
 By default the :class:`~aiida_cusp.calculators.VaspCalculator` class uses the :ref:`VaspFileParser<user-guide-parsers-vaspfileparser>` to parse the generated results.
 Note that if no additional parser options are passed to this parser class only the `CONTCAR`, `vasprun.xml` and `OUTCAR` files will be avilable in the calculation's outputs.
-
-Calclator Exit-Codes
---------------------

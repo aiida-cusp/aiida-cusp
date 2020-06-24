@@ -1,3 +1,5 @@
+.. _installation-getpluginready:
+
 ************************
 Getting the Plugin Ready
 ************************
@@ -14,6 +16,7 @@ If the above is not true for your installation, please complete the AiiDA instal
 
    In case you are new to AiiDA please refer to the `AiiDA documentation`_ for detailed instructions on how to install and/or setup AiiDA and it's related services.
 
+.. _installation-getpluginready-setupcustodian:
 
 Setting up the Custodian Codes
 ==============================
@@ -87,6 +90,7 @@ After successfull code setup your newly configured Custodian code should give an
    Append text           No append text
    --------------------  ----------------------------------------------------
 
+.. _installation-getpluginready-preparepseudos:
 
 Populating the Database with VASP Pseudo-Potentials
 ===================================================
@@ -150,6 +154,8 @@ In the following only a single pseudo-potential for silicon, required to run the
        216  c19da65f-c696-4d02-bdbe-c5211e1c896f  Si_sv_GW_nr  Si         pbe
        217  537a85fa-34b8-4267-bbc0-aed06346a03f  Si_sv_GW     Si         pbe
 
+
+.. _installation-getpluginready-calcexample:
 
 Calculation Example
 ===================

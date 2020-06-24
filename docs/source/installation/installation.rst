@@ -1,3 +1,5 @@
+.. _installation-installingtheplugin:
+
 *********************
 Installing the Plugin
 *********************
@@ -31,6 +33,7 @@ The output of this command should now contain the new calculation entry point ``
    If this post-installation step is skipped new entry points installed by the
    plugin will not be discoverable and the plugin will not work as expected.
 
+.. _installation-installingtheplugin-pip:
 
 Installing via PIP
 ==================
@@ -45,6 +48,7 @@ To install the plugin via the ``pip`` installer simply run the command
 which will install the plugin and all the required dependencies using
 the pypi repository.
 
+.. _installation-installingtheplugin-conda:
 
 Installing via Conda
 ====================
@@ -59,6 +63,7 @@ installed on your machine. To install the plugin simply run the command
 
 which will install the plugin and all the required dependencies.
 
+.. _installation-installingtheplugin-fromsource:
 
 Installing from Source
 ======================

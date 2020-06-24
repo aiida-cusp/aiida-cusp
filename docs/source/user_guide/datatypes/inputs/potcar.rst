@@ -29,46 +29,35 @@ In the following some examples are given to show how the :meth:`aiida_cusp.data.
 To test this functionality a test structure is required.
 In the following example a simple fcc structure is used to demonstrate the process of the pseudo-potential setup:
 
-.. code-block:: console
+.. code-block:: python
 
-   $ verdi shell
-   Python 3.6.7 | packaged by conda-forge | (default, Feb 28 2019, 09:07:38)
-   Type 'copyright', 'credits' or 'license' for more information
-   IPython 7.14.0 -- An enhanced Interactive Python. Type '?' for help.
-
-   In [1]: from pymatgen import Structure, Lattice
-
-   In [2]: VaspPotcarData = DataFactory('cusp.potcar')
-
-   In [3]: lattice = Lattice.cubic(3.524)
-
-   In [4]: structure = Structure.from_spacegroup(225, lattice, ["Cu"], [[0.0, 0.0, 0.0]])
-
+   >>> from pymatgen import Structure, Lattice
+   >>> from aiida.plugins import DataFactory
+   >>> VaspPotcarData = DataFactory('cusp.potcar')
+   >>> lattice = Lattice.cubic(3.524)
+   >>> structure = Structure.from_spacegroup(225, lattice, ["Cu"], [[0.0, 0.0, 0.0]])
 
 Simply passing the structure and the desired functional to the method without specifying any `potcar_params` initializes the pseudo-potential list with the default settings.
 This means: For each element present in the structure the database is queried for a pseudo-potential with the defined functional and a potential name matching the element name.
 From the list of potentials matching these requirements the potential with the highest version number will be return as input potential:
 
-.. code-block:: console
+.. code-block:: python
 
-   In [5]: potcar = VaspPotcarData.from_structure(structure, 'pbe')
-
-   In [6]: potcar
-   Out[6]: {'Cu': <VaspPotcarData: uuid: 0ea424b7-9b9e-446a-8d44-7690cb0006d7 (unstored)>}
-
-   In [7]: print("{} {} {}".format(potcar['Cu'].name, potcar['Cu'].version, potcar['Cu'].functional))
+   >>> potcar = VaspPotcarData.from_structure(structure, 'pbe')
+   >>> potcar
+   {'Cu': <VaspPotcarData: uuid: 0ea424b7-9b9e-446a-8d44-7690cb0006d7 (unstored)>}
+   >>> print("{} {} {}".format(potcar['Cu'].name, potcar['Cu'].version, potcar['Cu'].functional))
    Cu 20010105 pbe
 
 If your calculation requires a different potential, for instance the `Cu_pv` potential, the above shown default behavior can be overidden by passing the desired potential paramters to the function using the `potcar_params` dictionary.
 To use the `Cu_pv` potential instead of the `Cu` potential, chosen by default, the following `potcar_params` need to passed:
 
-.. code-block:: console
+.. code-block:: python
 
-   In [8]: potcar = VaspPotcarData.from_structure(structure, 'pbe', potcar_params={'Cu': {'name': 'Cu_pv'}})
-   In [9]: potcar
-   Out[9]: {'Cu': <VaspPotcarData: uuid: c55928e9-3f3a-4d03-87f7-5b2c4be5fd9a (unstored)>}
-
-   In [10]: print("{} {} {}".format(potcar['Cu'].name, potcar['Cu'].version, potcar['Cu'].functional))
+   >>> potcar = VaspPotcarData.from_structure(structure, 'pbe', potcar_params={'Cu': {'name': 'Cu_pv'}})
+   >>> potcar
+   {'Cu': <VaspPotcarData: uuid: c55928e9-3f3a-4d03-87f7-5b2c4be5fd9a (unstored)>}
+   >>> print("{} {} {}".format(potcar['Cu'].name, potcar['Cu'].version, potcar['Cu'].functional))
    Cu_pv 20000906 pbe
 
 Note that the `potcar_params` also allows a `'version'` key for each element to not only define the potential's name to be used but also potentially fix the potential's version.
@@ -76,10 +65,8 @@ However, since in the above example only the potential name is changed and the v
 
 .. code-block:: console
 
-   In [11]: potcar = VaspPotcarData.from_structure(structure, 'pbe', potcar_params=['Cu_pv'])
-
-   In [12]: potcar
-   Out[12]: {'Cu': <VaspPotcarData: uuid: 1f6ea785-876f-4942-9f30-51a8eac39573 (unstored)>}
-
-   In [13]: print("{} {} {}".format(potcar['Cu'].name, potcar['Cu'].version, potcar['Cu'].functional))
+   >>> potcar = VaspPotcarData.from_structure(structure, 'pbe', potcar_params=['Cu_pv'])
+   >>> potcar
+   {'Cu': <VaspPotcarData: uuid: 1f6ea785-876f-4942-9f30-51a8eac39573 (unstored)>}
+   >>> print("{} {} {}".format(potcar['Cu'].name, potcar['Cu'].version, potcar['Cu'].functional))
    Cu_pv 20000906 pbe

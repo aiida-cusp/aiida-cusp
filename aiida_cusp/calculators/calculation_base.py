@@ -18,6 +18,11 @@ from aiida_cusp.utils.defaults import (PluginDefaults, VaspDefaults,
 from aiida_cusp.utils.custodian import CustodianSettings
 
 
+# TODO: input ports with default values will be defined as calculation
+#       inputs even though not set. Think about if this is what we want.
+#       All custodian inputs show up even though no code may be set
+#       Maybe we should summarize the settings as dict and remove the
+#       default values from the input definition...
 # TODO: This is a temporary fix since the to_aiida_type serizalizer function
 #       obviously is not defined for the aiida.orm.List type...
 def dl_serialize(value):

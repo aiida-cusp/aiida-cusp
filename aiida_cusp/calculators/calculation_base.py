@@ -21,10 +21,16 @@ from aiida_cusp.utils.custodian import CustodianSettings
 # TODO: This is a temporary fix since the to_aiida_type serizalizer function
 #       obviously is not defined for the aiida.orm.List type...
 def dl_serialize(value):
+    # passing a list of handler names is equivalent to passing
+    # a dictionary of handler names with empty dicts as values to indicate
+    # default values shall be used
+    # Thus, we directly transform the list to the corresponding dict to
+    # avoid further issues downstream
     if isinstance(value, (list, tuple)):
-        return List(list=value)
+        out = {v: {} for v in value}
     elif isinstance(value, dict):
-        return Dict(dict=value)
+        out = value
+    return Dict(dict=value)
 
 
 class CalculationBase(CalcJob):

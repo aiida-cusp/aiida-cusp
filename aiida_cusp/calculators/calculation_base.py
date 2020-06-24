@@ -9,13 +9,22 @@ Base class serving as parent for other VASP calculator implementations
 import pathlib
 
 from aiida.engine import CalcJob
-from aiida.orm import RemoteData, Code, Bool, Dict, List
+from aiida.orm import RemoteData, Code, Int, Bool, Dict, List
 from aiida.orm.nodes.data.base import to_aiida_type
 from aiida.common import (CalcInfo, CodeInfo, CodeRunMode)
 
 from aiida_cusp.utils.defaults import (PluginDefaults, VaspDefaults,
                                        CustodianDefaults)
 from aiida_cusp.utils.custodian import CustodianSettings
+
+
+# TODO: This is a temporary fix since the to_aiida_type serizalizer function
+#       obviously is not defined for the aiida.orm.List type...
+def dl_serialize(value):
+    if isinstance(value, (list, tuple)):
+        return List(list=value)
+    elif isinstance(value, dict):
+        return Dict(dict=value)
 
 
 class CalculationBase(CalcJob):
@@ -59,38 +68,42 @@ class CalculationBase(CalcJob):
             'custodian.handlers',
             valid_type=(Dict, List),
             default=lambda: Dict(dict={}),
-            serializer=to_aiida_type,
+            serializer=dl_serialize,
             help=("Error handlers connected to the custodian executable")
         )
-        spec.input_namespace('custodian.settings', required=False, non_db=True)
+        spec.input_namespace('custodian.settings', required=False)
         # since custodian is exlusively used to run a VASP calculation with
         # enabled error correction only the most basic custodian options
         # affecting single runs are exposed here
         spec.input(
             'custodian.settings.max_errors',
-            valid_type=int,
-            default=10,
+            valid_type=Int,
+            serializer=to_aiida_type,
+            default=lambda: Int(10),
             help=("Maximum number of accepted errors before the calculation "
                   "is terminated")
         )
         spec.input(
             'custodian.settings.polling_time_step',
-            valid_type=int,
-            default=10,
+            valid_type=Int,
+            serializer=to_aiida_type,
+            default=lambda: Int(10),
             help=("Seconds between two consecutive checks for the calcualtion "
                   "being completed")
         )
         spec.input(
             'custodian.settings.monitor_freq',
-            valid_type=int,
-            default=30,
+            valid_type=Int,
+            serializer=to_aiida_type,
+            default=lambda: Int(30),
             help=("Number of performed polling steps before the calculation "
                   "is checked for possible errors")
         )
         spec.input(
             'custodian.settings.skip_over_errors',
-            valid_type=bool,
-            default=False,
+            valid_type=Bool,
+            serializer=to_aiida_type,
+            default=lambda: Bool(False),
             help=("If set to `True` failed error handlers will be skipped")
         )
         # required inputs to restart a calculation

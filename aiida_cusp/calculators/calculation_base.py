@@ -30,7 +30,7 @@ def dl_serialize(value):
         out = {v: {} for v in value}
     elif isinstance(value, dict):
         out = value
-    return Dict(dict=value)
+    return Dict(dict=out)
 
 
 class CalculationBase(CalcJob):

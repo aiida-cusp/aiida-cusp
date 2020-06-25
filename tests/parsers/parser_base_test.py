@@ -52,6 +52,7 @@ def test_register_output_nodes_method(vasp_code):
     from aiida.plugins import CalculationFactory
     from aiida.orm import Node
     from aiida_cusp.parsers.parser_base import ParserBase
+    from aiida_cusp.utils.defaults import PluginDefaults
     # define code
     vasp_code.set_attribute('input_plugin', 'cusp.vasp')
     # setup calculator and instantiate parser class
@@ -64,11 +65,15 @@ def test_register_output_nodes_method(vasp_code):
     parser = ParserBase(vasp_calc_node)
     # test add output node
     linkname = 'output_node'
+    # all parsed outputs are expected to be registered through the dynamic
+    # parsed_results namespace
+    expected = "{}.{}".format(PluginDefaults.PARSER_OUTPUT_NAMESPACE,
+                              linkname)
     node = Node()
     exit_code = parser.register_output_nodes([(linkname, node)])
-    assert exit_code == 0
-    assert linkname in parser.outputs
-    assert isinstance(parser.outputs.get(linkname), Node) is True
+    assert exit_code is None
+    assert expected in parser.outputs
+    assert isinstance(parser.outputs.get(expected), Node) is True
     # test storing the node with same linkname fails
     exit_code = parser.register_output_nodes([(linkname, node)])
     assert exit_code.status == 303

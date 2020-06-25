@@ -73,3 +73,40 @@ def test_is_neb(vasp_code, poscar, is_restart, is_neb):
     # assert is_neb() returns the desired result
     result = vasp_calc_base.is_neb()
     assert result is is_neb
+
+
+@pytest.mark.parametrize('calc_type', ['normal', 'neb'])
+@pytest.mark.filterwarnings("ignore::UserWarning")
+def test_all_calculation_inputs(vasp_code, cstdn_code, incar, kpoints, poscar,
+                                with_pbe_potcars, calc_type, temporary_cwd):
+    from aiida.engine import run
+    from aiida_cusp.data import VaspPotcarData
+    from aiida_cusp.calculators import VaspCalculation
+    from aiida_cusp.utils.defaults import CustodianDefaults
+    # default custodian settings and handlers
+    custodian_settings = CustodianDefaults.CUSTODIAN_SETTINGS
+    custodian_handlers = CustodianDefaults.ERROR_HANDLER_SETTINGS
+    # define code
+    vasp_code.set_attribute('input_plugin', 'cusp.vasp')
+    cstdn_code.set_attribute('input_plugin', 'cusp.vasp')
+    # define all possible inputs
+    inputs = {
+        'code': vasp_code,
+        'incar': incar,
+        'kpoints': kpoints,
+        'potcar': VaspPotcarData.from_structure(poscar, 'pbe'),
+        'custodian': {
+            'settings': custodian_settings,
+            'handlers': custodian_handlers,
+        },
+        'metadata': {
+            'dry_run': True,
+            'options': {'resources': {'num_machines': 1}},
+        },
+    }
+    if calc_type == 'normal':
+        inputs['poscar'] = poscar
+    elif calc_type == 'neb':
+        neb_path = {'node_00': poscar, 'node_01': poscar, 'node_02': poscar}
+        inputs['neb_path'] = neb_path
+    run(VaspCalculation, **inputs)

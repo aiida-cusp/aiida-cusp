@@ -93,7 +93,7 @@ def test_build_parsing_list(vasp_file_parser, name_or_wildcard, tmpdir,
     # duplicates
     _ = vasp_file_parser.verify_and_set_parser_settings()
     exit_code = vasp_file_parser.build_parsing_list()
-    assert exit_code == 0
+    assert exit_code is None
     assert len(set(vasp_file_parser.files_to_parse)) == \
            len(vasp_file_parser.files_to_parse)
     # check generated list matches with expected parsing list
@@ -115,7 +115,7 @@ def test_potcar_is_never_parsed(wildcard, vasp_file_parser, tmpdir):
     vasp_file_parser.settings['parse_files'] = [wildcard]
     _ = vasp_file_parser.verify_and_set_parser_settings()
     exit_code = vasp_file_parser.build_parsing_list()
-    assert exit_code == 0
+    assert exit_code is None
     assert vasp_file_parser.files_to_parse == []
 
 
@@ -145,7 +145,7 @@ def test_empty_parsing_list_fails(vasp_file_parser, file_exists,
     if fail_on_missing:
         assert exit_code.status == 302  # parsing list is empty
     else:  # all other cases should lead to zero exit code
-        assert exit_code == 0
+        assert exit_code is None
 
 
 # file list for all known files and a single (PROCAR) file which is going
@@ -172,6 +172,10 @@ def test_parsing_for_calcs(vasp_file_parser, tmpdir, outfile, poscar,
                                     neb_subfolder, base_linkname)
     else:
         linkname = base_linkname
+    # build complete expected output linkname by adding the parser output
+    # namespace prefix to the base linkname
+    full_linkname = "{}.{}".format(PluginDefaults.PARSER_OUTPUT_NAMESPACE,
+                                   linkname)
     # load expected datatype for output node
     ExpectedDatatype = DataFactory(entrypoint)
     # setup the file
@@ -187,16 +191,16 @@ def test_parsing_for_calcs(vasp_file_parser, tmpdir, outfile, poscar,
     # run the parser on the current temporary directory
     vasp_file_parser.settings['parse_files'] = [outfile]
     errno = vasp_file_parser.parse(retrieved_temporary_folder=str(tmpdirpath))
-    assert errno == 0
-    assert linkname in vasp_file_parser.outputs
-    ParsedDatatype = vasp_file_parser.outputs.get(linkname)
+    assert errno is None
+    assert full_linkname in vasp_file_parser.outputs
+    ParsedDatatype = vasp_file_parser.outputs.get(full_linkname)
     assert isinstance(ParsedDatatype, ExpectedDatatype) is True
 
 
 @pytest.mark.parametrize('setting,expected_exit_code',
 [   # noqa: E128
-    ({'parse_files': ['A', 'B', 'C']}, 0),
-    ({'fail_on_missing_files': True}, 0),
+    ({'parse_files': ['A', 'B', 'C']}, None),
+    ({'fail_on_missing_files': True}, None),
     ({'unknown_option': None}, 301),
 ])
 def test_accepted_parser_settings(vasp_code, setting, expected_exit_code):
@@ -220,7 +224,7 @@ def test_accepted_parser_settings(vasp_code, setting, expected_exit_code):
     parser = VaspFileParser(vasp_calc_node)
     exit_code = parser.verify_and_set_parser_settings()
     if not exit_code:
-        assert exit_code == 0
+        assert exit_code is None
         assert parser.settings == setting
     else:
         assert exit_code.status == expected_exit_code

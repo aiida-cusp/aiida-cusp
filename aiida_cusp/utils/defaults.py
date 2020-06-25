@@ -95,6 +95,12 @@ class PluginDefaults(object):
         identifier = r"^{}[0-9]{{2}}$".format(cls.NEB_NODE_PREFIX)
         return re.compile(identifier)
 
+    # default output namespace through which parsed calculation results
+    # are added to the calculation
+    @classproperty
+    def PARSER_OUTPUT_NAMESPACE(cls):
+        return "parsed_results"
+
 
 class CustodianDefaults(object):
     """
@@ -172,6 +178,14 @@ class CustodianDefaults(object):
             'terminate_func': None,
             'terminate_on_nonzero_returncode': False,
         }
+
+    # custodian settings that may be altered by the user (settings not
+    # defined here won't be accepted when passed as input to the
+    # calculation's custodian.settings option!)
+    @classproperty
+    def MODIFIABLE_SETTINGS(cls):
+        return ['max_errors', 'polling_time_step', 'monitor_freq',
+                'skip_over_errors']
 
     # dictionary of the used default settings for all VASP error handlers
     # that may be used with this plugin

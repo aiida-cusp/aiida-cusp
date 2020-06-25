@@ -66,13 +66,21 @@ class CustodianSettings(object):
         :rtype: `dict`
         """
         cstdn_settings = dict(CustodianDefaults.CUSTODIAN_SETTINGS)
-        # at this point cstdn_settins contains **all** available input
-        # parameters
-        for parameter in cstdn_settings.keys():
-            try:
-                cstdn_settings[parameter] = settings.pop(parameter)
-            except KeyError:
-                continue
+        valid_settings = CustodianDefaults.MODIFIABLE_SETTINGS
+        for parameter in list(settings.keys()):
+            # fail if the parameter is not a valid custodian setting at all
+            if parameter not in cstdn_settings.keys():
+                valid = ", ".join(valid_settings)
+                raise CustodianSettingsError("got an invalid custodian "
+                                             "setting '{}' (valid settings: "
+                                             "{})".format(parameter, valid))
+            # fail if the parameter is valid setting but not modifiable
+            if parameter not in CustodianDefaults.MODIFIABLE_SETTINGS:
+                raise CustodianSettingsError("cannot set value for protected "
+                                             "custodian setting '{}'"
+                                             .format(parameter))
+            # otherwise: update the defaults from the user input
+            cstdn_settings[parameter] = settings.pop(parameter)
         return cstdn_settings
 
     def setup_custodian_handlers(self, handlers):

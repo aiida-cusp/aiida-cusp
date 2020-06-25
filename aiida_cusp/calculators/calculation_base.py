@@ -226,8 +226,11 @@ class CalculationBase(CalcJob):
         restart folder to the current calculation folder.
         """
         # files never copied for restarted calculations
+        # (Return _aiidasubmit.sh to remain compatible with AiiDA versions
+        # prior to 1.2.1 where this option was introduced)
         exclude_files = [
-            self.inputs.metadata.options.get('submit_script_filename'),
+            self.inputs.metadata.options.get('submit_script_filename',
+                                             '_aiidasubmit.sh'),
             PluginDefaults.CSTDN_SPEC_FNAME,
             'job_tmpl.json',
             'calcinfo.json',
@@ -313,8 +316,11 @@ class CalculationBase(CalcJob):
         parser.
         """
         retrieve_permanent = [
-            # submit script and custodian logfiles
-            self.inputs.metadata.options.get('submit_script_filename'),
+            # submit script and custodian logfiles (return _aiidasubmit.sh
+            # by default to be compatible with AiiDA versions < 1.2.1 where
+            # this option was introduces)
+            self.inputs.metadata.options.get('submit_script_filename',
+                                             '_aiidasubmit.sh'),
             PluginDefaults.CSTDN_SPEC_FNAME,
             CustodianDefaults.RUN_LOG_FNAME,
             # other logfiles, i.e. scheduler as well as stdout / stderr

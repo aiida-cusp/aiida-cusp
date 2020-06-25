@@ -93,13 +93,17 @@ def test_remote_folder_filelist(vasp_code, filename, relpath, aiida_sandbox):
     assert remote_filelist == expected_filelist
 
 
+# FIXME: Setting a custom submit script name should be skippe for AiiDA
+#        versions below 1.2.1 where this option was first introduced
+#        if aiida.__version__ < 1.2.1 and submit_script_name:
+#              pytest.skip('submit_script_filename option not available for
+#                          AiiDA versions below 1.2.1')
 @pytest.mark.parametrize('submit_script_name', [None, 'foo.bar'])
 @pytest.mark.parametrize('contcar_to_poscar', [True, False])
 def test_default_restart_files_exclude(submit_script_name, contcar_to_poscar,
                                        vasp_code):
     from aiida_cusp.calculators.calculation_base import CalculationBase
     from aiida_cusp.utils.defaults import PluginDefaults, VaspDefaults
-    # setup the calculator
     inputs = {
         'code': vasp_code,
         'restart': {'contcar_to_poscar': contcar_to_poscar},
@@ -161,7 +165,8 @@ def test_prepare_for_submission_base_vasp(withmpi, vasp_code, cstdn_code,
     # run prepare_for_submission() to write the submit script to the
     # sandbox folder
     calcinfo = Base.presubmit(aiida_sandbox)
-    script = Base.inputs.metadata.options.submit_script_filename
+    script = Base.inputs.metadata.options.get('submit_script_filename',
+                                              '_aiidasubmit.sh')
     with open(aiida_sandbox.abspath + '/' + script, 'r') as script_file:
         script_file_contents = script_file.read()
     if withmpi:
@@ -200,7 +205,8 @@ def test_prepare_for_submission_base_cstdn(withmpi, vasp_code, cstdn_code,
     # run prepare_for_submission() to write the submit script to the
     # sandbox folder
     calcinfo = Base.presubmit(aiida_sandbox)
-    script = Base.inputs.metadata.options.submit_script_filename
+    script = Base.inputs.metadata.options.get('submit_script_filename',
+                                              '_aiidasubmit.sh')
     with open(aiida_sandbox.abspath + '/' + script, 'r') as script_file:
         script_file_contents = script_file.read()
     # `withmpi` only affects the contents of the cstdn_spec.yaml and thus the

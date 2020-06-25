@@ -13,7 +13,7 @@ Checkout the :ref:`Tutorials section<tutorials>` for a collection if example cal
 
 Nah, uh, I'd rather get to known the plugin's intestines first
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-Jump to the :ref:`User-Guide section<user-guide>` to learn everything about the details of calculation plugins and data types used by this plugin.
+Jump to the :ref:`User-Guide section<user-guide>` to learn everything about the details of calculation plugins and the data types used by this plugin.
 
 I found a bug and / or would like to contribute to the plugin
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

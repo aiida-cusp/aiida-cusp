@@ -21,14 +21,14 @@ If the above is not true for your installation, please complete the AiiDA instal
 Setting up the Custodian Codes
 ==============================
 
-Setting up the codes for Custodian is straightforward and does not differ from the setup of regular codes.
-Similar to setting up the VASP code for the corresponding ``vasp`` executable, Custodian codes are setup using the ``cstdn`` executable.
-The only reason it is covered here is that it may likely be not available on your system by default and may required some extra steps.
+Setting up the codes for Custodian is straightforward and does in general not differ compared to the setup of regular codes.
+Similar to setting up the VASP code which tells AiiDA how to load and access the corresponding ``vasp`` executable, Custodian codes are setup to give AiiDA the same information on the ``cstdn`` executable.
+The only reason for the Custodian code setup being covered in more detail here is the fact that it may likely not be available on your system by default and thus may required some extra steps to setup.
 
 .. note::
 
    In case Custodian is already available on your system you may skip the following steps and directly setup the code as usual.
-   To check if Custodian is already available simply check if the  ``cstdn`` executable is available, for instance using the command
+   To check if Custodian is already available simply you can simply test if the  ``cstdn`` executable is available, for instance using the command
 
    .. code:: console
 
@@ -37,13 +37,19 @@ The only reason it is covered here is that it may likely be not available on you
       $ which cstdn
       /home/andreas/local/apps/anaconda3/2019.3/envs/aiida-cusp-dev/bin/cstdn
 
-Assuming the above check fails and Custodian is obviously not available on your system yet, the following example shows how to install and setup the code through anaconda.
+Assuming the above check has failed for you and Custodian is obviously not available on your system yet, the following example shows how to install and setup the code through anaconda.
 
 .. note::
 
    Keep in mind that the example shown in the following is only one possibility of installing Custodian on your system.
    The solution best suited for your use case, of course, depends on the available python installation and your personal preferences.
-   Thus, consider the given example as a basic guide giving you an idead of the required installation steps
+   Thus, consider the given example as a basic guide giving you a general idea of the required installation steps
+
+.. warning::
+
+   Custodian has to be installed on the **target computer** that is later used to run the calculation (i.e. usually the same computer where also VASP is installed).
+   Keep in mind that this computer may be different from the computer you're running AiiDA from!
+
 
 To setup the Custodian code on a remote computer using anaconda we first create a new environment containing the Custodian installation.
 Using ``custodian`` for the envrionment name the required ``conda`` command could look like the following
@@ -52,24 +58,28 @@ Using ``custodian`` for the envrionment name the required ``conda`` command coul
 
    $ conda create --name custodian python=3.6 custodian
 
-You may check that custodian was indeed installed by activating the environment and perform the above mentioned check for the ``cstdn`` executable.
+After the installation is completed you may check that custodian was indeed installed.
+To do this simply activate the created environment and perform the above mentioned check for the ``cstdn`` executable:
 
 .. code:: console
 
    $ conda activate custodian
-   $ which custodian
+   $ which cstdn
    /home/user/envs/custodian/bin/cstdn
 
 If the the full path to the ``cstdn`` executable is printed to the screen the installation was successful.
-Next the code can be setup on your local computer running AiiDA via the ``verdi code setup`` command.
+Note that the printed path should point to the folder in which the new Anaconda environment was installed previously.
+After installing the required exectuable, the next step is now to setup the code on your local computer (i.e. the computer you're actually running AiiDA on!)
+To setup the code simply run the ``verdi code setup`` command and provide all the neccessary information you're asked for.
 (Please refer to the `AiiDA documentation`_ for detailed instructions on how to setup a new code)
 
 .. note::
 
-   During the code setup make sure the Custodian installation is made available by adding the appropriate commands to the prepend section.
-   Choose the ``cusp.vasp`` entrypoint as input plugin during setup to connect the code to the plugin's calculator.
+   When asked for the input plugin, choose the ``cusp.vasp`` entrypoint in order to connect the code to the plugin's calculator.
+   At the very end of the setup the code's prepend / append sections are requested: Please make sure the Custodian installation is made available at the code's loading time by adding the appropriate commands to the requested prepend section
+   (See the example below)
 
-After successfull code setup your newly configured Custodian code should give an output similar to the following:
+After successfull code setup you may run the `verdi code show` command  on your newly configured Custodian code which should give an output similar to the following:
 
 .. code:: console
 
@@ -101,13 +111,15 @@ To this end the plugin extends the ``verdi data`` command with the additional ``
 This new subcommand allows to interact with VASP pseudo-potential files and offers two different ways of adding potentials:
 
  * adding only single potentials using ``verdi data potcar add single``
- * or adding a bunch of potentials at once using ``verdi data potcar add family``
+ * or adding a batch of potentials at once using ``verdi data potcar add family``
 
 .. note::
 
    Type ``verdi data potcar --help`` on the command line to get more information on the provided commands and the expected syntax.
+   The command is also documented :ref:`here<user-guide-commands-potcar>`.
 
-In the following only a single pseudo-potential for silicon, required to run the calculation example presented in the next section, is added to the database:
+In the following, only a single pseudo-potential for silicon, required to run the calculation example presented in the next section, is added to the database.
+As stated above a single pseudo-potential may be added to the database using the ``verdi data potcar add single`` command, thus:
 
 .. code:: console
 
@@ -129,9 +141,14 @@ In the following only a single pseudo-potential for silicon, required to run the
    Before continuing, please check the displayed list for possible errors! Continue and store? [y/N]: y
    Created new VaspPotcarFile node with UUID c6dd3acc-7ffe-44de-b638-4dff4ff8bab8 at ID 918
 
+Check the printed summary to check if the potential was recognized correctly and press ``Y`` to continue and save the potential with the shown attributes to the database.
+
 .. note::
 
-   Use the ``vasp data potcar list`` command to get an overview of the available potentials, i.e.
+   In later calculations you can choose from the different stored potentials by referencing to the ``name``, ``functional`` and ``version`` printed to the screen when adding the potential.
+   Fixing all of the three attributes uniquely defines a pseudo-potential which is the reason why these attributes are used as potential identifiers throughout this plugin.
+
+   If you want know which potentials are already stored, use the ``vasp data potcar list`` command to get an overview of the available potentials, i.e.
 
    .. code:: console
 
@@ -160,7 +177,7 @@ In the following only a single pseudo-potential for silicon, required to run the
 Calculation Example
 ===================
 
-As an example the following code snippet describes the relaxation for a simple silicon diamond structure using both custodian and vasp code.
+As an example the following code snippet describes the relaxation for a simple silicon diamond structure using both Custodian and the VASP code.
 (Note that this is only for demonstration purposes and simply adding a custodian code will **not** enable any error correction for that calculation!
 Please refer to the calculator section on how to run a calculation with error corrections)
 For the sake of simplicity, here, all calculation input parameters are taken as defined by pymatgen's :class:`~pymatgen.io.vasp.sets.MPRelaxSet`.
@@ -219,13 +236,15 @@ For the sake of simplicity, here, all calculation input parameters are taken as 
    # submit the code to the daemon
    calc_node = submit(VaspSiRelax)
 
-Saving the contents to the calculation file ``test_calc.py`` we are now ready to acutally run the calculation:
+Saving the above contents to a new python file, i.e. ``test_calc.py``, we are now ready to acutally run the calculation.
+One the command line simply execute the following command to start the calculation:
 
 .. code:: console
 
    $ verdi run test_calc.py
 
-After the calculation has been successfully deployed to the daemon it should appear in the list of active processes:
+After the calculation has been successfully deployed to the daemon it should now appear in the list of active processes.
+You may check this using AiiDA's ``verdi process list`` which will output all active processes:
 
 .. code:: console
 

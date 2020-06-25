@@ -8,17 +8,10 @@
 aiida-cusp -- a Custodian based VASP Plugin for AiiDA
 #####################################################
 
-The aiida-cusp plugin is an AiiDA plugin for VASP optionally utilizing
-Custodian to run the VASP calculations with automated error correction.
-Contrary to error correction methods that may be implemented directly in AiiDA
-workflows that allow for error corrections on the workflows' step level, the
-Custodian interface of this plugin introduces error corrections for VASP on
-the calculation's runtime level. In addition to the error correction of
-VASP calculations this plugin was also designed with fast and  easy pre- and
-post-processing in mind. Thus, all datatypes serving as inputs and outputs
-to the calculators, implemented by this plugin, are tightly connected to the
-Pymatgen framework mainting direct access to the rich set of implemented
-analysis tools.
+The aiida-cusp plugin is an AiiDA plugin for VASP optionally utilizing Custodian to run the VASP calculations with automated error correction.
+Contrary to error correction methods that may be implemented directly in AiiDA workflows that allow for error corrections on the workflows' step level, the `Custodian`_ interface of this plugin introduces error corrections for VASP on the calculation's runtime level.
+In addition to the error correction of VASP calculations this plugin was also designed with fast and easy pre- and post-processing in mind.
+Thus, all datatypes serving as inputs and outputs to the calculators, implemented by this plugin, are tightly connected to the `Pymatgen`_ framework mainting direct access to the therin implemented set of atomistic tools.
 
 .. toctree::
    :maxdepth: 1
@@ -70,3 +63,5 @@ Indices and tables
 * :ref:`search`
 
 .. _AiiDA: https://aiida.readthedocs.io/projects/aiida-core/en/latest/
+.. _Pymatgen: https://pymatgen.org
+.. _Custodian: https://materialsproject.github.io/custodian/

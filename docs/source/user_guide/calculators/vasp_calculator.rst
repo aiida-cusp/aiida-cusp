@@ -85,24 +85,17 @@ Options passed to the Custodian executable if a custodian code is set for the `c
 * **custodian.handlers** (:class:`list` or :class:`dict`) --
   Optional input option defining the error handlers connected to the calculation.
   For a complete list of available error handlers that may be set here please refer to the :ref:`handler section<user-guide-custodian-handlers>` in the Custodian documentation of this plugin.
-  (optional, default: `{}`)
+  (optional, default: ``{}``)
 
   .. warning::
 
      Be advised that setting no error handlers for Custodian is perfectly fine, however, defining a Custodian code without setting any handlers will disable the error correction.
 
-* **custodian.settings.max_errors** (:class:`int`) --
-  This sets the maximum number of errors that may occur for a single calculation before terminating the calculation
-  (optional, default: `10`)
-* **custodian.settings.polling_time_step** (:class:`int`) --
-  Seconds between two consecutive checks for the calculation being completed
-  (optional, default: `10`)
-* **custodian.settings.monitor_freq** (:class:`int`) --
-  Number of performed polling steps before the calculation is checked for possibly encountered errors
-  (optional, default: `30`)
-* **custodian.settings.skip_over_errors** (:class:`bool`) --
-  Set this option to :class:`True` to skip over any failed error handler
-  (optional, default: `False`)
+* **custodian.settings** (:class:`dict`) --
+  Optional dictionary containing the settings that should be set to customize the behavior of the Custodian executable.
+  If no settings are passed (default) then the plugin's default settings for Custodian will be used.
+  For a complete list of available settings that may be set here and their corresponding default values, please refer to the :ref:`settings section<user-guide-custodian-settings>` in the Custodian documentation of this plugin.
+  (default: ``{}``)
 
 .. _user-guide-calculators-vaspcalculator-inputs-restart:
 
@@ -127,7 +120,12 @@ Restart Options:
 Default Calculator Outputs
 ---------------------------
 
-After the calculation has finished, parsed outputs are available via the calculation nodes `outputs` key.
-Note that the contents stored as calculation outputs of course depend the parser plugin used for the calculation (see the :ref:`Parsers section<user-guide-parsers>`).
+After the calculation has finished, parsed outputs are available via the calculation nodes `outputs.parsed_results` key.
+Note that the contents that are stored to this output key of course depend the parser plugin used for the calculation (see the :ref:`Parsers section<user-guide-parsers>`).
 By default the :class:`~aiida_cusp.calculators.VaspCalculator` class uses the :ref:`VaspFileParser<user-guide-parsers-vaspfileparser>` to parse the generated results.
 Note that if no additional parser options are passed to this parser class only the `CONTCAR`, `vasprun.xml` and `OUTCAR` files will be avilable in the calculation's outputs.
+
+.. note::
+
+   Files not generated as a result of the calculation, i.e. the logged scheduler and stdout / stderr outputs as well as the used submit script and custodian inputs are not stored under the `outputs.parsed_results` key.
+   You can find these files in the calculation's retrieved folder located under the `output.retrieved` key.

@@ -4,19 +4,18 @@ Custodian Settings
 ==================
 
 Settings changing the default behavior of the custodian executable can be passed for every VASP calculation via the ``inputs.custodian.settings`` input.
-Inputs passed to the calculation by this option are expected to be of type :class:`dict`.
+Inputs passed to the calculation by this option are expected to be of type :class:`dict` containing the parameters and the corresponding values to be set as key-value pairs.
+For instance, if you are using a builder to setup the calculation the settings may be given as
 
-.. note::
+.. code-block:: python
 
-   In case you are using a builder to setup the calculations the options may also be accessed indiviually, i.e.
+   builder.inputs.custodian.settings = {
+     'max_errors': 10,
+     'monitor_freq': 5,
+     ...
+   }
 
-   .. code-block:: python
-
-      builder.inputs.custodian.settings.max_errors = 10
-      builder.inputs.custodian.monitor_freq = 5
-      ...
-
-In the following all available options that may be defined and the corresponding default options are shown in the following.
+In the following all available options that may be defined and the corresponding default options that are used in case they are undefined are shown in the following.
 
 **Available Options:**
 

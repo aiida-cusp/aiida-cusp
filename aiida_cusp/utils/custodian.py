@@ -67,7 +67,7 @@ class CustodianSettings(object):
         """
         cstdn_settings = dict(CustodianDefaults.CUSTODIAN_SETTINGS)
         valid_settings = CustodianDefaults.MODIFIABLE_SETTINGS
-        for parameter in settings.keys():
+        for parameter in list(settings.keys()):
             # fail if the parameter is not a valid custodian setting at all
             if parameter not in cstdn_settings.keys():
                 valid = ", ".join(valid_settings)

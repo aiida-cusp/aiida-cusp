@@ -28,6 +28,9 @@
 			"aiida.calculations": [
 				"cusp.vasp = aiida_cusp.calculators.vasp_calculation:VaspCalculation"
 			],
+			"aiida.parsers": [
+				"cusp.default = aiida_cusp.parsers.vasp_file_parser:VaspFileParser"
+			],
 			"aiida.cmdline.data": [
 				"potcar = aiida_cusp.cli.potcar_cmd:potcar"
 			]

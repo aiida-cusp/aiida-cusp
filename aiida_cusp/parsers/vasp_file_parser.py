@@ -114,7 +114,7 @@ class VaspFileParser(ParserBase):
         if not self.files_to_parse and self.fail_on_empty_list:
             exit_code = self.exit_codes.ERRNO_PARSING_LIST_EMPTY
         else:
-            exit_code = 0
+            exit_code = None
         return exit_code
 
     def verify_and_set_parser_settings(self):
@@ -129,7 +129,7 @@ class VaspFileParser(ParserBase):
         if settings:
             return self.exit_codes.ERRNO_UNKNOWN_PARSER_SETTING
         else:
-            return 0
+            return None
 
     def parse_vasprun_xml(self, filepath):
         """

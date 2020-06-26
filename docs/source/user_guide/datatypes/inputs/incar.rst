@@ -4,9 +4,9 @@ INCAR (``cusp.incar``)
 ----------------------
 
 The :class:`~aiida_cusp.data.VaspIncarData` is the central object used to define and pass `INCAR parameters`_ to the VASP calculation object.
-It is made available by the plugin using the ``cusp.incar`` entry point and can be loaded via AiiDA's :func:`~aiida.plugins.DataFactory` function.
-Note that the class cannot be used directly as input for VASP calculations but has to be first initialized with the desired input parameters.
-As discussed in the following, the parameters may be passed directly (i.e. as dictionary) or indirect via a pymatgen :class:`~pymatgen.io.vasp.inputs.Incar` instance.
+This data class is published by the plugin using the ``cusp.incar`` entry point and can be loaded via AiiDA's :func:`~aiida.plugins.DataFactory` function.
+Note that in order to use the class as input for VASP calculations it has to be first initialized with the desired input parameters.
+As discussed in the following, the parameters may be passed to the constructor either directly (i.e. as dictionary) or indirect via a pymatgen :class:`~pymatgen.io.vasp.inputs.Incar` instance.
 
 .. _user-guide-datatypes-inputs-incar-initializing:
 
@@ -36,6 +36,11 @@ In general the constructor of the :class:`~aiida_cusp.data.VaspIncarData` class 
      }
 
   In that case, the dictionary keys (``PARAM``) define the INCAR parameter to be set and the values (``VALUE``) the corresponding value.
+
+Implemented Methods and Attributes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automethod:: aiida_cusp.data.VaspIncarData.get_incar
 
 Example
 ^^^^^^^

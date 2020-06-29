@@ -159,7 +159,6 @@ class CustodianDefaults(object):
             'half_kpts': False,
             'settings_override': None,
             'gamma_vasp_cmd': None,
-            'copy_magmom': False,
             'auto_continue': False,
         }
 

@@ -120,7 +120,7 @@ class VaspCalculation(VaspBasicCalculation, VaspNebCalculation):
         else:  # no restart: check the inputs of this calcjob
             # checking this calculation we can simply use dictionary syntax
             # due to the not yet flattened inputs
-            return any(self.inputs.neb_path) or False
+            return any(self.inputs.get('neb_path', [False]))
 
     def verify_structure_inputs(self):
         restart = self.inputs.restart.get('folder', False)

@@ -29,14 +29,6 @@ class VaspBasicCalculation(CalculationBase):
     @classmethod
     def define(cls, spec):
         super(VaspBasicCalculation, cls).define(spec)
-        # define parser to be used with the calculation
-        # FIXME: Enable this once Regular parsers are implemented
-        # spec.input('metadata.options.parser_name',
-        #            valid_type=str,
-        #            default=None,
-        #            help=("Parser used to parse the results of a finished "
-        #                  "calculation")
-        # )
         # define the available inputs required to run VASP calculations (all
         # inputs marked as optional so that a restart can be performed solely
         # based on the outputs stored in a remote folder location)

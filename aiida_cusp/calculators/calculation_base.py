@@ -9,13 +9,28 @@ Base class serving as parent for other VASP calculator implementations
 import pathlib
 
 from aiida.engine import CalcJob
-from aiida.orm import RemoteData, Code, Bool, Dict, List
+from aiida.orm import RemoteData, Code, Int, Bool, Dict, List
 from aiida.orm.nodes.data.base import to_aiida_type
 from aiida.common import (CalcInfo, CodeInfo, CodeRunMode)
 
 from aiida_cusp.utils.defaults import (PluginDefaults, VaspDefaults,
                                        CustodianDefaults)
 from aiida_cusp.utils.custodian import CustodianSettings
+
+
+# TODO: This is a temporary fix since the to_aiida_type serizalizer function
+#       obviously is not defined for the aiida.orm.List type...
+def lidi_serializer(value):
+    # passing a list of handler names is equivalent to passing
+    # a dictionary of handler names with empty dicts as values to indicate
+    # default values shall be used
+    # Thus, we directly transform the list to the corresponding dict to
+    # avoid further issues downstream
+    if isinstance(value, (list, tuple)):
+        out = {v: {} for v in value}
+    elif isinstance(value, dict):
+        out = value
+    return Dict(dict=out)
 
 
 class CalculationBase(CalcJob):
@@ -58,40 +73,16 @@ class CalculationBase(CalcJob):
         spec.input(
             'custodian.handlers',
             valid_type=(Dict, List),
-            default=lambda: Dict(dict={}),
-            serializer=to_aiida_type,
+            serializer=lidi_serializer,
+            required=False,
             help=("Error handlers connected to the custodian executable")
         )
-        spec.input_namespace('custodian.settings', required=False, non_db=True)
-        # since custodian is exlusively used to run a VASP calculation with
-        # enabled error correction only the most basic custodian options
-        # affecting single runs are exposed here
         spec.input(
-            'custodian.settings.max_errors',
-            valid_type=int,
-            default=10,
-            help=("Maximum number of accepted errors before the calculation "
-                  "is terminated")
-        )
-        spec.input(
-            'custodian.settings.polling_time_step',
-            valid_type=int,
-            default=10,
-            help=("Seconds between two consecutive checks for the calcualtion "
-                  "being completed")
-        )
-        spec.input(
-            'custodian.settings.monitor_freq',
-            valid_type=int,
-            default=30,
-            help=("Number of performed polling steps before the calculation "
-                  "is checked for possible errors")
-        )
-        spec.input(
-            'custodian.settings.skip_over_errors',
-            valid_type=bool,
-            default=False,
-            help=("If set to `True` failed error handlers will be skipped")
+            'custodian.settings',
+            valid_type=Dict,
+            serializer=to_aiida_type,
+            required=False,
+            help=("Calculation settings passed to the custodian executable")
         )
         # required inputs to restart a calculation
         spec.input_namespace('restart', required=False)
@@ -104,8 +95,7 @@ class CalculationBase(CalcJob):
         spec.input(
             'restart.contcar_to_poscar',
             valid_type=Bool,
-            serializer=lambda val: Bool(val),
-            default=lambda: Bool(True),
+            serializer=to_aiida_type,
             required=False,
             help=("If set to `False` POSCAR in the restarted calculation will "
                   "not be replaced with CONTCAR form parent calculation")
@@ -114,6 +104,18 @@ class CalculationBase(CalcJob):
         # option to specify optional parser settings
         spec.input_namespace('metadata.options.parser_settings',
                              required=False, non_db=True, dynamic=True)
+        # this is the output node available to all connected parser for
+        # storing their generated results (whatever these may be)
+        spec.output_namespace(PluginDefaults.PARSER_OUTPUT_NAMESPACE,
+                              required=False, dynamic=True)
+        # add dynamic sub-namespaces parsed_results.node_00 to
+        # parsed_results.node_99 to provide possibly requird output ports for
+        # neb results
+        for index in range(100):  # iterate over all possible neb image indices
+            neb_node_namespace = "{}.node_{:0>2d}".format(
+                                 PluginDefaults.PARSER_OUTPUT_NAMESPACE, index)
+            spec.output_namespace(neb_node_namespace, required=False,
+                                  dynamic=True)
 
     def prepare_for_submission(self, folder):
         """
@@ -232,14 +234,17 @@ class CalculationBase(CalcJob):
         restart folder to the current calculation folder.
         """
         # files never copied for restarted calculations
+        # (Return _aiidasubmit.sh to remain compatible with AiiDA versions
+        # prior to 1.2.1 where this option was introduced)
         exclude_files = [
-            self.inputs.metadata.options.get('submit_script_filename'),
+            self.inputs.metadata.options.get('submit_script_filename',
+                                             '_aiidasubmit.sh'),
             PluginDefaults.CSTDN_SPEC_FNAME,
             'job_tmpl.json',
             'calcinfo.json',
         ]
         # do not copy POSCAR if replaced with CONTCAR
-        if self.inputs.restart.get('contcar_to_poscar', False):
+        if self.inputs.restart.get('contcar_to_poscar', True):
             exclude_files += [VaspDefaults.FNAMES['poscar']]
         return exclude_files
 
@@ -250,8 +255,8 @@ class CalculationBase(CalcJob):
         """
         # setup the inputs to create the custodian settings from the passed
         # parameters
-        settings = dict(self.inputs.custodian.get('settings'))
-        handlers = dict(self.inputs.custodian.get('handlers'))
+        settings = dict(self.inputs.custodian.get('settings', {}))
+        handlers = dict(self.inputs.custodian.get('handlers', {}))
         # get the vasp run command and the stdout / stderr files
         vasp_cmd = self.vasp_run_line()
         stdout = self._default_output_file
@@ -272,7 +277,7 @@ class CalculationBase(CalcJob):
         remote_data = self.inputs.restart.get('folder')
         remote_comp_uuid = remote_data.computer.uuid
         exclude_files = self.restart_files_exclude()
-        overwrite_poscar = self.inputs.restart.get('contcar_to_poscar')
+        overwrite_poscar = self.inputs.restart.get('contcar_to_poscar', True)
         for name, abspath, relpath in self.remote_filelist(remote_data):
             if name in exclude_files:
                 continue
@@ -319,8 +324,11 @@ class CalculationBase(CalcJob):
         parser.
         """
         retrieve_permanent = [
-            # submit script and custodian logfiles
-            self.inputs.metadata.options.get('submit_script_filename'),
+            # submit script and custodian logfiles (return _aiidasubmit.sh
+            # by default to be compatible with AiiDA versions < 1.2.1 where
+            # this option was introduces)
+            self.inputs.metadata.options.get('submit_script_filename',
+                                             '_aiidasubmit.sh'),
             PluginDefaults.CSTDN_SPEC_FNAME,
             CustodianDefaults.RUN_LOG_FNAME,
             # other logfiles, i.e. scheduler as well as stdout / stderr

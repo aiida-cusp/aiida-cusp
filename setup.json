@@ -28,12 +28,15 @@
 			"aiida.calculations": [
 				"cusp.vasp = aiida_cusp.calculators.vasp_calculation:VaspCalculation"
 			],
+			"aiida.parsers": [
+				"cusp.default = aiida_cusp.parsers.vasp_file_parser:VaspFileParser"
+			],
 			"aiida.cmdline.data": [
 				"potcar = aiida_cusp.cli.potcar_cmd:potcar"
 			]
     },
     "install_requires": [
-      "aiida-core>=1.0.0a1,<2.0.0",
+      "aiida-core>=1.2.1,<2.0.0",
       "custodian",
       "pymatgen",
 			"ase"

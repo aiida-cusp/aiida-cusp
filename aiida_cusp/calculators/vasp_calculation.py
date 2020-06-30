@@ -40,6 +40,15 @@ class VaspCalculation(VaspBasicCalculation, VaspNebCalculation):
             help=("Pseudo-potentials for each element present in the input "
                   "structure (POSCAR) used for the VASP calculation")
         )
+        # define parser to be used with the calculation
+        spec.input(
+            'metadata.options.parser_name',
+            valid_type=str,
+            default='cusp.default',
+            help=("Parser used to parse the results of a finished "
+                  "calculation (if undefined `cusp.default` is used "
+                  "by default)")
+        )
         # exit codes for parsing errors
         spec.exit_code(
             300,
@@ -111,7 +120,7 @@ class VaspCalculation(VaspBasicCalculation, VaspNebCalculation):
         else:  # no restart: check the inputs of this calcjob
             # checking this calculation we can simply use dictionary syntax
             # due to the not yet flattened inputs
-            return any(self.inputs.neb_path) or False
+            return any(self.inputs.get('neb_path', [False]))
 
     def verify_structure_inputs(self):
         restart = self.inputs.restart.get('folder', False)

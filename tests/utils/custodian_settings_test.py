@@ -12,7 +12,7 @@ from aiida_cusp.utils.defaults import CustodianDefaults
 
 
 @pytest.mark.parametrize('is_neb', [True, False])
-def test_setup_vasjob_settings_no_input(is_neb):
+def test_setup_vaspjob_settings_no_input(is_neb):
     from aiida_cusp.utils.custodian import CustodianSettings
     from aiida_cusp.utils.defaults import CustodianDefaults, PluginDefaults
     vasp_cmd = None
@@ -69,14 +69,34 @@ def test_setup_custodian_settings_with_inputs():
     from aiida_cusp.utils.custodian import CustodianSettings
     from aiida_cusp.utils.defaults import CustodianDefaults
     val = 'updated_value'
-    defaults = dict(CustodianDefaults.CUSTODIAN_SETTINGS)
-    updated = {key: val for key in defaults.keys()}
-    settings = dict(updated)
-    # instantiate custodian settings and test setup_vaspjob_settings method
+    settings = {key: val for key in CustodianDefaults.MODIFIABLE_SETTINGS}
+    # update default parameters with given value
+    expected_settings = dict(CustodianDefaults.CUSTODIAN_SETTINGS)
+    expected_settings.update(settings)
+    # instantiate custodian settings and test setup_custodian_settings method
     # with defined settings
     custodian_settings = CustodianSettings(val, val, val, settings={})
     output_settings = custodian_settings.setup_custodian_settings(settings)
-    assert output_settings == updated
+    assert output_settings == expected_settings
+
+
+@pytest.mark.parametrize('protected_custodian_setting',
+[   # noqa: E128
+    'max_errors_per_job',
+    'scratch_dir',
+    'gzipped_output',
+    'checkpoint',
+    'terminate_func',
+    'terminate_on_nonzero_returncode',
+])
+def test_protected_custodian_settings(protected_custodian_setting):
+    from aiida_cusp.utils.custodian import CustodianSettings
+    from aiida_cusp.utils.exceptions import CustodianSettingsError
+    settings = {protected_custodian_setting: None}
+    with pytest.raises(CustodianSettingsError) as exception:
+        _ = CustodianSettings("", "", "", settings=settings)
+    expected_error = "cannot set value for protected custodian setting"
+    assert expected_error in str(exception.value)
 
 
 @pytest.mark.parametrize('handler_type', ['list', 'tuple', 'dict'])
@@ -191,7 +211,7 @@ def test_custodian_settings_raises_on_unprocessed_settings():
     stderr = PluginDefaults.STDERR_FNAME
     with pytest.raises(CustodianSettingsError) as exception:
         _ = CustodianSettings(vasp_cmd, stdout, stderr, settings=settings)
-    assert "Unknown Custodian setting(s)" in str(exception.value)
+    assert "got an invalid custodian setting" in str(exception.value)
 
 
 def test_write_custodian_spec_raises_on_wrong_filetype(tmpdir):
@@ -372,7 +392,6 @@ def test_write_custodian_spec_yaml_format_with_handler_neb(tmpdir):
         "    auto_gamma: false",
         "    auto_npar: false",
         "    backup: true",
-        "    copy_magmom: false",
         "    final: true",
         "    gamma_vasp_cmd: null",
         "    half_kpts: false",
@@ -427,7 +446,6 @@ def test_write_custodian_spec_yaml_format_without_handler_neb(tmpdir):
         "    auto_gamma: false",
         "    auto_npar: false",
         "    backup: true",
-        "    copy_magmom: false",
         "    final: true",
         "    gamma_vasp_cmd: null",
         "    half_kpts: false",

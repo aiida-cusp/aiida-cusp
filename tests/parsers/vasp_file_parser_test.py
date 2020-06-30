@@ -228,3 +228,37 @@ def test_accepted_parser_settings(vasp_code, setting, expected_exit_code):
         assert parser.settings == setting
     else:
         assert exit_code.status == expected_exit_code
+
+
+@pytest.mark.parametrize('filepath', ['somefile', '00/somefile',
+                         '45/somefile', '99/somefile'])
+def test_output_node_namespaces(vasp_code, filepath, tmpdir):
+    import pathlib
+    from aiida.plugins import CalculationFactory
+    from aiida_cusp.parsers.vasp_file_parser import VaspFileParser
+    from aiida_cusp.utils.defaults import PluginDefaults
+    # setup files in the temporary directory
+    fpath = pathlib.Path(tmpdir) / filepath
+    if not fpath.parent.exists():
+        fpath.parent.mkdir(parents=True)
+    fpath.touch()  # define code
+    vasp_code.set_attribute('input_plugin', 'cusp.vasp')
+    # setup calculator and instantiate parser class
+    inputs = {
+        'code': vasp_code,
+        'metadata': {
+            'options': {
+                'resources': {'num_machines': 1},
+                'parser_settings': {'parse_files': ['somefile']},
+            },
+        },
+    }
+    VaspCalculation = CalculationFactory('cusp.vasp')
+    vasp_calc = VaspCalculation(inputs=inputs)
+    parser = VaspFileParser(vasp_calc.node)
+    exit_code = parser.parse(retrieved_temporary_folder=tmpdir)
+    assert exit_code is None
+    # test outputs can actually be linked (this would fail if the namespace
+    # is not available)
+    for linkname, node in parser.outputs.items():
+        vasp_calc.out(linkname, node)

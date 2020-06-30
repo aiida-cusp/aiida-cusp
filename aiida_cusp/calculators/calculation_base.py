@@ -108,6 +108,14 @@ class CalculationBase(CalcJob):
         # storing their generated results (whatever these may be)
         spec.output_namespace(PluginDefaults.PARSER_OUTPUT_NAMESPACE,
                               required=False, dynamic=True)
+        # add dynamic sub-namespaces parsed_results.node_00 to
+        # parsed_results.node_99 to provide possibly requird output ports for
+        # neb results
+        for index in range(100):  # iterate over all possible neb image indices
+            neb_node_namespace = "{}.node_{:0>2d}".format(
+                                 PluginDefaults.PARSER_OUTPUT_NAMESPACE, index)
+            spec.output_namespace(neb_node_namespace, required=False,
+                                  dynamic=True)
 
     def prepare_for_submission(self, folder):
         """

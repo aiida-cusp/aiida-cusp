@@ -3,7 +3,7 @@
 Vasp File Parser (``cusp.default``)
 ===================================
 
-The :class:`~aiida_cusp.parsers.vasp_file_parser.VaspFileParser` class is the default class used by each calculation if no other parser is set through the ``metadata.options.parser_name`` option.
+The :class:`~aiida_cusp.parsers.vasp_file_parser.VaspFileParser` class is the default class used by each calculation if no alternative parser is set through the ``metadata.options.parser_name`` option.
 This parser does not apply any parser magic but simply checks the output files and adds them as gzip-compressed archives to the repository.
 Since no parsing of individual values is applied this parser class is suitable for all VASP calculations (i.e. normal calculations, AIMD as well as NEB).
 Of course, the set of files added for each calculation can be changes based on the available parser settings discussed in the following.,
@@ -38,7 +38,7 @@ The dictionary thereby accepts the settings show in the following.
 Parser Outputs
 --------------
 
-All files defined by the ``parse_files`` options are added to the calculation as output files by the parser.
+All files defined by the ``parse_files`` options are added by the parser to the calculation as outputs available under the `outputs.parsed_results` key.
 
 .. note::
 
@@ -50,13 +50,13 @@ Thus, after parsing a stored *CONTCAR* file can be accessed from the stored calc
 
 .. code-block:: python
 
-   calulation_node.outputs.contcar
+   calulation_node.outputs.parsed_results.contcar
 
-while a parsed *vasprun.xml* file would be accessible (without the corresponding *.xml* suffix) via
+while a parsed *vasprun.xml* file would be accessible (with the corresponding *.xml* suffix being replaced by *_xml*) via
 
 .. code-block:: python
 
-   calculation_node.outputs.vasprun
+   calculation_node.outputs.parsed_results.vasprun_xml
 
 In case of NEB calculation featuring files stored at different NEB subfolders all files found inside the topfolder are added corresponding to the scheme above.
 However, files located in NEB subfolders will be added to an individual namespace corresponding to the subfolder it was found in prefixed with ``node_``.
@@ -65,9 +65,9 @@ Then each of the individual output files is accessible via the output links
 
 .. code-block:: python
 
-   calculation_node.outputs.node_00.concar  # output 00/CONTCAR
-   calculation_node.outputs.node_01.concar  # output 01/CONTCAR
-   calculation_node.outputs.node_02.concar  # output 02/CONTCAR
+   calculation_node.outputs.parsed_results.node_00.contcar  # output 00/CONTCAR
+   calculation_node.outputs.parsed_results.node_01.contcar  # output 01/CONTCAR
+   calculation_node.outputs.parsed_results.node_02.contcar  # output 02/CONTCAR
 
 .. note::
 

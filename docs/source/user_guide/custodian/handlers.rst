@@ -10,7 +10,7 @@ Here, the input is expected to be a dictionary of the following form:
 
 .. code-block:: python
 
-   handler_input = {
+   handler_inputs = {
       'HandlerName1': {
           'option': 'value',
           ...

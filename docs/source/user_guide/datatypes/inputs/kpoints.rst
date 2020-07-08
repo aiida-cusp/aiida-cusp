@@ -3,15 +3,17 @@
 KPOINTS (``cusp.kpoints``)
 --------------------------
 
-Using the :class:`~aiida_cusp.data.VaspKpointData` the `KPOINT parameters`_ of a calculation are passed to the VASP calculation object.
-The class is made available by the plugin using the ``cusp.kpoints`` entry point and can be loaded via AiiDA's :func:`~aiida.plugins.DataFactory` function.
-To simplify the setup of different KPOINT grids the class is closely connected to pymatgen's :class:`~pymatgen.io.vasp.inputs.Kpoints` supporting multiple initialization modes.
+Using the :class:`~aiida_cusp.data.VaspKpointData` the `KPOINT parameters`_ of a calculation can be passed to the VASP calculation object.
+This data class is published by the plugin using the ``cusp.kpoints`` entry point and can be loaded via AiiDA's :func:`~aiida.plugins.DataFactory` function.
+To simplify the setup of different k-point grids (i.e. `Monkhorst`, `Gamma`, `Automatic`, etc.), the class is closely connected to Pymatgen's :class:`~pymatgen.io.vasp.inputs.Kpoints` class supporting multiple initialization modes.
+Which of the implemented initialization mode is used to generate the k-point data is decided by the plugin based on the type and set of parameters passed to the constructor (see the :ref:`following section<user-guide-datatypes-inputs-kpoints-init>`)
 
+.. _user-guide-datatypes-inputs-kpoints-init:
 
 Initializing the class
 ^^^^^^^^^^^^^^^^^^^^^^
 
-In general the constructor of the :class:`~aiida_cusp.data.VaspKpointData` class is of the following form:
+In general the constructor of the :class:`~aiida_cusp.data.VaspKpointData` class accepts k-point settings (defining the k-point grid) and an optional structure input required for density based on k-point grid definition:
 
 .. code-block:: python
 
@@ -21,13 +23,13 @@ In general the constructor of the :class:`~aiida_cusp.data.VaspKpointData` class
 
 * **kpoints** (:class:`dict` or :class:`pymatgen.io.vasp.inputs.Kpoints`) --
   The KPOINT parameters used to run a VASP calculation.
-  May be given as :class:`pymatgen.io.vasp.inputs.Kpoints` object which is useful if KPOINT parameters defined by a pymatgen set should be used.
-  Alternatively (i.e. if not no pymatgen set is used) the desired KPOINT grid may also be set using a parameter :class:`dict`.
+  May be given as :class:`pymatgen.io.vasp.inputs.Kpoints` object which is useful if k-points parameters defined by a pymatgen set should be used.
+  Alternatively (i.e. no pre-defined pymatgen set should be used) the desired k-point grid may also be set using a parameter :class:`dict`.
   In that case the grid is generated using the class-internal methods depending on the type of parameters passed by the :class:`dict`
   (See the :ref:`following section<inputs_kpoints_init_modes>` for more details on the possible parameters and corresponding generation modes)
   kpoint parameters
 * **structure** (optional, :class:`pymatgen.core.Structure`, :class:`pymatgen.io.vasp.inputs.Poscar` or :class:`aiida_core.data.StructureData`) --
-  Optional input for structures.
+  Optional structure input for initialization modes that are based on a k-point density.
   This is only required if the KPOINT grid is initialized using the internal methods based on a passed kpoint density.
   (See the initialization modes discussed in the :ref:`following section<inputs_kpoints_init_modes>` for more details)
 
@@ -69,7 +71,7 @@ In this mode the expected input parameters passed in the input dictionary are:
   Integer used to automatically determine the grid's subdivisions
 * **shift** (:class:`None`) --
   Unused by this mode
-* **symmpath** (:class:`None`) --
+* **sympath** (:class:`None`) --
   Unused by this mode
 
 **Example:** ::
@@ -109,7 +111,7 @@ In this mode the expected input parameters passed in the input dictionary are:
 
      If the grid is initialized from a density (i.e. kpoints is of type :class:`float`) any defined shift is ignored.
 
-* **symmpath** (:class:`None`) --
+* **sympath** (:class:`None`) --
   Unused by this mode
 
 **Example for explicit kpoint grid:** ::
@@ -165,7 +167,7 @@ In this mode the expected input parameters passed in the input dictionary are:
 
      If the grid is initialized from a density (i.e. kpoints is of type :class:`float`) any defined shift is ignored.
 
-* **symmpath** (:class:`None`) --
+* **sympath** (:class:`None`) --
   Unused by this mode
 
 **Example for explicit kpoint grid:** ::

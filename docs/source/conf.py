@@ -11,8 +11,8 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
+import os
+import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
 
@@ -49,7 +49,14 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+on_rtd = os.environ.get('READTHEDOCS', '') == 'True'
+if on_rtd:
+    from aiida.manage import configuration
+    configuration.IN_RT_DOC_MODE = True
+    configuration.BACKEND = 'django'
+    html_theme = 'default'
+else:
+    html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -70,10 +77,8 @@ intersphinx_mapping = {
 
 
 def run_apidoc_autobuild(_):
-    import sys
     import pathlib
     from sphinx.ext import apidoc
-
     docs_dir = pathlib.Path(__file__).parent.parent.absolute()
     module_path = str(docs_dir.parent / 'aiida_cusp')
     apidoc_path = str(docs_dir / 'source' / 'module_reference')

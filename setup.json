@@ -53,6 +53,7 @@
 				"pgtest"
       ]
     },
+		"reentry_register": true,
     "license": "MIT License",
     "url": "https://github.com/astamminger/aiida-cusp"
 }

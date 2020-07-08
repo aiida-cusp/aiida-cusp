@@ -96,5 +96,17 @@ def run_apidoc_autobuild(_):
     apidoc.main(apidoc_options)
 
 
+def run_reentry_scan(_):
+    """
+    Perform `reentry scan` before the documentation is built.
+
+    If this scan is not performed the automatic API documentation
+    of the added data command will complain when building on RTD
+    """
+    import subprocess
+    subprocess.check_call(['reentry', 'scan'])
+
+
 def setup(app):
     app.connect('builder-inited', run_apidoc_autobuild)
+    app.connect('builder-inited', run_reentry_scan)

@@ -42,6 +42,13 @@ Thus, all data types serving as inputs and outputs to the calculators, implement
    user_guide/datatypes.rst
    user_guide/commands.rst
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Module Reference
+   :name: module-reference
+
+   module_reference/aiida_cusp.rst
+
 ******************
 Indices and tables
 ******************

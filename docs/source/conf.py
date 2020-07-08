@@ -67,3 +67,29 @@ intersphinx_mapping = {
     'py':
         ('https://docs.python.org/3/', None),
 }
+
+
+def run_apidoc_autobuild(_):
+    import sys
+    import pathlib
+    from sphinx.ext import apidoc
+
+    docs_dir = pathlib.Path(__file__).parent.parent.absolute()
+    module_path = str(docs_dir.parent / 'aiida_cusp')
+    apidoc_path = str(docs_dir / 'source' / 'module_reference')
+    apidoc_options = [
+        '--separate',
+        '--private',
+        '--force',
+        '--module-first',
+        '--no-toc',
+        '-d', '3',
+        '-o', apidoc_path,
+        module_path,
+    ]
+    sys.path.insert(0, str(docs_dir.parent))
+    apidoc.main(apidoc_options)
+
+
+def setup(app):
+    app.connect('builder-inited', run_apidoc_autobuild)

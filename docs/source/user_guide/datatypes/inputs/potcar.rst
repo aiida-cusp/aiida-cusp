@@ -19,6 +19,7 @@ Generating Pseudo-Potential Inputs for VASP Calculations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automethod:: aiida_cusp.data.VaspPotcarData.from_structure
+   :noindex:
 
 .. _user-guide-datatypes-inputs-potcar-examples:
 

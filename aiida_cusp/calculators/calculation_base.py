@@ -202,6 +202,7 @@ class CalculationBase(CalcJob):
         Recurse remote folder contents and return a list of all files found
         on the remote with the list containing the files names, relative
         paths and the absolute file path on the remote.
+
         :returns: list of tuples of type (filename, absolut_path_on_remote,
             relative_path (without the filename)
         """

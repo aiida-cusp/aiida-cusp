@@ -101,13 +101,16 @@ class KpointWrapper(object):
     a density based initialization mode)
 
     Example:
-        kpoint_param = {'mode': 'auto', 'kpoints': 100}
-        kpts = KpointWrapper(kpoints=kpoint_params)
-        print(kpts)
-        Automatic Mesh
-        0
-        Auto
-          40
+
+    .. code-block:: python
+
+       >>> kpoint_param = {'mode': 'auto', 'kpoints': 100}
+       >>> kpts = KpointWrapper(kpoints=kpoint_params)
+       >>> print(kpts)
+       Automatic Mesh
+       0
+       Auto
+         40
 
     :param kpoints: input parameters that are used to construct the
         :class:`~pymatgen.io.vasp.inputs.Kpoints` object or a kpoints
@@ -207,11 +210,12 @@ class KpointWrapper(object):
         """
         Initialize automatic kpoint grid following the VASP automatic mode
 
-        Example:
-            Automatic Mesh
-            0
-            Auto
-              40
+        Example::
+
+           Automatic Mesh
+           0
+           Auto
+             40
         """
         # inform user that some set parameters will be ignored
         if cls.kpoint_params['shift'] is not None:
@@ -228,11 +232,12 @@ class KpointWrapper(object):
         Initialize gamma grid from a list explicitly defining the number
         of kpoint subdivisions along the crystal axis
 
-        Example:
-            Automatic Kpoint Scheme
-            0
-            Gamma
-            5 5 5
+        Example::
+
+           Automatic Kpoint Scheme
+           0
+           Gamma
+           5 5 5
         """
         if cls.kpoint_params['sympath'] is not None:
             warnings.warn("Explicit gamma grid mode: Ignoring defined high "
@@ -254,10 +259,13 @@ class KpointWrapper(object):
         of kpoint subdivisions along the crystal axis
 
         Example:
-            Automatic Kpoint Scheme
-            0
-            Monkhorst
-            4 4 4
+
+        .. code-block:: python
+
+           Automatic Kpoint Scheme
+           0
+           Monkhorst
+           4 4 4
         """
         if cls.kpoint_params['sympath'] is not None:
             warnings.warn("Explicit monkhorst grid mode: Ignoring defined "
@@ -278,11 +286,12 @@ class KpointWrapper(object):
         Initialize gamma grid using a given kpoint density. Enforces the
         usage of gamma grids.
 
-        Example:
-            Automatic Kpoint Scheme
-            0
-            Gamma
-            5 5 5
+        Example::
+
+           Automatic Kpoint Scheme
+           0
+           Gamma
+           5 5 5
         """
         # check if required input structure was given
         if cls.input_structure is None:
@@ -302,11 +311,12 @@ class KpointWrapper(object):
         of subdivisions is even a Monkhorst grid is constructured whereas
         gamma grids are used for odd kpoint subdivisions
 
-        Example:
-            Automatic Kpoint Scheme
-            0
-            Monkhorst
-            4 4 4
+        Example::
+
+           Automatic Kpoint Scheme
+           0
+           Monkhorst
+           4 4 4
         """
         # check if required input structure was given
         if cls.input_structure is None:
@@ -326,22 +336,23 @@ class KpointWrapper(object):
         Brillouin zone. Uses a path defined by the pymatgen HighSymmPath class
         with a defined number of kpoint subdivisions between the path nodes.
 
-        Example:
-            Line_mode KPOINTS file
-            100
-            Line_mode
-            Reciprocal
-            0.0 0.0 0.0 ! Gamma
-            0.0 0.5 0.0 ! X
+        Example::
 
-            0.0 0.5 0.0 ! X
+           Line_mode KPOINTS file
+           100
+           Line_mode
+           Reciprocal
+           0.0 0.0 0.0 ! Gamma
+           0.0 0.5 0.0 ! X
 
-            ...
+           0.0 0.5 0.0 ! X
 
-            0.0 0.5 0.0 ! X
+           ...
 
-            0.5 0.5 0.0 ! M
-            0.5 0.5 0.5 ! R
+           0.0 0.5 0.0 ! X
+
+           0.5 0.5 0.0 ! M
+           0.5 0.5 0.5 ! R
         """
         if cls.kpoint_params['shift'] is not None:
             warnings.warn("Line kpoint mode: Ignoring defined shift")

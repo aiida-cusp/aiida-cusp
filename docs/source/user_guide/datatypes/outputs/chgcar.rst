@@ -14,7 +14,10 @@ Implemented Methods and Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automethod:: aiida_cusp.data.VaspChgcarData.get_content
+   :noindex:
 
 .. automethod:: aiida_cusp.data.VaspChgcarData.write_file
+   :noindex:
 
 .. autoattribute:: aiida_cusp.data.VaspChgcarData.filepath
+   :noindex:

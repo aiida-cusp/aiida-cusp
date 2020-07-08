@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from .potcar import PotcarParser, PotcarParserError
+from .potcar import PotcarParser
 
-__all__ = ["PotcarParser", "PotcarParsingError"]
+__all__ = ["PotcarParser"]

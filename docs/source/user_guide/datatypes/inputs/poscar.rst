@@ -78,9 +78,13 @@ In order to further analyze or re-use structures the :class:`~aiida_cusp.data.Va
 In particular, four different methods are available to recover the stored structure data in different formats:
 
 .. automethod:: aiida_cusp.data.VaspPoscarData.get_poscar
+   :noindex:
 
 .. automethod:: aiida_cusp.data.VaspPoscarData.get_structure
+   :noindex:
 
 .. automethod:: aiida_cusp.data.VaspPoscarData.get_atoms
+   :noindex:
 
 .. automethod:: aiida_cusp.data.VaspPoscarData.get_aiida_structure
+   :noindex:

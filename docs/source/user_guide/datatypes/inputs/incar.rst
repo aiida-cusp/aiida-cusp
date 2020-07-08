@@ -41,6 +41,7 @@ Implemented Methods and Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automethod:: aiida_cusp.data.VaspIncarData.get_incar
+   :noindex:
 
 Example
 ^^^^^^^

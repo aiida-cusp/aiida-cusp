@@ -14,6 +14,7 @@ Implemented Methods and Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automethod:: aiida_cusp.data.VaspContcarData.get_contcar
+   :noindex:
 
 
 

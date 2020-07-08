@@ -63,6 +63,12 @@ else:
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+# RTD uses a relatively old Sphinx version which uses the `contents` as
+# default output document name. Here we set this name manually to `index`
+# (which is also the default name used by more recent sphinx versions)
+# See also: https://github.com/readthedocs/readthedocs.org/issues/2569
+master_doc = 'index'
+
 # targets for intersphinx extension
 intersphinx_mapping = {
     'pymatgen':
@@ -74,6 +80,9 @@ intersphinx_mapping = {
     'py':
         ('https://docs.python.org/3/', None),
 }
+
+
+# -- Things to be run before the documentation is build ----------------------
 
 
 def run_apidoc_autobuild(_):

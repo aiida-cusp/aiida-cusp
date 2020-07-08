@@ -3,7 +3,7 @@
 Custodian Error Handlers
 ========================
 
-Custodian uses different error handlers to check and correcto for different failures of VASP calculations.
+Custodian uses different error handlers to check and correct for different failures of VASP calculations.
 Thus, one can individually decide which error should be corrected and which error should fail the calculation and connect the corresponding handlers.
 Error handlers for the calculations run with the calculation classes implemented in this plugin can be passed via the ``inputs.custodian.handlers`` input.
 Here, the input is expected to be a dictionary of the following form:
@@ -48,8 +48,8 @@ Most basic error handler for VASP calculations checking for the most common VASP
   This has implications on the strategy of resolving some kind of the errors (for instance whether LREAL should be set to True or False, etc.)
   (default: `100`)
 * **errors_subset_to_catch** (:class:`list`) --
-  List of errors that will be catched (other errors not in the list are ignored!).
-  If set to `None` all errors known to the handler will be deteched.
+  List of errors that will be caught (other errors not in the list are ignored!).
+  If set to `None` all errors known to the handler will be detected.
   (default: :class:`None`)
 
   .. note::
@@ -97,7 +97,7 @@ Most basic error handler for VASP calculations checking for the most common VASP
 `'FrozenJobErrorHandler'`
 -------------------------
 
-Considers a calulation as frozen if the output to stdout is not updated for a defined amount of time and restarts the job if frozen.
+Considers a calculation as frozen if the output to stdout is not updated for a defined amount of time and restarts the job if frozen.
 (See also `FrozenJobErrorHandler`_)
 
 .. warning::
@@ -127,7 +127,7 @@ Check for positive energy changes in electronic steps (dE) larger than the defin
 `'NonConvergingErrorHandler'`
 -----------------------------
 
-Check if NELM is reach for ``nionic_steps`` consecutive ionic steps and correct by first switching to more stable algorithms (ALGO) and secondly ajusting the mixing parameters (AMIX, BMIX, BMIN).
+Check if NELM is reach for ``nionic_steps`` consecutive ionic steps and correct by first switching to more stable algorithms (ALGO) and secondly adjusting the mixing parameters (AMIX, BMIX, BMIN).
 (See also `NonConvergingErrorHandler`_)
 
 **Handler Settings:**
@@ -236,7 +236,7 @@ Check for symmetry errors and switch off symmetry (i.e. set ISYM=0) if reciproca
 `'LrfCommutatorErrorHandler'`
 -----------------------------
 
-Checks for *LRF_COMMUTATOR* errors corrects the error by switching to finit-differences when calculating the cell-periodic derivative or orbitals (i.e. sets LPEAD=True).
+Checks for *LRF_COMMUTATOR* errors corrects the error by switching to finite-differences when calculating the cell-periodic derivative or orbitals (i.e. sets LPEAD=True).
 (See also `LrfCommutatorErrorHandler`_)
 
 **Handler Settings:**

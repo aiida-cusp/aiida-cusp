@@ -13,7 +13,7 @@ Introduction
 ------------
 
 In this (simple) tutorial the :class:`~aiida_cusp.calculators.VaspCalculation` calculator of this plugin is used to run an error corrected VASP calculation.
-In particular, a silicon diamond structure is relaxeded to relax a diamond silicon structure and finally calculate the energy per Si atom from the relaxed structure.
+In particular, a silicon diamond structure is relaxed and finally the ground state energy per Si atom is calculated for the relaxed structure.
 
 Setting up the Inputs
 ---------------------
@@ -28,7 +28,7 @@ As every normal VASP calculation the plugin also requires the basic VASP inputs 
 
 We will start in the following with setting up the structure inputs for the silicon diamond relaxation.
 To this end we first need to setup the silicon diamond structure.
-Since the plugin is tightly connected to pymatgen's datatypes the structure is setup using pymatgen:
+Since the plugin is tightly connected to pymatgen's data types the structure is setup using pymatgen:
 
 .. code-block:: python
 
@@ -38,7 +38,7 @@ Since the plugin is tightly connected to pymatgen's datatypes the structure is s
    coords = [[0.0, 0.0, 0.0]]
    si_diamond_structure = Structure.from_spacegroup(227, lattice, species, coords)
 
-Using this structur we can now directly setup the required `POCAR` data for the calculation expecting a :class:`~aiida_cusp.data.VaspPoscarData` as input:
+Using this structure we can now directly setup the required `POSCAR` data for the calculation expecting a :class:`~aiida_cusp.data.VaspPoscarData` as input:
 
 .. code-block:: python
 
@@ -52,7 +52,7 @@ Using this structur we can now directly setup the required `POCAR` data for the 
    :class:`~pymatgen.io.vasp.inputs.Poscar` or :class:`~aiida.orm.StructureData` are also accepted input types.
 
 With the `POSCAR` data now being set we are already done with the structure setup for our calculation.
-Next we define the `INCAR` parameters for the calculation allowing for afull cell relaxation of the passed structure (i.e. `ISIF=3`).
+Next we define the `INCAR` parameters for the calculation allowing for a full cell relaxation of the passed structure (i.e. `ISIF=3`).
 As this is only a tutorial and not a serious calculation we, of course, want the calculation to finish quickly.
 Thus, a not very sophisticated force-convergence threshold of `EDIFFG=-0.1` is chosen for the tutorial.
 The expected input for the `INCAR` parameters is of type :class:`~aiida_cusp.data.VaspIncarData` and we can set it up by simply passing a dictionary containing the `INCAR` settings we want to apply for the calculation:
@@ -64,7 +64,7 @@ The expected input for the `INCAR` parameters is of type :class:`~aiida_cusp.dat
    incar = VaspIncarData(incar=incar_params)
 
 
-For the `KPOINT` params we also use a rather sparse grid.
+For the `KPOINTS` parameters we also use a rather sparse grid.
 In the following the grid is setup using the automatic method:
 
 .. code-block:: python
@@ -118,7 +118,7 @@ We can check for available codes using the ``verdi code list`` command which wil
    * pk 1271 - custodian_2020427@CompMPI
    * pk 1366 - vasp_5.4.1_openmpi_4.0.3_scalapack_2.1.0_vtst@CompMPI
 
-Here, three different codes are available from the datatabse, two VASP codes
+Here, three different codes are available from the database, two VASP codes
 
 * `vasp_5.4.1_openmpi_4.0.3_scalapack_2.1.0@CompMPI`
 * `vasp_5.4.1_openmpi_4.0.3_scalapack_2.1.0_vtst@CompMPI`
@@ -136,7 +136,7 @@ To connect the code and setup the calculation we first load the corresponding bu
    VaspSiRelax = CalculationFactory('cusp.vasp').get_builder()
 
 Using the returned builder we can now simply add our inputs to the calculation.
-For the VASP code and the required calculation inputs, setup in the previours step, this could look like the following
+For the VASP code and the required calculation inputs, setup in the previous step, this could look like the following
 
 .. code-block:: python
 
@@ -173,7 +173,7 @@ For a complete overview of the available error handlers and the available Custod
 .. note::
 
    You can also run this example without error corrections by simply leaving the `VaspSiRelax.custodian.code` and `VaspSiRelax.custodian.handler` inputs empty (those inputs are optional!)
-   In that case the calculator will call the VASP excutable defined by the code given in the `VaspSiRelax.code` input directly instead of wrapping VASP with Custodian.
+   In that case the calculator will call the VASP executable defined by the code given in the `VaspSiRelax.code` input directly instead of wrapping VASP with Custodian.
 
 With all required inputs defined, we are now ready to run the code.
 The following code shows how the calculation can be submitted to the AiiDA daemon via the :func:`~aiida.engine.submit` function provided by the :mod:`aiida.engine` module:
@@ -185,7 +185,7 @@ The following code shows how the calculation can be submitted to the AiiDA daemo
 
 .. note::
 
-   If you want to run the calcultion in your interpreter replace the used :func:`~aiida.engine.submit` function with the :func:`~aiida.engine.run` function.
+   If you want to run the calculation in your interpreter replace the used :func:`~aiida.engine.submit` function with the :func:`~aiida.engine.run` function.
 
 We can check that the calculation was indeed submitted to the daemon by checking the output of the ``verdi process list`` command which should now list our submitted calculation as running process:
 

@@ -20,7 +20,7 @@ In the following these calculation inputs are discussed and, for clarity, have b
   If a Custodian code and corresponding error handlers are defined error correction is enabled by wrapping the previously defined VASP calculation in Custodian.
   However, note that all inputs listed in this group are completely optional!
 * :ref:`Restart Options:<user-guide-calculators-vaspcalculator-inputs-restart>`
-  Available options when a calculation is restarted from a prevoius run using the remote folder of the parent calculation.
+  Available options when a calculation is restarted from a previous run using the remote folder of the parent calculation.
 
 .. _user-guide-calculators-vaspcalculator-inputs:
 
@@ -51,18 +51,18 @@ VASP Calculation Inputs:
   .. note::
 
      For NEB calculations a dictionary of multiple structures defining the NEB path is expected as input to the `neb_path` option.
-     Here, every structure has to passed under the corresponding key `'node_XX'` where `'XX'` represents the name of the NEB subfolder the image data is written to.
+     Here, every structure has to passed under the corresponding key `'node_XX'` where `'XX'` represents the name of the NEB sub-folder the image data is written to.
      As an example consider the following input:
 
      .. code-block:: python
 
         inputs.neb_path = {'node_00': poscar_1, 'node_01': poscar_2, 'node_02': poscar_3}
 
-     Then, upon submission of the calculation the contents of `poscar_1` are written to the calculation's `'00'` subfolder, the contents of `poscar_2` to the `'01'` subfolder and so on.
+     Then, upon submission of the calculation the contents of `poscar_1` are written to the calculation's `'00'` sub-folder, the contents of `poscar_2` to the `'01'` sub-folder and so on.
 
 * **potcar** (:class:`dict`) --
   The VASP pseudo-potentials to be used for the calculation.
-  Potentials are expected to be defined as dictionary containing the structure's elements as keys and the :class:`aiida_cusp.data.VaspPotcarData` of the potential to be used for that eleme
+  Potentials are expected to be defined as dictionary containing the structure's elements as keys and the :class:`aiida_cusp.data.VaspPotcarData` of the potential to be used for that element
 
   .. note::
 

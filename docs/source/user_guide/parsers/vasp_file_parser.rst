@@ -22,7 +22,7 @@ The dictionary thereby accepts the settings show in the following.
 
 * **parse_files** (:class:`list`, optional) --
   List of filenames (i.e. `'OUTCAR'`, `'vasprun.xml'`, etc.) or wildcards (i.e. `'\*CAR'`, `'\*'`, etc.).
-  Every file in the list of retrieved files maching a defined filename or a given wilcard is added to the calculation.
+  Every file in the list of retrieved files matching a defined filename or a given wildcard is added to the calculation.
 
   .. note::
 
@@ -58,9 +58,9 @@ while a parsed *vasprun.xml* file would be accessible (with the corresponding *.
 
    calculation_node.outputs.parsed_results.vasprun_xml
 
-In case of NEB calculation featuring files stored at different NEB subfolders all files found inside the topfolder are added corresponding to the scheme above.
-However, files located in NEB subfolders will be added to an individual namespace corresponding to the subfolder it was found in prefixed with ``node_``.
-As an example consider parsing the *CONTCAR* outputs of a NEB calculation located in the NEB calculation's three subfolders `'00'`, `'01'` and `'02'`.
+In case of NEB calculation featuring files stored at different NEB sub-folders all files found inside the top-folder are added corresponding to the scheme above.
+However, files located in NEB sub-folders will be added to an individual namespace corresponding to the sub-folder it was found in prefixed with ``node_``.
+As an example consider parsing the *CONTCAR* outputs of a NEB calculation located in the NEB calculation's three sub-folders `'00'`, `'01'` and `'02'`.
 Then each of the individual output files is accessible via the output links
 
 .. code-block:: python
@@ -71,4 +71,4 @@ Then each of the individual output files is accessible via the output links
 
 .. note::
 
-   This scheme applies to all calculation output files found in NEB subfolders which will also be added to the corresponding sub-namespace.
+   This scheme applies to all calculation output files found in NEB sub-folders which will also be added to the corresponding sub-namespace.

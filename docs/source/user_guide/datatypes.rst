@@ -1,13 +1,13 @@
 .. _user-guide-datatypes:
 
-*******************
-Available Datatypes
-*******************
+********************
+Available Data Types
+********************
 
-In this chapter the calculation input and output datatypes for VASP calculations as implemented by this plugin are documented.
-Here, input datatypes implement a representation of input parameters passed to a VASP calculation (i.e. corresponding to `INCAR`, `KPOINTS`, `POSCAR` and `POTCAR` files) that is compatible with and storable to AiiDA databases.
-Contrary, the implemented output datatypes are used to store the generated outputs of VASP calculations to the AiiDA database.
-In order to see how the input datatypes can be initialized and how you can interact with both calculation inputs and outputs, please refer to the individual documentation of each datatype given below.
+In this chapter the calculation input and output data types for VASP calculations as implemented by this plugin are documented.
+Here, input data types implement a representation of input parameters passed to a VASP calculation (i.e. corresponding to `INCAR`, `KPOINTS`, `POSCAR` and `POTCAR` files) that is compatible with and storable to AiiDA databases.
+Contrary, the implemented output data types are used to store the generated outputs of VASP calculations to the AiiDA database.
+In order to see how the input data types can be initialized and how you can interact with both calculation inputs and outputs, please refer to the individual documentation of each datatype given below.
 
 .. note::
 
@@ -18,7 +18,7 @@ In order to see how the input datatypes can be initialized and how you can inter
 
 .. toctree::
    :maxdepth: 1
-   :caption: Input Datatypes
+   :caption: Input Data Types
 
    datatypes/inputs/incar.rst
    datatypes/inputs/kpoints.rst
@@ -29,7 +29,7 @@ In order to see how the input datatypes can be initialized and how you can inter
 
 .. toctree::
    :maxdepth: 1
-   :caption: Output Datatypes
+   :caption: Output Data Types
 
    datatypes/outputs/contcar.rst
    datatypes/outputs/vasprun.rst

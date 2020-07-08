@@ -6,7 +6,7 @@ This section contains tutorials using the plugin's calculation objects to illust
 
 .. note::
 
-   Note that a copy-and-pasteable example of the calculation's code discussed in the tutorial is provided at the end of each tutorial included in this section.
+   Note that a copy and paste-able example of the calculation's code discussed in the tutorial is provided at the end of each tutorial included in this section.
 
 .. toctree::
    :maxdepth: 1

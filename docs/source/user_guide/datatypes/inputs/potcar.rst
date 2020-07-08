@@ -49,7 +49,7 @@ From the list of potentials matching these requirements the potential with the h
    >>> print("{} {} {}".format(potcar['Cu'].name, potcar['Cu'].version, potcar['Cu'].functional))
    Cu 20010105 pbe
 
-If your calculation requires a different potential, for instance the `Cu_pv` potential, the above shown default behavior can be overidden by passing the desired potential paramters to the function using the `potcar_params` dictionary.
+If your calculation requires a different potential, for instance the `Cu_pv` potential, the above shown default behavior can be overridden by passing the desired potential parameters to the function using the `potcar_params` dictionary.
 To use the `Cu_pv` potential instead of the `Cu` potential, chosen by default, the following `potcar_params` need to passed:
 
 .. code-block:: python
@@ -61,7 +61,7 @@ To use the `Cu_pv` potential instead of the `Cu` potential, chosen by default, t
    Cu_pv 20000906 pbe
 
 Note that the `potcar_params` also allows a `'version'` key for each element to not only define the potential's name to be used but also potentially fix the potential's version.
-However, since in the above example only the potential name is changed and the version reamins unchanged (i.e. whatever highest version found) the above given is equivalent to passing the pseudo-potential name only:
+However, since in the above example only the potential name is changed and the version remains unchanged (i.e. whatever highest version found) the above given is equivalent to passing the pseudo-potential name only:
 
 .. code-block:: console
 

@@ -1,7 +1,19 @@
+.. _tutorials-calculations-si-diamond-structure:
+
 Relaxation of a Si Diamond Structure
 ====================================
 
-In this (simple) tutorial the plugin is used to relax a diamon silicon structure.
+Topics covered in this tutorial:
+
+* Setting up calculation inputs
+* Setting up an (error corrected) VASP calculation
+* Access generated outputs
+
+Introduction
+------------
+
+In this (simple) tutorial the :class:`~aiida_cusp.calculators.VaspCalculation` calculator of this plugin is used to run an error corrected VASP calculation.
+In particular, a silicon diamond structure is relaxeded to relax a diamond silicon structure and finally calculate the energy per Si atom from the relaxed structure.
 
 Setting up the Inputs
 ---------------------
@@ -40,7 +52,7 @@ Using this structur we can now directly setup the required `POCAR` data for the 
    :class:`~pymatgen.io.vasp.inputs.Poscar` or :class:`~aiida.orm.StructureData` are also accepted input types.
 
 With the `POSCAR` data now being set we are already done with the structure setup for our calculation.
-Next we define the `INCAR` parameters.
+Next we define the `INCAR` parameters for the calculation allowing for afull cell relaxation of the passed structure (i.e. `ISIF=3`).
 As this is only a tutorial and not a serious calculation we, of course, want the calculation to finish quickly.
 Thus, a not very sophisticated force-convergence threshold of `EDIFFG=-0.1` is chosen for the tutorial.
 The expected input for the `INCAR` parameters is of type :class:`~aiida_cusp.data.VaspIncarData` and we can set it up by simply passing a dictionary containing the `INCAR` settings we want to apply for the calculation:
@@ -48,7 +60,7 @@ The expected input for the `INCAR` parameters is of type :class:`~aiida_cusp.dat
 .. code-block:: python
 
    VaspIncarData = DataFactory('cusp.incar')
-   incar_params = {'EDIFFG': -0.1}
+   incar_params = {'ISIF': 3, 'EDIFFG': -0.1}
    incar = VaspIncarData(incar=incar_params)
 
 
@@ -90,8 +102,8 @@ which initializes a dictionary containing a single entry of the following form
 
    Please refer to the :ref:`potcar command documentation<user-guide-commands-potcar>` for a detailed introduction to the command and the expected parameters and their meanings.
 
-Setting up and Running the Calculation
-""""""""""""""""""""""""""""""""""""""
+Preparing and Running the Calculation
+-------------------------------------
 
 Since we now have defined all required inputs we are ready to setup and finally also run the calculation.
 To setup the calculation we need to define a code that should be used to run the VASP calculation.
@@ -131,11 +143,19 @@ For the VASP code and the required calculation inputs, setup in the previours st
    from aiida.orm import Code
    # setup the VASP code
    VaspSiRelax.code = Code.get_from_string('vasp_5.4.1_openmpi_4.0.3_scalapack_2.1.0@CompMPI')
+   resources = {'tot_num_mpiprocs': 4, 'num_machines': 1}
+   VaspSiRelax.metadata.options.resources = resources
    # setup the VASP calculation inputs
    VaspSiRelax.incar = incar
    VaspSiRelax.kpoints = kpoints
    VaspSiRelax.poscar = poscar
    VaspSiRelax.potcar = potcar
+
+.. note::
+
+   Note the added resources for the job defined via the `metadata.options.resources` option.
+   These define the calculation jobs resources the scheduler acquires upon submission, i.e. the number of cores and machines to be used on the computer to run the job.
+   As the settings defined here usually depend on the type of scheduler you are using, please refer to the `AiiDA scheduler documentation`_ for the options available for your scheduler.
 
 Finally, we want to run the VASP calculation defined by the above inputs with automated error correction using Custodian.
 To do so we need to add the Custodian executable, defined by the `custodian_2020427@CompMPI` code object, and the error handlers we want to use to the calculation as additional inputs:
@@ -167,7 +187,7 @@ The following code shows how the calculation can be submitted to the AiiDA daemo
 
    If you want to run the calcultion in your interpreter replace the used :func:`~aiida.engine.submit` function with the :func:`~aiida.engine.run` function.
 
-We can check that the calculation was indeed by submitted by checking the output of the ``verdi process list`` command which should now list our submitted calculation as running process:
+We can check that the calculation was indeed submitted to the daemon by checking the output of the ``verdi process list`` command which should now list our submitted calculation as running process:
 
 .. code-block:: console
 
@@ -175,6 +195,37 @@ We can check that the calculation was indeed by submitted by checking the output
      PK  Created    Process label         Process State    Process status
    ----  ---------  --------------------  ---------------  ---------------------------------------
    1377  43s ago    VaspCalculation       ⏵ Waiting        Monitoring scheduler: job state RUNNING
+
+Inspecting the Outputs
+----------------------
+
+After the job has finished the automatically connected default :class:`~aiida_cusp.parsers.vasp_file_parser.VaspFileParser` will add the generated `vasprun.xml`, `OUTCAR` and `CONTCAR` files as outputs to the stored calculation node.
+As the stored files are available from the node using the `outputs.parsed_results` namespace we can easily determine the energy per Si atom in the relaxed structure using the parsed `vasprun.xml` file by loading the calculation node and inspecting the stored file contents.
+Using the `PK` of the stored calculation node printed, next to the running calculation in the output of `verdi process list` (see above), the node can be loaded from the database using AiiDA's :func:`~aiida.orm.load_node` function.
+In the following a `verdi shell`_ is used to load the node and calculated the energy per Si atom by inspecting the loaded node's outputs:
+
+.. code-block:: python
+
+   >>> from aiida.orm import load_node
+   >>> si_relax_node = load_node(1377)
+   >>> print(si_relax_node)
+   uuid: f97a5909-6a3d-4cec-b4ea-39a69a3a125e (pk: 1337)
+   >>> print(si_relax_node.outputs.parsed_results__vasprun_xml)
+   <VaspVasprunData: uuid: 136e55a1-b1d4-4aeb-9661-8830808552f5 (pk: 1339)>
+
+Since the plugin tightly integrates AiiDA with the Pymatgen framework we can easily get to the total energy of the system (and actually many more quantities) using the :meth:`~aiida_cups.data.VaspVasprunData.get_vasprun` method implemented by the :class:`~aiida_cusp.data.VaspVasprunData` class:
+
+.. code-block:: python
+
+   >>> pymatgen_vasprun = si_relax_node.outputs.parsed_results.vasprun_xml.get_vasprun()
+   >>> print(type(pymatgen_vasprun))
+   <class 'pymatgen.io.vasp.outputs.Vasprun'>
+   >>> total_energy = float(pymatgen_vasprun.final_energy)
+   >>> num_atoms = float(len(pymatgen_vasprun.final_structure))
+   >>> energy_per_atom = total_energy / num_atoms
+   >>> print("Energy per atom: {} (eV/atom)".format(energy_per_atom))
+   Energy per atom: -5.41045657375 (eV/atom)
+
 
 Copy-and-Paste
 --------------
@@ -203,10 +254,10 @@ Copy-and-Paste
    si_diamond_structure = Structure.from_spacegroup(227, lattice, species, coords)
 
    # define calculation inputs
-   incar = VaspIncarData(incar={'EDIFFG': -0.1})
+   incar = VaspIncarData(incar={'ISIF': 3, 'EDIFFG': -0.1})
    poscar = VaspPoscarData(structure=si_diamond_structure)
    potcar = VaspPotcarData.from_structure(poscar, 'pbe')
-   kpoints = VaspKpointData(kpoints={'mode': 'auto', 'kpoints': 100})
+   kpoints = VaspKpointData(kpoints={'mode': 'auto', 'kpoints': 25})
 
    # fetch codes from the AiiDA database
    vasp_code = Code.get_from_string(vasp_code_label)
@@ -214,6 +265,8 @@ Copy-and-Paste
 
    # setup the calculation object
    VaspSiRelax = CalculationFactory('cusp.vasp').get_builder()
+   resources = {'tot_num_mpiprocs': 4, 'num_machines': 1}
+   VaspSiRelax.metadata.options.resources = resources
    VaspSiRelax.code = vasp_code
    VaspSiRelax.incar = incar
    VaspSiRelax.poscar = poscar
@@ -228,4 +281,8 @@ Copy-and-Paste
    # submit calculation the daemon
    node = submit(VaspSiRelax)
 
+   # print out the PK of the submitted job
+   print("Submitted VaspSiRelax with PK: {}".format(node.pk))
 
+.. _AiiDA scheduler documentation: https://aiida-core.readthedocs.io/en/stable/scheduler/index.html#supported-schedulers
+.. _verdi shell: https://aiida-core.readthedocs.io/en/stable/working_with_aiida/scripting.html#verdi-shell

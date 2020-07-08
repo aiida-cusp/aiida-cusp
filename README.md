@@ -1,4 +1,5 @@
 # aiida-cusp - a Custodian based VASP Plugin for AiiDA
+[![Documentation Status](https://readthedocs.org/projects/aiida-cusp/badge/?version=latest)](https://aiida-cusp.readthedocs.io/en/latest/?badge=latest)
 
 [Custodian](https://materialsproject.github.io/custodian) plugin for VASP enabling automated error correction for [AiiDA](https://www.aiida.net) managed VASP calculations
 

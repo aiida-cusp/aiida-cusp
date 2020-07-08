@@ -42,18 +42,6 @@ Thus, all datatypes serving as inputs and outputs to the calculators, implemente
    user_guide/datatypes.rst
    user_guide/commands.rst
 
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Development
-   :name: development
-
-   development/development.rst
-
-
-
-
-
 ******************
 Indices and tables
 ******************

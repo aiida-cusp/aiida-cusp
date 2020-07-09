@@ -171,8 +171,6 @@ class CalculationBase(CalcJob):
         scheduler = computer.get_scheduler()
         resources = self.inputs.metadata.options.resources
         default_cpus_machine = computer.get_default_mpiprocs_per_machine()
-        if default_cpus_machine is not None:
-            resources['default_mpiprocs_per_machine'] = default_cpus_machine
         job_resource = scheduler.create_job_resource(**resources)
         tot_num_mpiprocs = job_resource.get_tot_num_mpiprocs()
         mpi_arg_dict = {'tot_num_mpiprocs': tot_num_mpiprocs}

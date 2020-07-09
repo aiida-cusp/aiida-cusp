@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7.7, 3.8]
     services:
       postgres:
         image: postgres:10
@@ -78,7 +78,7 @@ jobs:
 
     - name: Test package using pytest
       run: |
-        pytest
+        pytest tests
 
   docs:
     runs-on: ubuntu-latest

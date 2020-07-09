@@ -61,11 +61,11 @@ class VaspPoscarData(Dict):
 
     def get_atoms(self):
         """
-        Create and return a :class:`ase.atoms.Atoms` instance from the node's
+        Create and return a :class:`ase.Atoms` instance from the node's
         stored structure data contents
 
         :return: an ASE-Atoms instance
-        :rtype: :class:`ase.atoms.Atoms`
+        :rtype: :class:`ase.Atoms`
         """
         structure = self.get_structure()
         return AseAtomsAdaptor.get_atoms(structure)
@@ -85,9 +85,9 @@ class VaspPoscarData(Dict):
         """
         Write the stored Poscar contents to VASP input file.
 
-        File creation is redirected to the :meth:`pymatgen.io.vasp.inputs.\
-        Poscar.write_file` method and the created output file will be
-        formatted as VASP input file (POSCAR)
+        File creation is redirected to the
+        :meth:`pymatgen.io.vasp.inputs.Poscar.write_file` method and the
+        created output file will be formatted as VASP input file (POSCAR)
 
         :param filename: destination for the output file including the
             desired output filename
@@ -122,8 +122,9 @@ class PoscarWrapper(object):
 
     :param structure: Structure data used to initialize the VASP Poscar input
         file.
-    :type structure: :class:`~aiida.orm.StructureData`, :class:`~pymatgen.\
-        core.Structure` or :class:`~pymatgen.io.vasp.inputs.Poscar`
+    :type structure: :class:`~aiida.orm.StructureData`,
+        :class:`~pymatgen.core.structure.Structure` or
+        :class:`~pymatgen.io.vasp.inputs.Poscar`
     :param constraints: Nx3 list containing boolean values defining
         constraints on the coordinates of all atoms present in the structure
         with values set to `False` indicating fixed coordinates.

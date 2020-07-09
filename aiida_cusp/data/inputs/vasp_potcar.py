@@ -378,8 +378,9 @@ class VaspPotcarData(Dict):
 
         :param structure: input structure for which the potential list is
             generated
-        :type structure: :class:`~pymatgen.core.Structure`, :class:`~pymatgen.\
-            io.vasp.poscar.Poscar`, :class:`~aiida_core.data.StructureData` or
+        :type structure: :class:`~pymatgen.core.structure.Structure`,
+            :class:`~pymatgen.io.vasp.inputs.Poscar`,
+            :class:`~aiida.orm.StructureData` or
             :class:`~aiida_cusp.data.inputs.vasp_poscar.VaspPoscarData`
         :param functional: functional type of the used potentials, accepted
             functionals inputs are: `'lda_us'`, `'lda'`, `'lda_52'`, `'pbe'`,

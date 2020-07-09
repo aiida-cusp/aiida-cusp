@@ -3,7 +3,7 @@
 Vasp Calculator (``cusp.vasp``)
 ===============================
 
-The :class:`~aiida_cusp.calculators.VaspCalculator` is available using the ``cusp.vasp`` entry point allows you to perform all kind of VASP calculation ranging from simple calculations to AIMD and even NEB calculations.
+The :class:`~aiida_cusp.calculators.VaspCalculation` is available using the ``cusp.vasp`` entry point allows you to perform all kind of VASP calculation ranging from simple calculations to AIMD and even NEB calculations.
 Similar to VASP itself the behavior of the calculation is entirely controllable by the passed input parameters defined for `KPOINTS`, `INCAR` and the `POTCAR` pseudo-potential.
 (Please refer to the :ref:`potcar command documentation<user-guide-commands-potcar>` how to add pseudo-potentials for VASP to the database)
 Whether a simple calculation or complex NEB calculation is run is decided by the calculation object based on the given structural inputs (i.e. ``poscar`` or ``neb_path``).
@@ -122,7 +122,7 @@ Default Calculator Outputs
 
 After the calculation has finished, parsed outputs are available via the calculation nodes `outputs.parsed_results` key.
 Note that the contents that are stored to this output key of course depend the parser plugin used for the calculation (see the :ref:`Parsers section<user-guide-parsers>`).
-By default the :class:`~aiida_cusp.calculators.VaspCalculator` class uses the :ref:`VaspFileParser<user-guide-parsers-vaspfileparser>` to parse the generated results.
+By default the :class:`~aiida_cusp.calculators.VaspCalculation` class uses the :ref:`VaspFileParser<user-guide-parsers-vaspfileparser>` to parse the generated results.
 Note that if no additional parser options are passed to this parser class only the `CONTCAR`, `vasprun.xml` and `OUTCAR` files will be avilable in the calculation's outputs.
 
 .. note::

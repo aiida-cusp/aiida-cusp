@@ -20,10 +20,10 @@ class VaspIncarData(Dict):
     AiiDA compatible node representing a VASP incar data object based on the
     :class:`~pymatgen.io.vasp.inputs.Incar` datatype.
 
-    :param incar: input parameters used to construct the :class:`~pymatgen.\
-        io.casp.inputs.Incar` object or a incar object itself (Note: may also
-        be set to `None` to initialize an empty incar object and use the
-        VASP default parameters)
+    :param incar: input parameters used to construct the
+        :class:`~pymatgen.io.vasp.inputs.Incar` object or a incar object
+        itself (Note: may also be set to `None` to initialize an empty incar
+        object and use the VASP default parameters)
     :type incar: dict or :class:`~pymatgen.io.vasp.inputs.Incar`
     """
     def __init__(self, *args, **kwargs):
@@ -71,13 +71,14 @@ class IncarWrapper(object):
     Utility class for initializing :class:`pymatgen.io.vasp.inputs.Incar`
     data objects
 
-    Accepts either a :class:`~pymatgen.io.vasp.inputs.Incar instance or
+    Accepts either a :class:`~pymatgen.io.vasp.inputs.Incar` instance or
     a dictionary containing valid VASP Incar parameters which will be passed
     through to the :class:`~pymatgen.io.vasp.inputs.Incar` constructor. Note:
     If `incar` is set to `None` and empty incar file will be initialized.
 
-    :param incar: input parameters used to construct the :class:`~pymatgen.\
-        io.casp.inputs.Incar` object or a incar object itself.
+    :param incar: input parameters used to construct the
+        :class:`~pymatgen.io.vasp.inputs.Incar` object or a incar object
+        itself.
     :type incar: dict or :class:`~pymatgen.io.vasp.inputs.Incar`
     """
 

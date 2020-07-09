@@ -28,7 +28,7 @@ In general the constructor of the :class:`~aiida_cusp.data.VaspKpointData` class
   In that case the grid is generated using the class-internal methods depending on the type of parameters passed by the :class:`dict`
   (See the :ref:`following section<inputs_kpoints_init_modes>` for more details on the possible parameters and corresponding generation modes)
   kpoint parameters
-* **structure** (optional, :class:`pymatgen.core.Structure`, :class:`pymatgen.io.vasp.inputs.Poscar` or :class:`aiida_core.data.StructureData`) --
+* **structure** (optional, :class:`pymatgen.core.structure.Structure`, :class:`pymatgen.io.vasp.inputs.Poscar` or :class:`aiida.orm.StructureData`) --
   Optional structure input for initialization modes that are based on a k-point density.
   This is only required if the KPOINT grid is initialized using the internal methods based on a passed kpoint density.
   (See the initialization modes discussed in the :ref:`following section<inputs_kpoints_init_modes>` for more details)

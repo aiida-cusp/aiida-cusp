@@ -29,5 +29,5 @@ In the following all available options that may be defined and the corresponding
   Number of performed polling steps before the calculation is checked for
   possibly encountered errors (default: `30`)
 * **skip_over_errors** (:class:`bool`) --
-  Set this option to :class:`True` to skip over any failed error handler
-  (default: :class:`False`)
+  Set this option to `True` to skip over any failed error handler
+  (default: `False`)

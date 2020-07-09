@@ -12,7 +12,7 @@ In order to see how the input data types can be initialized and how you can inte
 .. note::
 
    Note that VASP output files that are not listed here explicitly does not mean that the plugin does not know about them or does not know how to store or handle them.
-   For such files simply no individual output datatype was implemented and those will be stored to the database using the implemented general :class:`~aiida_cusp.outputs.VaspGenericData` class.
+   For such files simply no individual output datatype was implemented and those will be stored to the database using the implemented general :class:`~aiida_cusp.data.VaspGenericData` class.
 
 .. _user-guide-datatypes-inputs:
 

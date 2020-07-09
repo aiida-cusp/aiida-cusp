@@ -222,7 +222,7 @@ Running the NEB Calculation
 ---------------------------
 
 To setup the final NEB calculation we first need to find intermediate images by interpolating the path between the defined NEB path endpoints.
-In the following this interpolation step is shown based on the interpolation method naturally implemented in the :class:`~pymatgen.Structure` class.
+In the following this interpolation step is shown based on the interpolation method naturally implemented in the :class:`~pymatgen.core.structure.Structure` class.
 Using the relaxed endpoints of the previous step a NEB path containing a single intermediate image is generated running the following code.
 
 .. code-block:: python

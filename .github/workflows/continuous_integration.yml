@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[develop]
+          pip install -e .[develop]
 
       - name: Run pre-commit hook
         run: |
@@ -90,7 +90,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[docs]
+          pip install -e .[docs]
 
       - name: Build documentation
         run: |
@@ -126,7 +126,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install .[develop]
+          pip install -e .[develop]
           reentry scan
           # print out the list of installed packages
           pip freeze

@@ -9,7 +9,7 @@
 
 * Automated error corrections for VASP calculations on the calculation's runtime level (rather than on the workflow level)
 * Full compatability with [pymatgen](https://pymatgen.org) and easy access to set of therein implemented tools for pre- and postprocessing of VASP calculations directly from the implemented datatypes
-* It' still VASP, but better!
+* It's still VASP, but better!
 
 ## Installation
 

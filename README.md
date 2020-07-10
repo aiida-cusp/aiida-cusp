@@ -11,6 +11,10 @@
 * Full compatability with [pymatgen](https://pymatgen.org) and easy access to set of therein implemented tools for pre- and postprocessing of VASP calculations directly from the implemented datatypes
 * It' still VASP, but better!
 
+## Installation
+
+Please refer to aiida-cusp's [documentation](https://aiida-cusp.readthedocs.io/) for further information.
+
 ## Contributing
 
 Suggestions for useful improvements, feature requests, bug reports and the like are highly welcome and appreciated.

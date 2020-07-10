@@ -136,9 +136,9 @@ jobs:
             pytest --cov-report=xml --cov=aiida_cusp tests/
 
       - name: Upload recorded coverage report
-        uses: codecov/codecov-action@v1.0.3
+        uses: codecov/codecov-action@v1
         with:
           name: aiida-cusp-coverage
-          token: ${{secrets.CODECOV_TOKEN}}
+          token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
           fail_ci_if_error: false

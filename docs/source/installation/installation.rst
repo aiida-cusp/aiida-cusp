@@ -71,10 +71,12 @@ If the installation was successful the new calculation entry point ``cusp.vasp``
    * cusp.vasp
    * templatereplacer
 
+If the new entry point ``cusp.vasp`` is disovered correctly please proceed with the :ref:`next step<installation-getpluginready>` to finalize the plugin's installation.
+
 .. _installation-installingtheplugin-pip:
 
-Installing via PIP
-==================
+Installing via PIP (advanced)
+=============================
 
 
 To install the plugin via the ``pip`` installer run the command
@@ -88,8 +90,8 @@ which will install the plugin and the required dependencies using the resources 
 
 .. _installation-installingtheplugin-source:
 
-Installing from Source
-======================
+Installing from Source (advanced)
+=================================
 
 Alternatively to the previous installation methods, install the plugin directly from source by cloning the plugin's repository.
 After cloning go to the source root directory containing the project's `setup.py` and run

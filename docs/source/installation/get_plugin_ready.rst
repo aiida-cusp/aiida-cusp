@@ -14,6 +14,7 @@ If the above is not true for your installation, please complete the AiiDA instal
 
 .. note::
 
+   Although the plugin installation automatically installs AiiDA to the plugin's environment you still need to manually configure the fresh AiiDA installation.
    In case you are new to AiiDA please refer to the `AiiDA documentation`_ for detailed instructions on how to install and/or setup AiiDA and it's related services.
 
 .. _installation-getpluginready-setupcustodian:

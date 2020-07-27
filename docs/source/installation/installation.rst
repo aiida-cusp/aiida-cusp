@@ -16,6 +16,7 @@ After the plugin has been installed you can check if the installation was succes
 
 .. code:: console
 
+   $ reentry scan
    $ verdi plugin list aiida.calculations
    Registered entry points for aiida.calculations:
    * arithmetic.add

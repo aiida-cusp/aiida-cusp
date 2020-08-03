@@ -4,13 +4,20 @@
     "author": "Andreas Stamminger",
     "author_email": "stammingera@gmail.com",
     "classifiers": [
-			"Development Status :: 1 - Planning",
-    	"Programming Language :: Python :: 3",
-			"Topic :: Scientific/Engineering :: Physics",
+			"Development Status :: 4 - Beta",
 			"License :: OSI Approved :: MIT License",
+    	"Programming Language :: Python :: 3.6",
+    	"Programming Language :: Python :: 3.7",
+    	"Programming Language :: Python :: 3.8",
+			"Topic :: Scientific/Engineering :: Physics",
+			"Topic :: Scientific/Engineering :: Chemistry",
 			"Environment :: Plugins",
 			"Framework :: AiiDA"
 		],
+		"description": "Custodian based VASP Plugin for AiiDA",
+    "url": "https://github.com/astamminger/aiida-cusp",
+    "license": "MIT License",
+		"reentry_register": true,
     "entry_points": {
 			"aiida.data": [
 				"cusp.kpoints = aiida_cusp.data.inputs.vasp_kpoint:VaspKpointData",
@@ -52,8 +59,5 @@
 				"pytest-cov",
 				"pgtest"
       ]
-    },
-		"reentry_register": true,
-    "license": "MIT License",
-    "url": "https://github.com/astamminger/aiida-cusp"
+    }
 }

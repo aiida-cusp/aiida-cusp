@@ -8,7 +8,7 @@ It is strongly recommended to install the plugin using the :ref:`conda<installat
 However, you may also install the plugin using either :ref:`pip<installation-installingtheplugin-pip>` or directly from the plugin's :ref:`source code<installation-installingtheplugin-source>`.
 
 .. warning::
-   Be advised that the installation via ``pip`` or directly from source will **not** install the required RabbitMQ_ or PostgreSQL_ services automatically! 
+   Be advised that the installation via ``pip`` or directly from source will **not** install the required RabbitMQ_ or PostgreSQL_ services automatically!
    While this allows you to use RabbitMQ_ or PostgreSQL_ installations already available on your system, it requires more manual work to get AiiDA setup and running.
    Thus, these installation routes are considered suitable only for advanced AiiDA users.
 
@@ -45,7 +45,7 @@ To install the plugin via the ``conda`` installer Anaconda_ needs to be installe
 Consult the `conda installation guide <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html>`_ for more information on how to install Anaconda_ on your system.
 
 .. note::
-  
+
    Instead of installing the full Anaconda distribution you may also install the more lightweight Miniconda distribution which will take up less disk space.
 
 Once Anaconda (or Miniconda) is installed on your system you may install the plugin using ``conda`` by running the command

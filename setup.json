@@ -1,6 +1,6 @@
 {
     "name": "aiida-cusp",
-    "version": "0.0.0",
+    "version": "0.1.0b1",
     "author": "Andreas Stamminger",
     "author_email": "stammingera@gmail.com",
     "classifiers": [

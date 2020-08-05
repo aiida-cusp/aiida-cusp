@@ -1,6 +1,6 @@
 {
     "name": "aiida-cusp",
-    "version": "0.1.0b1",
+    "version": "0.1.0b2",
     "author": "Andreas Stamminger",
     "author_email": "stammingera@gmail.com",
     "classifiers": [
@@ -15,6 +15,7 @@
 			"Framework :: AiiDA"
 		],
 		"description": "Custodian based VASP Plugin for AiiDA",
+		"long_description_content_type": "text/markdown",
     "url": "https://github.com/astamminger/aiida-cusp",
     "license": "MIT License",
 		"reentry_register": true,

@@ -15,6 +15,7 @@
 			"Framework :: AiiDA"
 		],
 		"description": "Custodian based VASP Plugin for AiiDA",
+		"long_description_content_type": "text/markdown",
     "url": "https://github.com/astamminger/aiida-cusp",
     "license": "MIT License",
 		"reentry_register": true,

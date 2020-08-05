@@ -72,7 +72,7 @@ If the the full path to the ``cstdn`` executable is printed to the screen the in
 Note that the printed path should point to the folder in which the new Anaconda environment was installed previously.
 After installing the required executable, the next step is now to setup the code on your local computer (i.e. the computer you're actually running AiiDA on!)
 To setup the code simply run the ``verdi code setup`` command and provide all the necessary information you're asked for.
-(Please refer to the `AiiDA documentation <https://aiida.readthedocs.io/projects/aiida-core/en/latest/howto/run_codes.html#how-to-setup-a-code>`_ for detailed instructions on how to setup a new code)
+(Please refer to the `offical AiiDA documentation <https://aiida.readthedocs.io/projects/aiida-core/en/latest/howto/run_codes.html#how-to-setup-a-code>`_ for detailed instructions on how to setup a new code)
 
 .. note::
 

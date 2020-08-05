@@ -1,0 +1,63 @@
+{
+    "name": "aiida-cusp",
+    "version": "0.1.0b1",
+    "author": "Andreas Stamminger",
+    "author_email": "stammingera@gmail.com",
+    "classifiers": [
+			"Development Status :: 4 - Beta",
+			"License :: OSI Approved :: MIT License",
+    	"Programming Language :: Python :: 3.6",
+    	"Programming Language :: Python :: 3.7",
+    	"Programming Language :: Python :: 3.8",
+			"Topic :: Scientific/Engineering :: Physics",
+			"Topic :: Scientific/Engineering :: Chemistry",
+			"Environment :: Plugins",
+			"Framework :: AiiDA"
+		],
+		"description": "Custodian based VASP Plugin for AiiDA",
+    "url": "https://github.com/astamminger/aiida-cusp",
+    "license": "MIT License",
+		"reentry_register": true,
+    "entry_points": {
+			"aiida.data": [
+				"cusp.kpoints = aiida_cusp.data.inputs.vasp_kpoint:VaspKpointData",
+				"cusp.poscar = aiida_cusp.data.inputs.vasp_poscar:VaspPoscarData",
+				"cusp.incar = aiida_cusp.data.inputs.vasp_incar:VaspIncarData",
+				"cusp.potcar = aiida_cusp.data.inputs.vasp_potcar:VaspPotcarData",
+				"cusp.vasprun = aiida_cusp.data.outputs.vasp_vasprun:VaspVasprunData",
+				"cusp.outcar = aiida_cusp.data.outputs.vasp_outcar:VaspOutcarData",
+				"cusp.contcar = aiida_cusp.data.outputs.vasp_contcar:VaspContcarData",
+				"cusp.chgcar = aiida_cusp.data.outputs.vasp_chgcar:VaspChgcarData",
+				"cusp.wavecar = aiida_cusp.data.outputs.vasp_wavecar:VaspWavecarData",
+				"cusp.generic = aiida_cusp.data.outputs.vasp_generic:VaspGenericData",
+				"cusp.potcarfile = aiida_cusp.data.inputs.vasp_potcar:VaspPotcarFile"
+			],
+			"aiida.calculations": [
+				"cusp.vasp = aiida_cusp.calculators.vasp_calculation:VaspCalculation"
+			],
+			"aiida.parsers": [
+				"cusp.default = aiida_cusp.parsers.vasp_file_parser:VaspFileParser"
+			],
+			"aiida.cmdline.data": [
+				"potcar = aiida_cusp.cli.potcar_cmd:potcar"
+			]
+    },
+    "install_requires": [
+      "aiida-core>=1.3.0,<2.0.0",
+      "custodian",
+      "pymatgen",
+			"ase"
+    ],
+    "extras_require": {
+      "docs": [
+        "sphinx",
+        "sphinx_rtd_theme"
+      ],
+      "develop": [
+				"pre-commit",
+				"pytest",
+				"pytest-cov",
+				"pgtest"
+      ]
+    }
+}

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+
 """
 Install the aiida-cusp plugin package
 """
@@ -7,7 +9,7 @@ Install the aiida-cusp plugin package
 import pathlib
 import json
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 setup_json_file = pathlib.Path(__file__).parent.absolute() / 'setup.json'
@@ -18,4 +20,5 @@ readme_file = pathlib.Path(__file__).parent.absolute() / 'README.md'
 with readme_file.open('r') as readme:
     long_description = readme.read()
 
-setup(long_description=long_description, **setup_kwargs)
+setup(packages=find_packages(), long_description=long_description,
+      **setup_kwargs)

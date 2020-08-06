@@ -20,5 +20,5 @@ readme_file = pathlib.Path(__file__).parent.absolute() / 'README.md'
 with readme_file.open('r') as readme:
     long_description = readme.read()
 
-setup(packages=find_packages(), long_description=long_description, 
+setup(packages=find_packages(), long_description=long_description,
       **setup_kwargs)

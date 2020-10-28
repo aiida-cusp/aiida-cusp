@@ -182,9 +182,9 @@ def computer(tmpdir):
     Setup a new computer object.
     """
     from aiida.orm import Computer, User
-    computer = Computer(name='local_computer', hostname='localhost')
-    computer.set_scheduler_type('direct')
-    computer.set_transport_type('local')
+    computer = Computer(label='local_computer', hostname='localhost')
+    computer.scheduler_type = 'direct'
+    computer.transport_type = 'local'
     computer.set_workdir(str(tmpdir))
     computer.set_default_mpiprocs_per_machine(1)
     computer.set_mpirun_command(['mpirun', '-np', '{tot_num_mpiprocs}'])

@@ -146,7 +146,7 @@ def test_automatic_mode():
     assert kpoints.style == Kpoints_supported_modes.Automatic
     assert kpoints.kpts == [[10]]
     assert kpoints.num_kpts == 0
-    assert kpoints.kpts_shift == (.0, .0, .0)
+    assert kpoints.kpts_shift == [.0, .0, .0]
 
 
 def test_gamma_explicit_mode():
@@ -261,7 +261,7 @@ def test_automatic_line_mode(minimal_pymatgen_structure):
     assert list(map(list, kpoints.kpts)) == kpts
     assert kpoints.num_kpts == 100
     assert kpoints.labels == labels
-    assert kpoints.kpts_shift == (0., 0., 0.)
+    assert kpoints.kpts_shift == [0., 0., 0.]
 
 
 def test_init_from_structure_types(minimal_pymatgen_structure):

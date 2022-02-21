@@ -157,7 +157,7 @@ def test_get_poscar_method(minimal_pymatgen_structure):
 
 
 def test_get_structure_method(minimal_pymatgen_structure):
-    from pymatgen import Structure
+    from pymatgen.core import Structure
     poscar = VaspPoscarData(structure=minimal_pymatgen_structure)
     # assert retrieved structure equals reference
     reference_structure = minimal_pymatgen_structure

@@ -135,7 +135,7 @@ def multi_component_structure():
     Setup a complex pymatgen structure (i.e. Li6PS5Br) comprising multiple
     different species.
     """
-    from pymatgen import Lattice, Structure
+    from pymatgen.core import Lattice, Structure
     lattice = Lattice.cubic(a=1.0E1)
     species, positions = list(zip(*[
         ('Li', [0.183, 0.183, 0.024]),

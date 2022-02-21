@@ -41,7 +41,7 @@ def test_store_and_load_kpoint_data_density(kpoint_params, structure,
     from aiida.orm import load_node
     # setup minimal structure and high symmetry path
     struct = minimal_pymatgen_structure
-    path = HighSymmKpath(struct, path_type='sc')
+    path = HighSymmKpath(struct, path_type='setyawan_curtarolo')
     # update kpoint parameters depending on set structure or high symmetry
     # path requirements
     if not structure:
@@ -75,7 +75,7 @@ def test_write_file_method(kpoint_params, structure, sympath, tmpdir,
     from aiida.plugins import DataFactory
     # setup minimal structure and high symmetry path
     struct = minimal_pymatgen_structure
-    path = HighSymmKpath(struct, path_type='sc')
+    path = HighSymmKpath(struct, path_type='setyawan_curtarolo')
     # update kpoint parameters depending on set structure or high symmetry
     # path requirements
     if not structure:
@@ -114,7 +114,8 @@ def test_description_method(mode, kpoints, expected_description,
         'mode': mode,
         'kpoints': kpoints,
         'shift': None,
-        'sympath': HighSymmKpath(minimal_pymatgen_structure, path_type='sc'),
+        'sympath': HighSymmKpath(minimal_pymatgen_structure, 
+                                 path_type='setyawan_curtarolo'),
     }
     kwargs = {
         'structure': minimal_pymatgen_structure,
@@ -231,7 +232,7 @@ def test_automatic_line_mode(minimal_pymatgen_structure):
     # setup minimal structure
     structure = minimal_pymatgen_structure
     # build high symmetry path
-    sympath = HighSymmKpath(structure, path_type='sc')
+    sympath = HighSymmKpath(structure, path_type='setyawan_curtarolo')
     generated_kpoints = [  # list of kpoints forming HighSymmKpath
         ([0.0, 0.0, 0.0], "\\Gamma"),
         ([0.0, 0.5, 0.0], "X"),

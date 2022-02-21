@@ -38,7 +38,7 @@
     "install_requires": [
       "aiida-core>=1.2.1,<2.0.0",
       "custodian",
-      "pymatgen",
+      "pymatgen>=2022.0.0",
 			"ase"
     ],
     "extras_require": {

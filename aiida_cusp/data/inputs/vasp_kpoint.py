@@ -226,7 +226,11 @@ class KpointWrapper(object):
             warnings.warn("Automatic kpoint mode: Ignoring defined high "
                           "symmetry path object")
         kpoints = cls.kpoint_params['kpoints']
-        return Kpoints.automatic(kpoints)
+        # pymatgen returns default shift as tuple (0, 0, 0) thus we need
+        # to transform the shift to a list of floats before returning
+        kpts = Kpoints.automatic(kpoints)
+        kpts.kpts_shift = list(map(float, kpts.kpts_shift))
+        return kpts
 
     @classmethod
     def gamma_list(cls):
@@ -363,4 +367,8 @@ class KpointWrapper(object):
                                      "parameter 'sympath'")
         divisions = cls.kpoint_params['kpoints']
         sympath = cls.kpoint_params['sympath']
-        return Kpoints.automatic_linemode(divisions, sympath)
+        # pymatgen returns default shift as tuple (0, 0, 0) thus we need
+        # to transform the shift to a list of floats before returning
+        kpts = Kpoints.automatic_linemode(divisions, sympath)
+        kpts.kpts_shift = list(map(float, kpts.kpts_shift))
+        return kpts

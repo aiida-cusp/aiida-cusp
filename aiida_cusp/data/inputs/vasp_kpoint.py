@@ -29,8 +29,9 @@ class VaspKpointData(Dict):
     :type kpoints: :class:`pymatgen.io.vasp.inputs.Kpoints` or dict
     :param structure: calculation input structure (optional, only required if
         k-points are initialized from a density)
-    :type structure: :class:`~pymatgen.core.Structure`, :class:`~pymatgen.\
-        io.vasp.poscar.Poscar` or :class:`~aiida_core.data.StructureData`
+    :type structure: :class:`~pymatgen.core.structure.Structure`,
+        :class:`~pymatgen.io.vasp.inputs.Poscar` or
+        :class:`~aiida.orm.StructureData`
     """
     def __init__(self, *args, **kwargs):
         # if kpoints are set: assume initialization from user space
@@ -56,9 +57,9 @@ class VaspKpointData(Dict):
         """
         Write the stored k-point grid data to VASP input file.
 
-        File creation is redirected to the :meth:`pymatgen.io.vasp.inputs.\
-        Kpoints.write_file` method and the created output file will be
-        formatted as VASP input file (KPOINTS)
+        File creation is redirected to the
+        :meth:`pymatgen.io.vasp.inputs.Kpoints.write_file` method and the
+        created output file will be formatted as VASP input file (KPOINTS)
 
         :param filename: destination for the output file including the
             desired output filename
@@ -118,8 +119,9 @@ class KpointWrapper(object):
     :type kpoints: dict or :class:`~pymatgen.io.vasp.inputs.Kpoints`
     :param structure: optional input structure for the calculation required
         for density based kpoint initialization
-    :type structure: :class:`~pymatgen.core.Structure`, :class:`~pymatgen.\
-        io.vasp.poscar.Poscar` or :class:`~aiida_core.data.StructureData`
+    :type structure: :class:`~pymatgen.core.structure.Structure`,
+        :class:`~pymatgen.io.vasp.inputs.Poscar` or
+        :class:`~aiida.orm.StructureData`
     """
 
     _VALID_INIT_MODES = ["auto", "monkhorst", "gamma", "line"]

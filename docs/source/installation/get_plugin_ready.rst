@@ -14,14 +14,15 @@ If the above is not true for your installation, please complete the AiiDA instal
 
 .. note::
 
-   In case you are new to AiiDA please refer to the `AiiDA documentation`_ for detailed instructions on how to install and/or setup AiiDA and it's related services.
+   Although the plugin installation automatically installs AiiDA to the plugin's environment you still need to manually configure and setup the new AiiDA installation.
+   In case you are new to AiiDA please refer to the `AiiDA documentation`_ for detailed instructions on how to setup a new AiiDA installation and it's related services.
 
 .. _installation-getpluginready-setupcustodian:
 
 Setting up the Custodian Codes
 ==============================
 
-Setting up the codes for Custodian is straightforward and does in general not differ compared to the setup of regular codes.
+Setting up the codes for Custodian is straightforward and does in general not differ compared to the `setup of regular codes <https://aiida.readthedocs.io/projects/aiida-core/en/latest/howto/run_codes.html#how-to-setup-a-code>`_.
 Similar to setting up the VASP code which tells AiiDA how to load and access the corresponding ``vasp`` executable, Custodian codes are setup to give AiiDA the same information on the ``cstdn`` executable.
 The only reason for the Custodian code setup being covered in more detail here is the fact that it may likely not be available on your system by default and thus may required some extra steps to setup.
 
@@ -48,7 +49,7 @@ Assuming the above check has failed for you and Custodian is obviously not avail
 .. warning::
 
    Custodian has to be installed on the **target computer** that is later used to run the calculation (i.e. usually the same computer where also VASP is installed).
-   Keep in mind that this computer may be different from the computer you're running AiiDA from!
+   Keep in mind that this computer may be different from the computer running your AiiDA installation!
 
 
 To setup the Custodian code on a remote computer using anaconda we first create a new environment containing the Custodian installation.
@@ -71,7 +72,7 @@ If the the full path to the ``cstdn`` executable is printed to the screen the in
 Note that the printed path should point to the folder in which the new Anaconda environment was installed previously.
 After installing the required executable, the next step is now to setup the code on your local computer (i.e. the computer you're actually running AiiDA on!)
 To setup the code simply run the ``verdi code setup`` command and provide all the necessary information you're asked for.
-(Please refer to the `AiiDA documentation`_ for detailed instructions on how to setup a new code)
+(Please refer to the `offical AiiDA documentation <https://aiida.readthedocs.io/projects/aiida-core/en/latest/howto/run_codes.html#how-to-setup-a-code>`_ for detailed instructions on how to setup a new code)
 
 .. note::
 

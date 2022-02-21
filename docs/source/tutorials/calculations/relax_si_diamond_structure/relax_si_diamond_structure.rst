@@ -213,7 +213,7 @@ In the following a `verdi shell`_ is used to load the node and calculated the en
    >>> print(si_relax_node.outputs.parsed_results__vasprun_xml)
    <VaspVasprunData: uuid: 136e55a1-b1d4-4aeb-9661-8830808552f5 (pk: 1339)>
 
-Since the plugin tightly integrates AiiDA with the Pymatgen framework we can easily get to the total energy of the system (and actually many more quantities) using the :meth:`~aiida_cups.data.VaspVasprunData.get_vasprun` method implemented by the :class:`~aiida_cusp.data.VaspVasprunData` class:
+Since the plugin tightly integrates AiiDA with the Pymatgen framework we can easily get to the total energy of the system (and actually many more quantities) using the :meth:`~aiida_cusp.data.VaspVasprunData.get_vasprun` method implemented by the :class:`~aiida_cusp.data.VaspVasprunData` class:
 
 .. code-block:: python
 

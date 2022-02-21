@@ -1,5 +1,7 @@
 # aiida-cusp - a Custodian based VASP Plugin for AiiDA
 [![Documentation Status](https://readthedocs.org/projects/aiida-cusp/badge/?version=latest)](https://aiida-cusp.readthedocs.io/en/latest/?badge=latest)
+[![tests](https://github.com/aiida-cusp/aiida-cusp/workflows/tests/badge.svg?branch=develop)](https://github.com/aiida-cusp/aiida-cusp/actions)
+[![codecov](https://codecov.io/gh/aiida-cusp/aiida-cusp/branch/develop/graph/badge.svg)](https://codecov.io/gh/aiida-cusp/aiida-cusp)
 
 [Custodian](https://materialsproject.github.io/custodian) plugin for VASP enabling automated error correction for [AiiDA](https://www.aiida.net) managed VASP calculations
 
@@ -7,7 +9,11 @@
 
 * Automated error corrections for VASP calculations on the calculation's runtime level (rather than on the workflow level)
 * Full compatability with [pymatgen](https://pymatgen.org) and easy access to set of therein implemented tools for pre- and postprocessing of VASP calculations directly from the implemented datatypes
-* It' still VASP, but better!
+* It's still VASP, but better!
+
+## Installation
+
+Please refer to aiida-cusp's [documentation](https://aiida-cusp.readthedocs.io/) for further information.
 
 ## Contributing
 

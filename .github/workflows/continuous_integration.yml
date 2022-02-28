@@ -29,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.7.7, 3.8, 3.9]
+        python-version: [3.7.7, 3.8, 3.9, 3.10]
     services:
       postgres:
         image: postgres:10
@@ -94,7 +94,7 @@ jobs:
 
       - name: Build documentation
         run: |
-          SPHINXOPTS='-nW' make -C docs html
+          SPHINXOPTS='-nW --keep-going' make -C docs html
 
   coverage:
     runs-on: ubuntu-latest

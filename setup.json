@@ -52,6 +52,7 @@
     "extras_require": {
       "docs": [
         "sphinx",
+				"markupsafe<=2.0.1",
         "sphinx_rtd_theme"
       ],
       "develop": [

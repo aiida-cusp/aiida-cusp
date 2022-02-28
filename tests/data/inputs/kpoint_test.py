@@ -114,7 +114,7 @@ def test_description_method(mode, kpoints, expected_description,
         'mode': mode,
         'kpoints': kpoints,
         'shift': None,
-        'sympath': HighSymmKpath(minimal_pymatgen_structure, 
+        'sympath': HighSymmKpath(minimal_pymatgen_structure,
                                  path_type='setyawan_curtarolo'),
     }
     kwargs = {

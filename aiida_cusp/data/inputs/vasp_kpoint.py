@@ -180,6 +180,20 @@ class KpointWrapper(object):
         }
 
     @classmethod
+    def normalize(cls, kpoint):
+        """
+        Normalize a given :class:`~pymatgen.io.vasp.inputs.Kpoints` instance
+        such that defined attributes match the expected types
+
+        :param kpoint: a :class:`~pymatgen.io.vasp.inputs.Kpoints` instance
+        :type kpoint: :class:`~pymatgen.io.vasp.inputs.Kpoints`
+        """
+        # pymatgen returns default shift as tuple (0, 0, 0) of ints thus we
+        # need to transform the shift to a list of floats before returning
+        kpoint.kpts_shift = list(map(float, kpoint.kpts_shift))
+        return kpoint
+
+    @classmethod
     def build_init_mode(cls):
         """
         Figure out the initialization mode using the defined mode and the
@@ -226,11 +240,7 @@ class KpointWrapper(object):
             warnings.warn("Automatic kpoint mode: Ignoring defined high "
                           "symmetry path object")
         kpoints = cls.kpoint_params['kpoints']
-        # pymatgen returns default shift as tuple (0, 0, 0) thus we need
-        # to transform the shift to a list of floats before returning
-        kpts = Kpoints.automatic(kpoints)
-        kpts.kpts_shift = list(map(float, kpts.kpts_shift))
-        return kpts
+        return cls.normalize(Kpoints.automatic(kpoints))
 
     @classmethod
     def gamma_list(cls):
@@ -256,7 +266,8 @@ class KpointWrapper(object):
         if len(shift) != 3:
             raise KpointWrapperError("Expected list of length 3 for k-point "
                                      "grid shift")
-        return Kpoints.gamma_automatic(kpts=kpoints, shift=shift)
+        return cls.normalize(Kpoints.gamma_automatic(kpts=kpoints,
+                                                     shift=shift))
 
     @classmethod
     def monkhorst_list(cls):
@@ -284,7 +295,8 @@ class KpointWrapper(object):
         if len(shift) != 3:
             raise KpointWrapperError("Expected list of length 3 for k-point "
                                      "grid shift")
-        return Kpoints.monkhorst_automatic(kpts=kpoints, shift=shift)
+        return cls.normalize(Kpoints.monkhorst_automatic(kpts=kpoints,
+                                                         shift=shift))
 
     @classmethod
     def gamma_float(cls):
@@ -308,7 +320,9 @@ class KpointWrapper(object):
                           "high symmetry path object")
         structure = cls.structure_from_input()
         kpoints = cls.kpoint_params['kpoints']
-        return Kpoints.automatic_density(structure, kpoints, force_gamma=True)
+        return cls.normalize(Kpoints.automatic_density(structure,
+                                                       kpoints,
+                                                       force_gamma=True))
 
     @classmethod
     def monkhorst_float(cls):
@@ -333,7 +347,9 @@ class KpointWrapper(object):
                           "high symmetry path object")
         structure = cls.structure_from_input()
         kpoints = cls.kpoint_params['kpoints']
-        return Kpoints.automatic_density(structure, kpoints, force_gamma=False)
+        return cls.normalize(Kpoints.automatic_density(structure,
+                                                       kpoints,
+                                                       force_gamma=False))
 
     @classmethod
     def line_int(cls):
@@ -369,6 +385,4 @@ class KpointWrapper(object):
         sympath = cls.kpoint_params['sympath']
         # pymatgen returns default shift as tuple (0, 0, 0) thus we need
         # to transform the shift to a list of floats before returning
-        kpts = Kpoints.automatic_linemode(divisions, sympath)
-        kpts.kpts_shift = list(map(float, kpts.kpts_shift))
-        return kpts
+        return cls.normalize(Kpoints.automatic_linemode(divisions, sympath))

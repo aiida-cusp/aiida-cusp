@@ -35,6 +35,12 @@ extensions = [
     'sphinx.ext.autodoc',
 ]
 
+# Disable warnings treated as error during the import stage of the
+# autodoc extension (otherwise pymatgen will fail the build when running
+# sphinx with -W option due to a UserWarning indicating a missing
+# .pmgrc.yaml file...sigh)
+autodoc_warningiserror = False
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -71,7 +77,7 @@ master_doc = 'index'
 # targets for intersphinx extension
 intersphinx_mapping = {
     'pymatgen':
-        ('http://pymatgen.org/', None),
+        ('https://pymatgen.org/', None),
     'aiida':
         ('https://aiida.readthedocs.io/projects/aiida-core/en/latest/', None),
     'ase':
@@ -92,7 +98,7 @@ def run_apidoc_autobuild(_):
     apidoc_path = str(docs_dir / 'source' / 'module_reference')
     apidoc_options = [
         '--separate',
-        '--private',
+        #  '--private',
         '--force',
         '--module-first',
         '--no-toc',

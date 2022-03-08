@@ -29,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.6, 3.7.7, 3.8]
+        python-version: ['3.7.7', '3.8', '3.9', '3.10']
     services:
       postgres:
         image: postgres:10
@@ -54,10 +54,10 @@ jobs:
       run: |
         # install postgresql on the host machine as well since pg_ctl has to
         # be available for AiiDA to work
-        sudo apt update
-        sudo apt install postgresql-10
+        # sudo apt update
+        # sudo apt install postgresql-10
         # check pg_ctl is available
-        /usr/lib/postgresql/10/bin/pg_ctl -V
+        # /usr/lib/postgresql/10/bin/pg_ctl -V
 
     - name: Setup Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -94,7 +94,7 @@ jobs:
 
       - name: Build documentation
         run: |
-          SPHINXOPTS='-nW' make -C docs html
+          SPHINXOPTS='-nW --keep-going' make -C docs html
 
   coverage:
     runs-on: ubuntu-latest

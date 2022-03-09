@@ -74,7 +74,6 @@ jobs:
 
     - name: Test package using pytest
       run: |
-<<<<<<< HEAD
         pytest tests/
 
   docs:
@@ -143,6 +142,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
           fail_ci_if_error: false
-=======
-        pytest tests
->>>>>>> 513ccb9 (Fix minimal aiida-core version to 1.3.0 (#5))

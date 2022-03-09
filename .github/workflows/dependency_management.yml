@@ -1,0 +1,19 @@
+name: Dependency Management
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run every day at midnight
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dependabot Metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1.1.1
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      # The following properties are now available:
+      #  - steps.metadata.outputs.dependency-names
+      #  - steps.metadata.outputs.dependency-type
+      #  - steps.metadata.outputs.update-type

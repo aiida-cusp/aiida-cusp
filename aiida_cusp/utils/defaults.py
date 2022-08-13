@@ -203,6 +203,8 @@ class CustodianDefaults(object):
                 'output_filename': PluginDefaults.STDOUT_FNAME,
                 'timeout': 21600,
             },
+            'IncorrectSmearingHandler':{}, 
+            'LargeSigmaHandler': {},
             'LrfCommutatorHandler': {
                 'output_filename': PluginDefaults.STDERR_FNAME,
             },

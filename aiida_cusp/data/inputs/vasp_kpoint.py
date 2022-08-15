@@ -31,7 +31,7 @@ class VaspKpointData(Dict):
         k-points are initialized from a density)
     :type structure: :class:`~pymatgen.core.structure.Structure`,
         :class:`~pymatgen.io.vasp.inputs.Poscar` or
-        :class:`~aiida.orm.StructureData`
+        :class:`~aiida.orm.nodes.data.structure.StructureData`
     """
     def __init__(self, *args, **kwargs):
         # if kpoints are set: assume initialization from user space
@@ -121,7 +121,7 @@ class KpointWrapper(object):
         for density based kpoint initialization
     :type structure: :class:`~pymatgen.core.structure.Structure`,
         :class:`~pymatgen.io.vasp.inputs.Poscar` or
-        :class:`~aiida.orm.StructureData`
+        :class:`~aiida.orm.nodes.data.structure.StructureData`
     """
 
     _VALID_INIT_MODES = ["auto", "monkhorst", "gamma", "line"]

@@ -83,7 +83,7 @@ For the required k-points a gamma centered grid is employed:
    }
 
 With all `INCAR`, `KPOINTS` and structure (i.e. `POSCAR`) inputs being defined we can now initialize the required inputs for the calculation.
-Here, AiiDA's :func:`~aiida.plugins.DataFactory` function is used to load the corresponding data types provided by the plugin using their defined entry points:
+Here, AiiDA's :func:`~aiida.plugins.factories.DataFactory` function is used to load the corresponding data types provided by the plugin using their defined entry points:
 
 .. code-block:: python
 

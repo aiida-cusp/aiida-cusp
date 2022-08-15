@@ -49,7 +49,7 @@ Using this structure we can now directly setup the required `POSCAR` data for th
 .. note::
 
    You're not restricted to the pymatgen structure type here but you may also initialize the :class:`~aiida_cusp.data.VaspPotcarData` from several other types, i.e.:
-   :class:`~pymatgen.io.vasp.inputs.Poscar` or :class:`~aiida.orm.StructureData` are also accepted input types.
+   :class:`~pymatgen.io.vasp.inputs.Poscar` or :class:`~aiida.orm.nodes.data.structure.StructureData` are also accepted input types.
 
 With the `POSCAR` data now being set we are already done with the structure setup for our calculation.
 Next we define the `INCAR` parameters for the calculation allowing for a full cell relaxation of the passed structure (i.e. `ISIF=3`).
@@ -176,7 +176,7 @@ For a complete overview of the available error handlers and the available Custod
    In that case the calculator will call the VASP executable defined by the code given in the `VaspSiRelax.code` input directly instead of wrapping VASP with Custodian.
 
 With all required inputs defined, we are now ready to run the code.
-The following code shows how the calculation can be submitted to the AiiDA daemon via the :func:`~aiida.engine.submit` function provided by the :mod:`aiida.engine` module:
+The following code shows how the calculation can be submitted to the AiiDA daemon via the :func:`~aiida.engine.launch.submit` function provided by the :mod:`aiida.engine` module:
 
 .. code-block:: python
 
@@ -185,7 +185,7 @@ The following code shows how the calculation can be submitted to the AiiDA daemo
 
 .. note::
 
-   If you want to run the calculation in your interpreter replace the used :func:`~aiida.engine.submit` function with the :func:`~aiida.engine.run` function.
+   If you want to run the calculation in your interpreter replace the used :func:`~aiida.engine.launch.submit` function with the :func:`~aiida.engine.launch.run` function.
 
 We can check that the calculation was indeed submitted to the daemon by checking the output of the ``verdi process list`` command which should now list our submitted calculation as running process:
 
@@ -201,7 +201,7 @@ Inspecting the Outputs
 
 After the job has finished the automatically connected default :class:`~aiida_cusp.parsers.vasp_file_parser.VaspFileParser` will add the generated `vasprun.xml`, `OUTCAR` and `CONTCAR` files as outputs to the stored calculation node.
 As the stored files are available from the node using the `outputs.parsed_results` namespace we can easily determine the energy per Si atom in the relaxed structure using the parsed `vasprun.xml` file by loading the calculation node and inspecting the stored file contents.
-Using the `PK` of the stored calculation node printed, next to the running calculation in the output of `verdi process list` (see above), the node can be loaded from the database using AiiDA's :func:`~aiida.orm.load_node` function.
+Using the `PK` of the stored calculation node printed, next to the running calculation in the output of `verdi process list` (see above), the node can be loaded from the database using AiiDA's :func:`~aiida.orm.utils.loaders.load_node` function.
 In the following a `verdi shell`_ is used to load the node and calculated the energy per Si atom by inspecting the loaded node's outputs:
 
 .. code-block:: python

@@ -19,7 +19,7 @@ In general the constructor of the :class:`~aiida_cusp.data.VaspPoscarData` class
 
 **Arguments:**
 
-* **structure** (:class:`~aiida.orm.StructureData`, :class:`~pymatgen.core.structure.Structure` or :class:`~pymatgen.io.vasp.inputs.Poscar`) --
+* **structure** (:class:`~aiida.orm.nodes.data.structure.StructureData`, :class:`~pymatgen.core.structure.Structure` or :class:`~pymatgen.io.vasp.inputs.Poscar`) --
   The structure data used to generate the POSCAR data from.
 * **constraints** (:class:`list`, optional) --
   Nx3 list (N the number of atoms) of :class:`bool` introducing selective dynamics by adding constraints on the coordinates for every atom contained in the structure.

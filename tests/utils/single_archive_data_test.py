@@ -25,7 +25,9 @@ def test_single_archive_node_contents(tmpdir):
     single_archive = SingleArchiveData(file=testfile)
     with open(single_archive.filepath, 'rb') as filehandle:
         node_contents = filehandle.read()
-    assert node_contents == testcontent_compressed
+    assert node_contents[0:2] == b'\x1f\x8b'
+    # omit comparing mtime bytes which may cause spurious errors
+    assert node_contents[8:] == testcontent_compressed[8:]
 
 
 @pytest.mark.parametrize('decompress', [True, False])
@@ -42,13 +44,16 @@ def test_get_content_method(tmpdir, decompress):
     if decompress:
         assert contents == testcontent
     else:
-        assert contents == testcontent_compressed
+        # omit comparing mtime bytes which may cause spurious errors
+        assert contents[0:2] == b'\x1f\x8b'
+        assert contents[8:] == testcontent_compressed[8:]
 
 
 def test_get_repository_file_path(tmpdir):
     from aiida_cusp.utils.single_archive_data import SingleArchiveData
     testfile = pathlib.Path(tmpdir / 'testfile.txt')
     testcontent = "Test file contents".encode()
+    # set mtime
     testcontent_compressed = gzip.compress(testcontent)
     with open(testfile, 'wb') as filehandle:
         filehandle.write(testcontent)
@@ -56,7 +61,9 @@ def test_get_repository_file_path(tmpdir):
     node_path = single_archive.filepath
     with open(node_path, 'rb') as filehandle:
         content_at_path = filehandle.read()
-    assert content_at_path == testcontent_compressed
+    assert content_at_path[0:2] == b'\x1f\x8b'
+    # omit comparing mtime bytes which may cause spurious errors
+    assert content_at_path[8:] == testcontent_compressed[8:]
 
 
 @pytest.mark.parametrize('decompress', [True, False])
@@ -79,4 +86,6 @@ def test_write_file_method(tmpdir, decompress):
     if decompress:
         assert written_contents == testcontent
     else:
-        assert written_contents == testcontent_compressed
+        assert written_contents[0:2] == b'\x1f\x8b'
+        # omit comparing mtime bytes which may cause spurious errors
+        assert written_contents[8:] == testcontent_compressed[8:]

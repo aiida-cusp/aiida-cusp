@@ -25,7 +25,6 @@ class SingleArchiveData(SinglefileData):
     # to the repository
     ARCHIVE_SUFFIX = '.gz'
 
-    #def __init__(self, file, filename=None, **kwargs):
     def __init__(self, *args, **kwargs):
         super(SingleArchiveData, self).__init__(*args, **kwargs)
         self._filehandle = None
@@ -125,7 +124,7 @@ class SingleArchiveData(SinglefileData):
         #        deleted when garbage collected.
         if self._filehandle is None:
             self._filehandle = tempfile.NamedTemporaryFile(
-                                    mode='wb', suffix=self.ARCHIVE_SUFFIX)
+                mode='wb', suffix=self.ARCHIVE_SUFFIX)
             self._filehandle.write(self.get_content(decompress=False))
             self._filehandle.flush()
         return self._filehandle.name

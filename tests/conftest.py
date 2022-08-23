@@ -183,8 +183,8 @@ def computer(tmpdir):
     """
     from aiida.orm import Computer, User
     computer = Computer(label='local_computer', hostname='localhost')
-    computer.scheduler_type = 'direct'
-    computer.transport_type = 'local'
+    computer.scheduler_type = 'core.direct'
+    computer.transport_type = 'core.local'
     computer.set_workdir(str(tmpdir))
     computer.set_default_mpiprocs_per_machine(1)
     computer.set_mpirun_command(['mpirun', '-np', '{tot_num_mpiprocs}'])

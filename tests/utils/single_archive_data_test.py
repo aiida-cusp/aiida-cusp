@@ -44,8 +44,8 @@ def test_get_content_method(tmpdir, decompress):
     if decompress:
         assert contents == testcontent
     else:
-        # omit comparing mtime bytes which may cause spurious errors
         assert contents[0:2] == b'\x1f\x8b'
+        # omit comparing mtime bytes which may cause spurious errors
         assert contents[8:] == testcontent_compressed[8:]
 
 
@@ -89,3 +89,23 @@ def test_write_file_method(tmpdir, decompress):
         assert written_contents[0:2] == b'\x1f\x8b'
         # omit comparing mtime bytes which may cause spurious errors
         assert written_contents[8:] == testcontent_compressed[8:]
+
+
+def test_dynamic_filepath_property(tmpdir):
+    """
+    Checks for a bug with the filepath property being reported as not
+    available on a loaded SingleFileArchive Data objects that were
+    loaded from the database (__init__ is never called of a node is
+    loaded from the database)
+    """
+    from aiida_cusp.utils.single_archive_data import SingleArchiveData
+    emptyfile = pathlib.Path(tmpdir / 'testfile.txt')
+    emptyfile.touch()
+    data_node = SingleArchiveData(file=emptyfile)
+    assert hasattr(data_node, '_filehandle') is False
+    # make sure this does not fail and returns a string
+    path = data_node.filepath
+    assert isinstance(path, str)
+    # assert that _filehandle attribute was created after we call
+    # filepath property
+    assert hasattr(data_node, '_filehandle') is True

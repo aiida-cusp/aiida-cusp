@@ -25,10 +25,6 @@ class SingleArchiveData(SinglefileData):
     # to the repository
     ARCHIVE_SUFFIX = '.gz'
 
-    def __init__(self, *args, **kwargs):
-        super(SingleArchiveData, self).__init__(*args, **kwargs)
-        self._filehandle = None
-
     def set_file(self, file, filename=None):
         """
         Compress given file and store it to the node's repository.
@@ -122,7 +118,10 @@ class SingleArchiveData(SinglefileData):
         #        In order to bring both worlds together a temporary file is
         #        created from the contents stored in the repo which is then
         #        deleted when garbage collected.
-        if self._filehandle is None:
+
+        # since there is no call to __init__ when loading from the database
+        # we need to set the `_filehandle` property dynamically
+        if not hasattr(self, '_filehandle'):
             self._filehandle = tempfile.NamedTemporaryFile(
                 mode='wb', suffix=self.ARCHIVE_SUFFIX)
             self._filehandle.write(self.get_content(decompress=False))
@@ -132,7 +131,5 @@ class SingleArchiveData(SinglefileData):
     def __del__(self):
         # properly close the filehandle once the object went out of scope
         # and is garbage collected
-        if self._filehandle is not None:
+        if hasattr(self, '_filehandle'):
             self._filehandle.close()
-            self._filehandle = None
-        super(SingleArchiveData, self).__del__()

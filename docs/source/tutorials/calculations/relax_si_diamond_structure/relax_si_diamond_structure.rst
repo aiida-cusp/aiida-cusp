@@ -32,7 +32,7 @@ Since the plugin is tightly connected to pymatgen's data types the structure is 
 
 .. code-block:: python
 
-   from pymatgen import Lattice, Structure
+   from pymatgen.core import Lattice, Structure
    lattice = Lattice.cubic(5.431)
    species = ["Si"]
    coords = [[0.0, 0.0, 0.0]]
@@ -232,7 +232,7 @@ Copy-and-Paste
 
 .. code-block:: python
 
-   from pymatgen import Lattice, Structure
+   from pymatgen.core import Lattice, Structure
    from aiida.orm import Code
    from aiida.plugins import CalculationFactory, DataFactory
    from aiida.engine import submit

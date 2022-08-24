@@ -203,7 +203,7 @@ For the sake of simplicity, here, all calculation input parameters are taken as 
        """
        Setup a cubic unitcell containing the Si diamond structure
        """
-       from pymatgen import Lattice, Structure
+       from pymatgen.core import Lattice, Structure
        lattice = Lattice.cubic(5.4309)
        species = ['Si']
        coords = [[.0, .0, .0]]

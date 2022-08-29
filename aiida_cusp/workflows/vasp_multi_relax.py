@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 
+
 """
 Multi-Relaxation Workchain for VASP Relaxations
 """
+
 
 import re
 
 from aiida.plugins import CalculationFactory
 from aiida.engine import WorkChain, ToContext, while_
 from aiida.orm import Bool
+
 from aiida_cusp.calculators.calculation_base import CalculationBase
 from aiida_cusp.calculators import VaspCalculation
 from aiida_cusp.data import VaspIncarData
@@ -23,14 +26,16 @@ class MultiRelaxWorkChain(WorkChain):
     one, introduces a dynamical input namespace `incars` which
     accepts an arbitrary amount of INCAR entries of the form
 
-    incars = {
-        'incar_1': VaspIncarData,
-        'incar_2': VaspIncarData,
+    .. code-block:: text
 
-           ...
+        incars = {
+            'incar_1': VaspIncarData,
+            'incar_2': VaspIncarData,
 
-        'incar_N': VaspIncarData,
-    }
+               ...
+
+            'incar_N': VaspIncarData,
+        }
 
     In the initial relaxation run the provided POSCAR, KPOINTS and
     POTCAR are used together with the INCAR provided at the first
@@ -45,33 +50,36 @@ class MultiRelaxWorkChain(WorkChain):
     A flow chart illustrating which and how the provided resources
     are used within this workflow is show in the following:
 
-    {
-        'incar_1': INCAR_DATA, ------.  POSCAR, KPOINTS, POTCAR
-        'incar_2': INCAR_DATA, ----. |    |        |        |
-                                   | |    `--------+--------´
-         ...                       | |             |
-                                   | |             |
-        'incar_N': INCAR_DATA, --. | |             |
-    }                            | | |             V
-                                 | | '---> RELAXATION RUN 1
-                                 | |               |
-                                 | |            OUTPUTS
-                                 | |               |
-                                 | |               V
-                                 | '-----> RELAXATION RUN 2
-                                 |                 |
-                                 |              OUTPUTS
-                                 |                 |
-                                 |                 V
-                                 |                ...
-                                 |                 |
-                                 |                 V
-                                 '-------> RELAXATION RUN N
-                                                   |
-                                                   V
-                                             FINAL OUTPUTS
+    .. code-block:: text
+
+        {
+            'incar_1': INCAR_DATA, ------.  POSCAR, KPOINTS, POTCAR
+            'incar_2': INCAR_DATA, ----. |    |        |        |
+                                       | |    `--------+--------´
+             ...                       | |             |
+                                       | |             |
+            'incar_N': INCAR_DATA, --. | |             |
+        }                            | | |             V
+                                     | | '---> RELAXATION RUN 1
+                                     | |               |
+                                     | |            OUTPUTS
+                                     | |               |
+                                     | |               V
+                                     | '-----> RELAXATION RUN 2
+                                     |                 |
+                                     |              OUTPUTS
+                                     |                 |
+                                     |                 V
+                                     |                ...
+                                     |                 |
+                                     |                 V
+                                     '-------> RELAXATION RUN N
+                                                       |
+                                                       V
+                                                 FINAL OUTPUTS
 
     """
+
     @classmethod
     def define(cls, spec):
         super(MultiRelaxWorkChain, cls).define(spec)
@@ -107,6 +115,7 @@ class MultiRelaxWorkChain(WorkChain):
         """
         Check and verify the given workchain inputs
         """
+
         self.report("verifying passed workflow inputs")
         # inputs are marked optional on base calculation class to allow
         # restarts without any inputs given, thus we need to check that
@@ -164,6 +173,7 @@ class MultiRelaxWorkChain(WorkChain):
         """
         This function sets up the required inputs for the VASP calculation
         """
+
         if self.ctx.run_id == 0:  # this is the first run
             self.report("setting up calculation inputs for first run")
             inputs = self.exposed_inputs(VaspCalculation)
@@ -194,12 +204,14 @@ class MultiRelaxWorkChain(WorkChain):
         """
         Creates the name of the current calculation step
         """
+
         return f"workflow_step_{self.ctx.run_id}"
 
     def get_next_incar_data(self):
         """
         Return INCAR data for next step
         """
+
         (index, incar) = self.ctx.incars.pop()
         return incar
 
@@ -212,12 +224,14 @@ class MultiRelaxWorkChain(WorkChain):
         function returns `False` effectively ending the relaxation
         loop and stopping the workchain
         """
+
         return len(self.ctx.incars) != 0
 
     def run_vasp_relaxation(self):
         """
         Run the VASP calculation
         """
+
         step_name = self.get_current_step_name()
         inputs = self.ctx.next_run_inputs
         self.report(f"submitting calculation for current workflow step "
@@ -229,6 +243,7 @@ class MultiRelaxWorkChain(WorkChain):
         """
         Make sure the previous run was successful
         """
+
         if not self.ctx.last_calculation.is_finished_ok:
             step_name = self.get_current_step_name()
             self.report(f"workflow step '{step_name}' (run_id = "
@@ -246,6 +261,7 @@ class MultiRelaxWorkChain(WorkChain):
         Simply register the outputs of the last calculation as
         workflow outputs
         """
+
         self.out_many(
             self.exposed_outputs(self.ctx.last_calculation, VaspCalculation)
         )

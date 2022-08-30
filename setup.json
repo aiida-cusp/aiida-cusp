@@ -36,6 +36,9 @@
 			"aiida.calculations": [
 				"cusp.vasp = aiida_cusp.calculators.vasp_calculation:VaspCalculation"
 			],
+			"aiida.workflows": [
+				"cusp.multirelax = aiida_cusp.workflows.vasp_multi_relax:MultiRelaxWorkChain"
+			],
 			"aiida.parsers": [
 				"cusp.default = aiida_cusp.parsers.vasp_file_parser:VaspFileParser"
 			],
@@ -46,7 +49,7 @@
     "install_requires": [
       "aiida-core>=1.3.0,<2.0.0",
       "custodian",
-      "pymatgen",
+      "pymatgen<=2022.0.0",
 			"ase"
     ],
     "extras_require": {

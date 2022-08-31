@@ -99,3 +99,6 @@ jobs:
           fail_ci_if_error: false
   ci-branch-protect:
     needs: [pre-commit, run-pytest, coverage]
+    steps:
+      - name: CI Branch Protect
+        run: exit 0

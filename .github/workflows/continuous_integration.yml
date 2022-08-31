@@ -99,6 +99,7 @@ jobs:
           fail_ci_if_error: false
   ci-branch-protect:
     needs: [pre-commit, run-pytest, coverage]
+    runs-on: ubuntu-latest
     steps:
       - name: CI Branch Protect
         run: exit 0

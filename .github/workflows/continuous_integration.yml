@@ -97,3 +97,5 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./coverage.xml
           fail_ci_if_error: false
+  ci-branch-protect:
+    needs: [pre-commit, run-pytest, coverage]

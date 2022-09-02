@@ -37,7 +37,7 @@ VASP Calculation Inputs:
      Note that for the :class:`~aiida_cusp.calculators.VaspCalculation` class the input options `inputs.poscar` and `inputs.neb_path` may not be set simultaneously.
      If both are set at the same time an error will be raised and the calculation will fail!
 
-* **code** (:class:`aiida.orm.Code`) --
+* **code** (:class:`aiida.orm.nodes.data.code.installed.InstalledCode`) --
   VASP code used to run the calculation.
 * **incar** (:class:`aiida_cusp.data.VaspIncarData`) -- i
   INCAR data input defining the calculation parameters for the VASP calculation (see :ref:`INCAR<user-guide-datatypes-inputs-incar>`)
@@ -81,7 +81,7 @@ Options passed to the Custodian executable if a custodian code is set for the `c
 
    If no settings are defined for Custodian the VASP code is not wrapped by Custodian (i.e. the `vasp` executable defined by the VASP code set for the `code` input is called directly)
 
-* **custodian.code** (:class:`aiida.orm.Code`) --
+* **custodian.code** (:class:`aiida.orm.nodes.data.code.installed.InstalledCode`) --
 * **custodian.handlers** (:class:`list` or :class:`dict`) --
   Optional input option defining the error handlers connected to the calculation.
   For a complete list of available error handlers that may be set here please refer to the :ref:`handler section<user-guide-custodian-handlers>` in the Custodian documentation of this plugin.
@@ -102,7 +102,7 @@ Options passed to the Custodian executable if a custodian code is set for the `c
 Restart Options:
 """"""""""""""""
 
-* **restart.folder** (:class:`aiida.orm.RemoteData`) --
+* **restart.folder** (:class:`aiida.orm.nodes.data.remote.base.RemoteData`) --
   Remote folder of the parent calculation from which the calculation is restarted.
   All files in the remote folder will be copied to the restarted calculation's folder and are used as input to the new calculation.
 

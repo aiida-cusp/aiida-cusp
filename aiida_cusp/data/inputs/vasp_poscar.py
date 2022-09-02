@@ -72,11 +72,13 @@ class VaspPoscarData(Dict):
 
     def get_aiida_structure(self):
         """
-        Create and return a :class:`aiida.orm.StructureData` instance from
+        Create and return a
+        :class:`aiida.orm.nodes.data.structure.StructureData` instance from
         the node's stored structure data contents
 
-        :return: an AiiDA :class:`~aiida.orm.StructureData` instance
-        :rtype: :class:`aiida.orm.StructureData`
+        :return: an AiiDA
+            :class:`~aiida.orm.nodes.data.structure.StructureData` instance
+        :rtype: :class:`aiida.orm.nodes.data.structure.StructureData`
         """
         structure = self.get_structure()
         return StructureData(pymatgen_structure=structure)
@@ -122,7 +124,7 @@ class PoscarWrapper(object):
 
     :param structure: Structure data used to initialize the VASP Poscar input
         file.
-    :type structure: :class:`~aiida.orm.StructureData`,
+    :type structure: :class:`~aiida.orm.nodes.data.structure.StructureData`,
         :class:`~pymatgen.core.structure.Structure` or
         :class:`~pymatgen.io.vasp.inputs.Poscar`
     :param constraints: Nx3 list containing boolean values defining

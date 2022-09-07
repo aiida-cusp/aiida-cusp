@@ -85,6 +85,13 @@ class CalculationBase(CalcJob):
             help=("Calculation settings passed to the custodian executable")
         )
         # required inputs to restart a calculation
+        spec.input(
+            'custodian.jobs',
+            valid_type=Dict,
+            serializer=to_aiida_type,
+            required=False,
+            help=("Calculation jobs passed to the custodian executable")
+        )
         spec.input_namespace('restart', required=False)
         spec.input(
             'restart.folder',
@@ -256,6 +263,7 @@ class CalculationBase(CalcJob):
         # parameters
         settings = dict(self.inputs.custodian.get('settings', {}))
         handlers = dict(self.inputs.custodian.get('handlers', {}))
+        jobs = dict(self.inputs.custodian.get('jobs', {}))
         # get the vasp run command and the stdout / stderr files
         vasp_cmd = self.vasp_run_line()
         stdout = self._default_output_file
@@ -264,6 +272,7 @@ class CalculationBase(CalcJob):
         custodian_settings = CustodianSettings(vasp_cmd, stdout, stderr,
                                                settings=settings,
                                                handlers=handlers,
+                                               jobs=jobs,
                                                is_neb=is_neb)
         return custodian_settings
 
@@ -277,13 +286,32 @@ class CalculationBase(CalcJob):
         remote_comp_uuid = remote_data.computer.uuid
         exclude_files = self.restart_files_exclude()
         overwrite_poscar = self.inputs.restart.get('contcar_to_poscar', True)
+
+        jobs = dict(self.inputs.custodian.get('jobs', {}))
+        suffixes = [""]
+        for job in jobs:
+            suffixes.append(job.get("suffix", ""))
+        suffixes = list(set(suffixes))
+
         for name, abspath, relpath in self.remote_filelist(remote_data):
-            if name in exclude_files:
+
+            # detect suffix and take it out
+            has_suffix = False
+            current_suffix = ""
+            for suffix in suffixes:
+                if name.endswith(suffix):
+                    has_suffix = True
+                    current_suffix = f"{suffix}"
+            if has_suffix:
+                bare_name = name[:-len(current_suffix)]
+
+            if bare_name in exclude_files:
                 continue
             # if overwrite poscar is set change target name for CONTCAR-files
             # to POSCAR
-            if name == VaspDefaults.FNAMES['contcar'] and overwrite_poscar:
-                name = VaspDefaults.FNAMES['poscar']
+            if (bare_name == VaspDefaults.FNAMES['contcar']
+               and overwrite_poscar):
+                name = VaspDefaults.FNAMES['poscar'] + current_suffix
             file_relpath = relpath + '/' + name
             remote_copy_entry = (remote_comp_uuid, abspath, file_relpath)
             calcinfo.remote_copy_list.append(remote_copy_entry)

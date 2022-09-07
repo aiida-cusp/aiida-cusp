@@ -71,15 +71,30 @@ class VaspFileParser(ParserBase):
         exit_code = self.register_output_nodes(parsed_results)
         return exit_code
 
-    def normalized_filename(self, filepath):
+    def normalized_filename(self, name):
         """
         Return a normalized version of the filename, i.e. lower case and
         .suffix replace with _suffix
         """
-        return str(filepath.name.lower()).replace(".", "_")
+        return str(name.lower()).replace(".", "_")
+
+    def split_suffix(self, name):
+        """
+        Split the filename and return the prefix and suffix separately
+        """
+        exist_parsers = ["generic", "wavecar", "chgcar",
+                         "contcar", "vasprun.xml", "outcar"]
+        formal_name = name
+        suffix = ""
+        for parser in exist_parsers:
+            if name.lower().startswith(parser):
+                formal_name = parser
+                suffix = name[len(parser):]
+        return formal_name, suffix
 
     def parsing_hook(self, filepath):
-        return "parse_{}".format(self.normalized_filename(filepath))
+        name, _ = self.split_suffix(filepath.name)
+        return "parse_{}".format(self.normalized_filename(name))
 
     def linkname(self, filepath):
         """
@@ -92,7 +107,10 @@ class VaspFileParser(ParserBase):
                                        neb_folder.group())
         else:
             namespace = ""
-        return "{}{}".format(namespace, self.normalized_filename(filepath))
+        name, suffix = self.split_suffix(filepath.name)
+        object_name = self.normalized_filename(name) \
+            + self.normalized_filename(suffix)
+        return "{}{}".format(namespace, object_name)
 
     def build_parsing_list(self):
         """
@@ -107,7 +125,7 @@ class VaspFileParser(ParserBase):
             # NEVER EVER parse a POTCAR file
             self.files_to_parse += [
                 f for f in filelist if f.is_file()
-                and f.name != VaspDefaults.FNAMES['potcar']
+                and not f.name.startswith(VaspDefaults.FNAMES['potcar'])
             ]
         # do not parse the same file multiple times
         self.files_to_parse = list(set(self.files_to_parse))
@@ -122,7 +140,7 @@ class VaspFileParser(ParserBase):
         Fail the parsing process if the parsin list if empty meaning no
         files will be parsed from the retrieved folder
         """
-        parse_default = ['CONTCAR', 'vasprun.xml', 'OUTCAR']
+        parse_default = ['CONTCAR*', 'vasprun.xml*', 'OUTCAR*']
         settings = dict(self.settings)
         self.fail_on_empty_list = settings.pop('fail_on_missing_files', False)
         self.parsing_list = settings.pop('parse_files', parse_default)

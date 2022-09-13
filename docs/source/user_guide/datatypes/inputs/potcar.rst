@@ -32,7 +32,7 @@ In the following example a simple fcc structure is used to demonstrate the proce
 
 .. code-block:: python
 
-   >>> from pymatgen import Structure, Lattice
+   >>> from pymatgen.core import Structure, Lattice
    >>> from aiida.plugins import DataFactory
    >>> VaspPotcarData = DataFactory('cusp.potcar')
    >>> lattice = Lattice.cubic(3.524)

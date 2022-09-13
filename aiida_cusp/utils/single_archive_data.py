@@ -10,6 +10,7 @@ archive instead of simply storing the file as-is
 import pathlib
 import gzip
 import io
+import tempfile
 
 from aiida.orm import SinglefileData
 
@@ -75,6 +76,8 @@ class SingleArchiveData(SinglefileData):
             are returned
         :type decompress: `bool`
         """
+        # cannot use internal get_content() method as this only reads
+        # strings from the repo
         with self.open(mode='rb') as archive:
             archive_contents = archive.read()
         if decompress:
@@ -99,9 +102,6 @@ class SingleArchiveData(SinglefileData):
         with open(filepath, 'wb') as outfile:
             outfile.write(self.get_content(decompress=decompress))
 
-    # TODO: Considering the repository redesign I have no idead if this will
-    #       continiue to work in the future (Although only Repository internal
-    #       and no external methods are applied to get the file path
     @property
     def filepath(self):
         """
@@ -110,5 +110,26 @@ class SingleArchiveData(SinglefileData):
         Basically replicates the procedure in the internal open method without
         the final call to the open()
         """
-        # get the path to the file stored in the repository
-        return self._repository._get_base_folder().get_abs_path(self.filename)
+        # FIXME: Due to the recent change in aiida v2 introducing the new file
+        #        repository classical files went out of existence. However,
+        #        pymatgen cannot handle streams but relies on the physical
+        #        files to instantiate output classes. Moreover, the file may
+        #        also be opened multiple times not only during instantiation.
+        #        In order to bring both worlds together a temporary file is
+        #        created from the contents stored in the repo which is then
+        #        deleted when garbage collected.
+
+        # since there is no call to __init__ when loading from the database
+        # we need to set the `_filehandle` property dynamically
+        if not hasattr(self, '_filehandle'):
+            self._filehandle = tempfile.NamedTemporaryFile(
+                mode='wb', suffix=self.ARCHIVE_SUFFIX)
+            self._filehandle.write(self.get_content(decompress=False))
+            self._filehandle.flush()
+        return self._filehandle.name
+
+    def __del__(self):
+        # properly close the filehandle once the object went out of scope
+        # and is garbage collected
+        if hasattr(self, '_filehandle'):
+            self._filehandle.close()

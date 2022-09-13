@@ -32,7 +32,7 @@ In general the constructor of the :class:`~aiida_cusp.data.VaspPoscarData` class
 **Example plain structure:** ::
 
   >>> from aiida.plugins import DataFactory
-  >>> from pymatgen import Lattice, Structure
+  >>> from pymatgen.core import Lattice, Structure
   >>> lattice = Lattice.cubic(3.359)
   >>> structure = Structure(lattice, ["Po"], [.0, .0, .0])
   >>> VaspPoscarData = DataFactory('cusp.poscar')
@@ -52,7 +52,7 @@ In general the constructor of the :class:`~aiida_cusp.data.VaspPoscarData` class
 **Example with constraints:** ::
 
   >>> from aiida.plugins import DataFactory
-  >>> from pymatgen import Lattice, Structure
+  >>> from pymatgen.core import Lattice, Structure
   >>> lattice = Lattice.cubic(3.359)
   >>> structure = Structure(lattice, ["Po"], [.0, .0, .0])
   >>> VaspPoscarData = DataFactory('cusp.poscar')

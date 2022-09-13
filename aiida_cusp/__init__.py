@@ -6,4 +6,4 @@ for AiiDA managed VASP calculations.
 """
 
 __license__ = 'MIT license, see LICENSE.txt file.'
-__version__ = '0.1.0b2'
+__version__ = '0.1.0'

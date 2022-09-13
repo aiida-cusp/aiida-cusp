@@ -37,7 +37,7 @@ We can easily setup the initial structure using pymatgen:
 
 .. code-block:: python
 
-   from pymatgen import Structure, Lattice
+   from pymatgen.core import Structure, Lattice
    # lattice vector lengths
    a = 6.10622  # a = b
    c = 6.61513
@@ -360,7 +360,7 @@ Copy-and-Paste
 
 .. code-block:: python
 
-   from pymatgen import Structure, Lattice, PeriodicSite
+   from pymatgen.core import Structure, Lattice, PeriodicSite
    from aiida.orm import Code
    from aiida.plugins import CalculationFactory, DataFactory
    from aiida.engine import submit

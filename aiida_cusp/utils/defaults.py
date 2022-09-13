@@ -203,6 +203,10 @@ class CustodianDefaults(object):
                 'output_filename': PluginDefaults.STDOUT_FNAME,
                 'timeout': 21600,
             },
+            'IncorrectSmearingHandler': {
+                'output_filename': VaspDefaults.FNAMES['vasprun'],
+            },
+            'LargeSigmaHandler': {},
             'LrfCommutatorHandler': {
                 'output_filename': PluginDefaults.STDERR_FNAME,
             },

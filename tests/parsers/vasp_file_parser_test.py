@@ -21,7 +21,7 @@ def test_normalize_filename(vasp_file_parser, filename, subfolder,
     import pathlib
     # construct some arbitrary absolute path to the file
     filepath = pathlib.Path().absolute() / subfolder / filename
-    normalized = vasp_file_parser.normalized_filename(filepath)
+    normalized = vasp_file_parser.normalized_filename(filepath.name)
     assert normalized == expected_normalized
 
 

@@ -129,7 +129,7 @@ In this mode the expected input parameters passed in the input dictionary are:
 
 **Example for kpoint density** ::
 
-  >>> from pymatgen import Structure, Lattice
+  >>> from pymatgen.core import Structure, Lattice
   >>> lattice = Lattice.cubic(1.0)
   >>> structure = Structure(lattice, ['H'], [[.0, .0, .0]])
   >>> monkhorst_mode_params = {
@@ -185,7 +185,7 @@ In this mode the expected input parameters passed in the input dictionary are:
 
 **Example for kpoint density** ::
 
-  >>> from pymatgen import Structure, Lattice
+  >>> from pymatgen.core import Structure, Lattice
   >>> lattice = Lattice.cubic(1.0)
   >>> structure = Structure(lattice, ['H'], [[.0, .0, .0]])
   >>> gamma_mode_params = {
@@ -217,7 +217,7 @@ Using line mode the expected input parameters passed in the input dictionary are
 
 **Example:** ::
 
-  >>> from pymatgen import Structure, Lattice
+  >>> from pymatgen.core import Structure, Lattice
   >>> from pymatgen.symmetry.bandstructure import HighSymmKpath
   >>> lattice = Lattice.cubic(1.0)
   >>> structure = Structure(lattice, ['H'], [[.0, .0, .0]])

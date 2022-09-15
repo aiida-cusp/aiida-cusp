@@ -295,6 +295,8 @@ class CalculationBase(CalcJob):
 
         for name, abspath, relpath in self.remote_filelist(remote_data):
 
+            bare_name = name
+
             # detect suffix and take it out
             has_suffix = False
             current_suffix = ""

@@ -74,9 +74,10 @@ class VaspFileParser(ParserBase):
     def normalized_filename(self, filepath):
         """
         Return a normalized version of the filename, i.e. lower case and
-        .suffix replace with _suffix
+        replace all non-alphanumeric characters with underscores, as such
+        character are not allowed in output linknames
         """
-        return str(filepath.name.lower()).replace(".", "_")
+        return re.sub(r"[^a-z0-9_]", "_", filepath.name.lower())
 
     def parsing_hook(self, filepath):
         return "parse_{}".format(self.normalized_filename(filepath))

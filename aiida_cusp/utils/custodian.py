@@ -13,6 +13,34 @@ from aiida_cusp.utils.exceptions import CustodianSettingsError
 from aiida_cusp.utils.defaults import CustodianDefaults
 
 
+def handler_serializer(input_data):
+    """
+    AiiDA compliant serializer for Custodian Handlers
+
+    :param input_data: single custodian handler instance or list of multiple
+        handler instances to be serialized
+    :type input_data: `~custodian.custodian.ErrorHandler` or `list`
+    :returns: dictionary containing the json serialzed contents of all
+        handler passed in the `input_data` argument
+    :rtype: `dict`
+    """
+    pass
+
+
+def job_serializer(input_data):
+    """
+    AiiDA compliant serializer for Custodian Jobs
+
+    :param input_data: single `~custodian.vasp.jobs.VaspJob` instance or list
+        of multiple `~custodian.vasp.jobs.VaspJob` instances to be serialized
+    :type input_data: `~custodian.vasp.jobs.VaspJob` or `list`
+    :returns: dictionary containing the json serialzed contents of all
+        `~custodian.vasp.jobs.VaspJob`s passed in the `input_data` argument
+    :rtype: `dict`
+    """
+    pass
+
+
 class CustodianSettings(object):
     """
     Class to store Custodian settings and generate the required input files

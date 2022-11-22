@@ -15,22 +15,8 @@ from aiida.common import (CalcInfo, CodeInfo, CodeRunMode)
 
 from aiida_cusp.utils.defaults import (PluginDefaults, VaspDefaults,
                                        CustodianDefaults)
-from aiida_cusp.utils.custodian import CustodianSettings
-
-
-# TODO: This is a temporary fix since the to_aiida_type serizalizer function
-#       obviously is not defined for the aiida.orm.List type...
-def lidi_serializer(value):
-    # passing a list of handler names is equivalent to passing
-    # a dictionary of handler names with empty dicts as values to indicate
-    # default values shall be used
-    # Thus, we directly transform the list to the corresponding dict to
-    # avoid further issues downstream
-    if isinstance(value, (list, tuple)):
-        out = {v: {} for v in value}
-    elif isinstance(value, dict):
-        out = value
-    return Dict(dict=out)
+from aiida_cusp.utils.custodian import (CustodianSettings, handler_serializer,
+                                        job_serializer)
 
 
 class CalculationBase(CalcJob):
@@ -72,10 +58,17 @@ class CalculationBase(CalcJob):
         # definition of vasp error handlers connected to the calculation
         spec.input(
             'custodian.handlers',
-            valid_type=(Dict, List),
-            serializer=lidi_serializer,
+            valid_type=Dict,
+            serializer=handler_serializer,
             required=False,
             help=("Error handlers connected to the custodian executable")
+        )
+        spec.input(
+            'custodian.jobs',
+            valid_type=Dict,
+            serializer=job_serializer,
+            required=False,
+            help=("VaspJobs connected to the custodian executable")
         )
         spec.input(
             'custodian.settings',

@@ -25,22 +25,26 @@ def handler_serializer(input_data):
     :rtype: `dict`
     """
     from custodian.custodian import ErrorHandler
-    from aiida.orm import List
+    from aiida.orm import Dict
 
     try:
         handler_input_list = list(input_data)
     except TypeError:
         handler_input_list = [input_data]
     assert all([isinstance(h, ErrorHandler) for h in handler_input_list])
-    handlers = list()
+    handlers = dict()
     for (hdlr_id, handler) in enumerate(handler_input_list):
         hdlr_attr = handler.as_dict()
         hdlr_ver = hdlr_attr.pop('@version')
         hdlr_mod = hdlr_attr.pop('@module')
         hdlr_cls = hdlr_attr.pop('@class')
         hdlr_arg = hdlr_attr
-        handlers.append({'name': f"{hdlr_mod}.{hdlr_cls}", 'args': hdlr_arg})
-    return List(list=handlers)
+        handlers[hdlr_cls] = {
+            'name': hdlr_cls,
+            'import_path': f"{hdlr_mod}.{hdlr_cls}",
+            'args': hdlr_arg,
+        }
+    return Dict(dict=handlers)
 
 
 def job_serializer(input_data):
@@ -55,22 +59,26 @@ def job_serializer(input_data):
     :rtype: `dict`
     """
     from custodian.vasp.jobs import VaspJob
-    from aiida.orm import List
+    from aiida.orm import Dict
 
     try:
         job_input_list = list(input_data)
     except TypeError:
         job_input_list = [input_data]
     assert all([isinstance(j, VaspJob) for j in job_input_list])
-    jobs = list()
+    jobs = dict()
     for (job_id, job) in enumerate(job_input_list):
         job_attr = job.as_dict()
         job_ver = job_attr.pop('@version')
         job_mod = job_attr.pop('@module')
         job_cls = job_attr.pop('@class')
         job_arg = job_attr
-        jobs.append({'name': f"{job_mod}.{job_cls}", 'args': job_arg})
-    return List(list=jobs)
+        jobs[f"{job_id}"] = {
+            'name': job_cls,
+            'import_path': f"{job_mod}.{job_cls}",
+            'args': job_arg,
+        }
+    return Dict(dict=jobs)
 
 
 class CustodianSettings(object):
@@ -97,7 +105,7 @@ class CustodianSettings(object):
     """
 
     def __init__(self, vasp_cmd, stdout_fname, stderr_fname, settings={},
-                 handlers={}, is_neb=False):
+                 handlers={}, jobs=[], is_neb=False):
         # store shared variables
         self.vasp_cmd = vasp_cmd
         self.stderr = stderr_fname

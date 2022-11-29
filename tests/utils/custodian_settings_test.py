@@ -99,19 +99,17 @@ def test_protected_custodian_settings(protected_custodian_setting):
     assert expected_error in str(exception.value)
 
 
-@pytest.mark.parametrize('handler_type', ['list', 'tuple', 'dict'])
-def test_setup_custodian_handlers_from_valid_types(handler_type):
+def test_setup_custodian_handlers_from_valid_types():
     from aiida_cusp.utils.custodian import CustodianSettings
     from aiida_cusp.utils.defaults import CustodianDefaults, PluginDefaults
     handlers_avail = dict(CustodianDefaults.ERROR_HANDLER_SETTINGS)
-    if handler_type == 'list':
-        handlers = list(handlers_avail.keys())
-    elif handler_type == 'tuple':
-        handlers = tuple(handlers_avail.keys())
-    elif handler_type == 'dict':
-        handlers = {h: {} for h in handlers_avail.keys()}
-    else:
-        raise
+    handlers = {}
+    for handler, arguments in handlers_avail.items():
+        handlers[handler] = {
+            'name': handler,
+            'import_path': f"some.random.python.path.{handler}",
+            'args': arguments,
+        }
     # instantiate custodian settings and test setup_vaspjob_settings method
     # with defined settings
     vasp_cmd = None
@@ -119,9 +117,8 @@ def test_setup_custodian_handlers_from_valid_types(handler_type):
     stderr = PluginDefaults.STDERR_FNAME
     custodian_settings = CustodianSettings(stdout, stderr, stdout)
     output_handlers = custodian_settings.setup_custodian_handlers(handlers)
-    import_path = CustodianDefaults.HANDLER_IMPORT_PATH
-    expected_output = {".".join([import_path, name]): params for name, params
-                       in handlers_avail.items()}
+    expected_output = {item['import_path']: item['args'] for key, item
+                       in handlers.items()}
     assert output_handlers == expected_output
 
 
@@ -143,20 +140,29 @@ def test_setup_custodian_handlers_raises_on_invalid_type(handler):
     with pytest.raises(CustodianSettingsError) as exception:
         _ = custodian_settings.setup_custodian_handlers(handler)
     assert "Invalid input type for 'handler'" in str(exception.value)
+    # verify this works for a dictionary being passed
+    _ = custodian_settings.setup_custodian_handlers(dict())
 
 
 @pytest.mark.parametrize('handler_name,handler_params',
                          CustodianDefaults.ERROR_HANDLER_SETTINGS.items())
-def test_setup_custodian_handlers_with_params(handler_name, handler_params):
+def test_setup_custodian_handlers_uses_defaults(handler_name, handler_params):
+    """Verify defaults override user input"""
     from aiida_cusp.utils.custodian import CustodianSettings
     from aiida_cusp.utils.defaults import CustodianDefaults
+    path = CustodianDefaults.HANDLER_IMPORT_PATH
     val = 'updated_val'
     custodian_settings = CustodianSettings(val, val, val)
-    hdlr_param_updated = {p: val for p in dict(handler_params).keys()}
+    hdlr_param_updated = {
+        'name': handler_name,
+        'import_path': f"{path}.{handler_name}",
+        'args': {p: val for p in dict(handler_params).keys()},
+    }
     hdlr_input = {handler_name: hdlr_param_updated}
     hdlr_output = custodian_settings.setup_custodian_handlers(hdlr_input)
     path = CustodianDefaults.HANDLER_IMPORT_PATH
-    expected_output = {".".join([path, handler_name]): hdlr_param_updated}
+    # assert generated output now contains the defined default values
+    expected_output = {".".join([path, handler_name]): handler_params}
     assert hdlr_output == expected_output
 
 

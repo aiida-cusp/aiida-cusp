@@ -79,13 +79,15 @@ def test_is_neb(vasp_code, poscar, is_restart, is_neb):
 @pytest.mark.filterwarnings("ignore::UserWarning")
 def test_all_calculation_inputs(vasp_code, cstdn_code, incar, kpoints, poscar,
                                 with_pbe_potcars, calc_type, temporary_cwd):
+    # choose some arbitrary error handlers for this test
+    from custodian.vasp.handlers import VaspErrorHandler, StdErrHandler
     from aiida.engine import run
     from aiida_cusp.data import VaspPotcarData
     from aiida_cusp.calculators import VaspCalculation
     from aiida_cusp.utils.defaults import CustodianDefaults
     # default custodian settings and handlers
     custodian_settings = CustodianDefaults.CUSTODIAN_SETTINGS
-    custodian_handlers = CustodianDefaults.ERROR_HANDLER_SETTINGS
+    custodian_handlers = [VaspErrorHandler(), StdErrHandler()]
     # define code
     vasp_code.set_attribute('input_plugin', 'cusp.vasp')
     cstdn_code.set_attribute('input_plugin', 'cusp.vasp')

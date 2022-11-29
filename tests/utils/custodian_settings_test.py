@@ -221,14 +221,16 @@ def test_write_custodian_spec_raises_on_wrong_filetype(tmpdir):
 
 def test_write_custodian_spec_yaml_format_with_handler_regular(tmpdir):
     import pathlib
+    from custodian.vasp.handlers import VaspErrorHandler
     from aiida_cusp.utils.custodian import CustodianSettings
+    from aiida_cusp.utils.custodian import handler_serializer
     outfile = pathlib.Path(tmpdir) / 'custodian_spec_file.yaml'
     # setup custom inputs including handler: use default settings for
     # vasp, custodian and the chosen handler
     vasp_cmd = ['mpirun', '-np', '4', '/path/to/vasp']
     stdout = 'stdout.txt'
     stderr = 'stderr.txt'
-    handlers = ['VaspErrorHandler']  # use default settings for handler
+    handlers = dict(handler_serializer(VaspErrorHandler()))
     settings = {}  # use the default vasp / custodian settings
     cstdn_settings = CustodianSettings(vasp_cmd, stdout, stderr, is_neb=False,
                                        handlers=handlers, settings=settings)
@@ -250,9 +252,45 @@ def test_write_custodian_spec_yaml_format_with_handler_regular(tmpdir):
         "handlers:",
         "- hdlr: custodian.vasp.handlers.VaspErrorHandler",
         "  params:",
-        "    errors_subset_to_catch: null",
-        "    natoms_large_cell: 100",
+        "    errors_subset_to_catch:",
+        "    - tet",
+        "    - inv_rot_mat",
+        "    - brmix",
+        "    - subspacematrix",
+        "    - tetirr",
+        "    - incorrect_shift",
+        "    - real_optlay",
+        "    - rspher",
+        "    - dentet",
+        "    - too_few_bands",
+        "    - triple_product",
+        "    - rot_matrix",
+        "    - brions",
+        "    - pricel",
+        "    - zpotrf",
+        "    - amin",
+        "    - zbrent",
+        "    - pssyevx",
+        "    - eddrmm",
+        "    - edddav",
+        "    - algo_tet",
+        "    - grad_not_orth",
+        "    - nicht_konv",
+        "    - zheev",
+        "    - elf_kpar",
+        "    - elf_ncl",
+        "    - rhosyg",
+        "    - posmap",
+        "    - point_group",
+        "    - symprec_noise",
+        "    - dfpt_ncore",
+        "    - bravais",
+        "    - nbands_not_sufficient",
+        "    - hnform",
+        "    - coef",
+        "    natoms_large_cell: null",
         "    output_filename: aiida.out",
+        "    vtst_fixes: false",
         "jobs:",
         "- jb: custodian.vasp.jobs.VaspJob",
         "  params:",
@@ -287,7 +325,7 @@ def test_write_custodian_spec_yaml_format_without_handler_regular(tmpdir):
     vasp_cmd = ['mpirun', '-np', '4', '/path/to/vasp']
     stdout = 'stdout.txt'
     stderr = 'stderr.txt'
-    handlers = []  # use default settings for handler
+    handlers = {}  # use default settings for handler
     settings = {}  # use the default vasp / custodian settings
     cstdn_settings = CustodianSettings(vasp_cmd, stdout, stderr, is_neb=False,
                                        handlers=handlers, settings=settings)
@@ -334,14 +372,16 @@ def test_write_custodian_spec_yaml_format_without_handler_regular(tmpdir):
 
 def test_write_custodian_spec_yaml_format_with_handler_neb(tmpdir):
     import pathlib
+    from custodian.vasp.handlers import VaspErrorHandler
     from aiida_cusp.utils.custodian import CustodianSettings
+    from aiida_cusp.utils.custodian import handler_serializer
     outfile = pathlib.Path(tmpdir) / 'custodian_spec_file.yaml'
     # setup custom inputs including handler: use default settings for
     # vasp, custodian and the chosen handler
     vasp_cmd = ['mpirun', '-np', '4', '/path/to/vasp']
     stdout = 'stdout.txt'
     stderr = 'stderr.txt'
-    handlers = ['VaspErrorHandler']  # use default settings for handler
+    handlers = dict(handler_serializer(VaspErrorHandler()))
     settings = {}  # use the default vasp / custodian settings
     cstdn_settings = CustodianSettings(vasp_cmd, stdout, stderr, is_neb=True,
                                        handlers=handlers, settings=settings)
@@ -363,9 +403,45 @@ def test_write_custodian_spec_yaml_format_with_handler_neb(tmpdir):
         "handlers:",
         "- hdlr: custodian.vasp.handlers.VaspErrorHandler",
         "  params:",
-        "    errors_subset_to_catch: null",
-        "    natoms_large_cell: 100",
+        "    errors_subset_to_catch:",
+        "    - tet",
+        "    - inv_rot_mat",
+        "    - brmix",
+        "    - subspacematrix",
+        "    - tetirr",
+        "    - incorrect_shift",
+        "    - real_optlay",
+        "    - rspher",
+        "    - dentet",
+        "    - too_few_bands",
+        "    - triple_product",
+        "    - rot_matrix",
+        "    - brions",
+        "    - pricel",
+        "    - zpotrf",
+        "    - amin",
+        "    - zbrent",
+        "    - pssyevx",
+        "    - eddrmm",
+        "    - edddav",
+        "    - algo_tet",
+        "    - grad_not_orth",
+        "    - nicht_konv",
+        "    - zheev",
+        "    - elf_kpar",
+        "    - elf_ncl",
+        "    - rhosyg",
+        "    - posmap",
+        "    - point_group",
+        "    - symprec_noise",
+        "    - dfpt_ncore",
+        "    - bravais",
+        "    - nbands_not_sufficient",
+        "    - hnform",
+        "    - coef",
+        "    natoms_large_cell: null",
         "    output_filename: aiida.out",
+        "    vtst_fixes: false",
         "jobs:",
         "- jb: custodian.vasp.jobs.VaspNEBJob",
         "  params:",
@@ -400,7 +476,7 @@ def test_write_custodian_spec_yaml_format_without_handler_neb(tmpdir):
     vasp_cmd = ['mpirun', '-np', '4', '/path/to/vasp']
     stdout = 'stdout.txt'
     stderr = 'stderr.txt'
-    handlers = []  # use default settings for handler
+    handlers = {}  # use default settings for handler
     settings = {}  # use the default vasp / custodian settings
     cstdn_settings = CustodianSettings(vasp_cmd, stdout, stderr, is_neb=True,
                                        handlers=handlers, settings=settings)

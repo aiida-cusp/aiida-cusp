@@ -91,10 +91,10 @@ Options passed to the Custodian executable if a custodian code is set for the `c
    If no settings are defined for Custodian the VASP code is not wrapped by Custodian (i.e. the `vasp` executable defined by the VASP code set for the `code` input is called directly)
 
 * **custodian.code** (:class:`aiida.orm.nodes.data.code.installed.InstalledCode`) --
-* **custodian.handlers** (:class:`list` or :class:`dict`) --
+* **custodian.handlers** (:class:`list`) --
   Optional input option defining the error handlers connected to the calculation.
   For a complete list of available error handlers that may be set here please refer to the :ref:`handler section<user-guide-custodian-handlers>` in the Custodian documentation of this plugin.
-  (optional, default: ``{}``)
+  (optional, default: ``[]``)
 
   .. warning::
 

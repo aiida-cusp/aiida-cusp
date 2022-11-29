@@ -4,32 +4,20 @@ Custodian Error Handlers
 ========================
 
 Custodian uses different error handlers to check and correct for different failures of VASP calculations.
-Thus, one can individually decide which error should be corrected and which error should fail the calculation and connect the corresponding handlers.
-Error handlers for the calculations run with the calculation classes implemented in this plugin can be passed via the ``inputs.custodian.handlers`` input.
-Here, the input is expected to be a dictionary of the following form:
+Thus, by connecting the appropriate handlers, one can individually decide which error should be corrected and which error should fail the calculation.
+In order to connect the handlers to the calculation, the implemented ``inputs.custodian.handlers`` input parameter needs to be used.
+Here, the input is expected to be a :class:`list` of one or more VASP error handlers, implemented by the Custodian package, i.e.
 
 .. code-block:: python
 
-   handler_inputs = {
-      'HandlerName1': {
-          'option': 'value',
-          ...
-          },
-      'HandlerName2': {
-          'option', 'value',
-          ...
-          }
-      ...
-  }
+   from custodian.handlers.vasp import VaspErrorHandler, StdErrHandler
+   handler_inputs = [
+     VaspErrorHandler(),
+     StdErrHandler(),
+   ]
 
-In that case every dictionary entry corresponds to an individual handler specified by its name and the corresponding handler options to be used for it.
-Note if an empty dictionary is passed as option to any handler, i.e. `'HandlerName': {}`, the plugin's default options are used for the handler.
-Since one often wants to use the defined default for **all** handlers in the first place handlers may also be passed as a simple list of handler names.
-In that case the default values are used for every defined handler and the example above would simplify to
-
-.. code-block:: python
-
-   handler_inputs = ['HandlerName1', 'HandlerName2', ...]
+Note that the defined handlers will be automatically serialized into a dictionary, before they are passed to the calculation.
+During this serialization process, arguments defining input and output files of VASP will be changed to reflect the actual filenames used by the plugin.
 
 In the following all handlers available for VASP calculations are described in more detail and the available settings and their used defaults are shown.
 (For more complete overview please refer to the original `Custodian documentation`_)

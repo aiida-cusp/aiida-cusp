@@ -165,9 +165,10 @@ To do so we need to add the Custodian executable, defined by the `custodian_2020
    # enable error correction by adding an  **additional** custodian code ...
    VaspSiRelax.custodian.code = Code.get_from_string('custodian_2020427@CompMPI')
    # ... and the corresponding custodian error handlers
-   VaspSiRelax.custodian.handlers = ['VaspErrorHandler']
+   from custodian.vasp.handlers import VaspErrorHandler
+   VaspSiRelax.custodian.handlers = [VaspErrorHandler()]
 
-In the above example only a single error handlers, i.e. the `'VaspErrorHandler'`, is set in the calculation and the default settings as defined by the plugin are used for the connected Custodian code.
+In the above example only a single error handlers, i.e. the `~custodian.vasp.handlers.VaspErrorHandler`, is set in the calculation and the default settings as defined by the plugin are used for the connected Custodian code.
 For a complete overview of the available error handlers and the available Custodian settings that may be set for the code, please refer to the :ref:`Custodian section<user-guide-custodian>` of this documentation.
 
 .. note::
@@ -232,6 +233,7 @@ Copy-and-Paste
 
 .. code-block:: python
 
+   from custodian.vasp.handlers import VaspErrorHandler
    from pymatgen.core import Lattice, Structure
    from aiida.orm import Code
    from aiida.plugins import CalculationFactory, DataFactory
@@ -276,7 +278,7 @@ Copy-and-Paste
    # optional inputs for the custodian error correction (skip this if you
    # do not want to enable error correction)
    VaspSiRelax.custodian.code = custodian_code
-   VaspSiRelax.custodian.handlers = ['VaspErrorHandler']
+   VaspSiRelax.custodian.handlers = [VaspErrorHandler()]
 
    # submit calculation the daemon
    node = submit(VaspSiRelax)

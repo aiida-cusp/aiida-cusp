@@ -4,18 +4,19 @@ formats: []
 
 # build process definition
 build:
+  os: ubuntu-22.04
   tools:
     python: "3.8"
 
 # used python environment configuration
 python:
-    install:
-        - method: pip
-          path: .
-          extra_requirements:
-            - docs
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs
 
 # fail sphinx build on warnings
 sphinx:
-    builder: html
-    fail_on_warning: true
+  builder: html
+  fail_on_warning: true

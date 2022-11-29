@@ -258,13 +258,14 @@ class CalculationBase(CalcJob):
 
     def setup_custodian_settings(self, is_neb=False):
         """
-        Create custodian settings instance from the given handlers and
-        settings.
+        Create custodian settings instance from the given handlers, jobs
+        and settings
         """
         # setup the inputs to create the custodian settings from the passed
         # parameters
         settings = dict(self.inputs.custodian.get('settings', {}))
         handlers = dict(self.inputs.custodian.get('handlers', {}))
+        jobs = dict(self.inputs.custodian.get('jobs', {}))
         # get the vasp run command and the stdout / stderr files
         vasp_cmd = self.vasp_run_line()
         stdout = self._default_output_file
@@ -273,6 +274,7 @@ class CalculationBase(CalcJob):
         custodian_settings = CustodianSettings(vasp_cmd, stdout, stderr,
                                                settings=settings,
                                                handlers=handlers,
+                                               jobs=jobs,
                                                is_neb=is_neb)
         return custodian_settings
 

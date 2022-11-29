@@ -105,7 +105,7 @@ class CustodianSettings(object):
     """
 
     def __init__(self, vasp_cmd, stdout_fname, stderr_fname, settings={},
-                 handlers={}, jobs=[], is_neb=False):
+                 handlers={}, jobs={}, is_neb=False):
         # store shared variables
         self.vasp_cmd = vasp_cmd
         self.stderr = stderr_fname
@@ -173,40 +173,27 @@ class CustodianSettings(object):
             found for a handler
         :raises CustodianSettingsError: if an invalid handler name is found
         """
-        # normalize input to a dictionary of the form {handler_name: params}
-        # where params = {} results in default parameters being used
-        if isinstance(handlers, (list, tuple)):
-            handlers_dict = {hdlr_name: {} for hdlr_name in handlers}
-        elif isinstance(handlers, dict):
-            handlers_dict = dict(handlers)
-        else:
+        if not isinstance(handlers, dict):
             raise CustodianSettingsError("Invalid input type for 'handler', "
-                                         "expected '{}' or '{}' but got "
-                                         "'{}'".format(type(list), type(dict),
+                                         "expected type '{}' but got type "
+                                         "'{}'".format(type(dict),
                                                        type(handlers)))
+        handlers_dict = dict(handlers)
         handlers_and_settings = dict(CustodianDefaults.ERROR_HANDLER_SETTINGS)
         handler_import_and_params = {}
         for handler_name, handler_params in handlers_and_settings.items():
             try:
                 user_handler_params = handlers_dict.pop(handler_name)
-                for parameter, value in user_handler_params.items():
-                    if parameter in handler_params.keys():
-                        handler_params[parameter] = value
-                    else:
-                        valid = ", ".join(list(handler_params.keys()))
-                        error_msg = ("Invalid parameter '{}' for handler "
-                                     "'{}' (Valid parameters: {})"
-                                     .format(parameter, handler_name, valid))
-                        raise CustodianSettingsError(error_msg)
-                # if found add the handler import path with it's corresponding
-                # parameters to the input handler dictionary
-                import_path = ".".join([CustodianDefaults.HANDLER_IMPORT_PATH,
-                                        handler_name])
-                handler_import_and_params[import_path] = handler_params
-
+                user_handler_args = user_handler_params.pop('args')
+                import_path = user_handler_params.pop('import_path')
+                # override user-defined parameters with defined defaults
+                # if there are any
+                for param, value in handler_params.items():
+                    user_handler_args[param] = value
+                handler_import_and_params[import_path] = user_handler_args
             except KeyError:  # proceed with next handler if not found
                 continue
-        # raise if any handlers are remaining
+        # raise if any remaining (i.e. unprocessed) handlers are found
         self.validate_handlers(handlers_dict)
         return handler_import_and_params
 

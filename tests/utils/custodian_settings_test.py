@@ -166,24 +166,20 @@ def test_setup_custodian_handlers_uses_defaults(handler_name, handler_params):
     assert hdlr_output == expected_output
 
 
-@pytest.mark.parametrize('handler_type', ['list', 'tuple', 'dict'])
-def test_custodian_settings_raises_on_unprocessed_handler(handler_type):
+def test_custodian_validate_handlers():
     from aiida_cusp.utils.custodian import CustodianSettings
     from aiida_cusp.utils.defaults import PluginDefaults
     from aiida_cusp.utils.exceptions import CustodianSettingsError
-    if handler_type == 'list':
-        handlers = ["ThisIsAnUnknownHandler"]
-    elif handler_type == 'tuple':
-        handlers = ("ThisIsAnUnknownHandler",)
-    elif handler_type == 'dict':
-        handlers = {"ThisIsAnUnknownHandler": {}}
-    else:
-        raise
     # instantiate custodian settings and test setup_vaspjob_settings method
     # with defined settings
     vasp_cmd = None
     stdout = PluginDefaults.STDOUT_FNAME
     stderr = PluginDefaults.STDERR_FNAME
+    # check that we do not raise on an empty dict (i.e. all handlers have
+    # been processed inside the setup_custodian_handlers() method
+    _ = CustodianSettings(vasp_cmd, stdout, stderr, handlers=dict())
+    # otherwise, check that we raise
+    handlers = {'UnprocessedHandler': {}}
     with pytest.raises(CustodianSettingsError) as exception:
         _ = CustodianSettings(vasp_cmd, stdout, stderr, handlers=handlers)
     assert "Unknown Error-Handler(s)" in str(exception.value)

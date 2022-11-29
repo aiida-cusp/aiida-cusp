@@ -210,7 +210,7 @@ def test_write_custodian_spec_raises_on_wrong_filetype(tmpdir):
     vasp_cmd = ['vasp']
     stdout = 'stdout.txt'
     stderr = 'stderr.txt'
-    handlers = []
+    handlers = {}
     settings = {}  # use the default vasp / custodian settings
     cstdn_settings = CustodianSettings(vasp_cmd, stdout, stderr, is_neb=False,
                                        handlers=handlers, settings=settings)

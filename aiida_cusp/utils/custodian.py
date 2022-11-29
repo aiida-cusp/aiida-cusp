@@ -8,6 +8,7 @@ up the input scripts for the Custodian executable.
 
 
 import yaml
+import copy
 
 from aiida_cusp.utils.exceptions import CustodianSettingsError
 from aiida_cusp.utils.defaults import CustodianDefaults
@@ -155,15 +156,13 @@ class CustodianSettings(object):
         """
         Define error handlers used by custodian.
 
-        Accepts a list of handler names which will initialize the handlers
-        with their corresponding default values. If `handlers` is given as
-        dictionary keys are assumed to be of type handler name and the
-        corresponding item to be of type `dict` containing the non-default
-        parameters for the corresponding handler.
+        Accepts a dictionary of deserialized custodian handler classes.
+        Thereby, each dictionary key corresponds to the name of a used
+        handler.
 
-        :param handlers: list of handler names or a dictionary of handlers
-            and their corresponding non-default parameters
-        :type handlers: `dict` or `list`
+        :param handlers: dictionary of handlers and their corresponding
+            user-defined parameters
+        :type handlers: `dict`
         :returns: dictionary of handler module paths and the corresponding
             handler setings for all handlers defined in the input `handlers`
         :rtype: `dict`
@@ -176,9 +175,9 @@ class CustodianSettings(object):
         if not isinstance(handlers, dict):
             raise CustodianSettingsError("Invalid input type for 'handler', "
                                          "expected type '{}' but got type "
-                                         "'{}'".format(type(dict),
+                                         "'{}'".format(type(dict()),
                                                        type(handlers)))
-        handlers_dict = dict(handlers)
+        handlers_dict = copy.deepcopy(handlers)
         handlers_and_settings = dict(CustodianDefaults.ERROR_HANDLER_SETTINGS)
         handler_import_and_params = {}
         for handler_name, handler_params in handlers_and_settings.items():

@@ -197,27 +197,21 @@ class CustodianDefaults(object):
         return ['max_errors', 'polling_time_step', 'monitor_freq',
                 'skip_over_errors']
 
-    # dictionary of the used default settings for all VASP error handlers
-    # that may be used with this plugin
+    # the following dictionary contains all error handlers defined in the
+    # custodian package. dictionary entries defined here will be used during
+    # calculation setup to overwrite any user given inputs
     @classproperty
     def ERROR_HANDLER_SETTINGS(cls):
         return dict({
             'AliasingErrorHandler': {
                 'output_filename': PluginDefaults.STDOUT_FNAME,
             },
-            'DriftErrorHandler': {
-                'max_drift': None,
-                'to_average': 3,
-                'enaug_multiply': 2,
-            },
             'FrozenJobErrorHandler': {
                 'output_filename': PluginDefaults.STDOUT_FNAME,
-                'timeout': 21600,
             },
             'IncorrectSmearingHandler': {
                 'output_filename': VaspDefaults.FNAMES['vasprun'],
             },
-            'LargeSigmaHandler': {},
             'LrfCommutatorHandler': {
                 'output_filename': PluginDefaults.STDERR_FNAME,
             },
@@ -227,7 +221,6 @@ class CustodianDefaults(object):
             },
             'NonConvergingErrorHandler': {
                 'output_filename': VaspDefaults.FNAMES['oszicar'],
-                'nionic_steps': 10,
             },
             'PositiveEnergyErrorHandler': {
                 'output_filename': VaspDefaults.FNAMES['oszicar'],
@@ -235,7 +228,6 @@ class CustodianDefaults(object):
             'PotimErrorHandler': {
                 'input_filename': VaspDefaults.FNAMES['poscar'],
                 'output_filename': VaspDefaults.FNAMES['oszicar'],
-                'dE_threshold': 1.0,
             },
             'StdErrHandler': {
                 'output_filename': PluginDefaults.STDERR_FNAME,
@@ -245,14 +237,10 @@ class CustodianDefaults(object):
             },
             'VaspErrorHandler': {
                 'output_filename': PluginDefaults.STDOUT_FNAME,
-                'natoms_large_cell': 100,
-                'errors_subset_to_catch': None,
             },
-            'WalltimeHandler': {
-                'wall_time': None,
-                'buffer_time': 300,
-                'electronic_step_stop': False,
-            },
+            'WalltimeHandler': {},
+            'DriftErrorHandler': {},
+            'LargeSigmaHandler': {},
         })  # ERROR_HANDLER_SETTINGS
 
 

@@ -166,22 +166,6 @@ def test_setup_custodian_handlers_uses_defaults(handler_name, handler_params):
     assert hdlr_output == expected_output
 
 
-@pytest.mark.parametrize('handler_name',
-                         CustodianDefaults.ERROR_HANDLER_SETTINGS.keys())
-def test_setup_custodian_handlers_raises_for_invalid_param(handler_name):
-    from aiida_cusp.utils.custodian import CustodianSettings
-    from aiida_cusp.utils.defaults import CustodianDefaults, PluginDefaults
-    from aiida_cusp.utils.exceptions import CustodianSettingsError
-    vasp_cmd = None
-    stdout = PluginDefaults.STDOUT_FNAME
-    stderr = PluginDefaults.STDERR_FNAME
-    custodian_settings = CustodianSettings(vasp_cmd, stdout, stderr)
-    hdlr_input = {handler_name: {'this_is_an_invalid_handler_parameter': None}}
-    with pytest.raises(CustodianSettingsError) as exception:
-        hdlr_output = custodian_settings.setup_custodian_handlers(hdlr_input)
-    assert "Invalid parameter" in str(exception.value)
-
-
 @pytest.mark.parametrize('handler_type', ['list', 'tuple', 'dict'])
 def test_custodian_settings_raises_on_unprocessed_handler(handler_type):
     from aiida_cusp.utils.custodian import CustodianSettings

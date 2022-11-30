@@ -138,42 +138,63 @@ class CustodianDefaults(object):
         return 'custodian.vasp.jobs.VaspJob'
 
     # default settings controlling regular VASP jobs run through custodian
+    # (except for fixed parameters, which will be used for all calculations
+    # automatically, other parameter are only used in case no job input
+    # was passed to the calculation)
     @classproperty
     def VASP_JOB_SETTINGS(cls):
         return {
+            # always need to be replaced with the plugin defaults
             'vasp_cmd': None,
             'output_file': PluginDefaults.STDOUT_FNAME,
             'stderr_file': PluginDefaults.STDERR_FNAME,
+            # disallow automatic switch to gamma optimized version
+            'auto_gamma': False,
+            'gamma_vasp_cmd': None,
             'suffix': "",
             'final': True,
             'backup': True,
             'auto_npar': False,
-            'auto_gamma': False,
             'settings_override': None,
-            'gamma_vasp_cmd': None,
             'copy_magmom': False,
             'auto_continue': False,
         }
 
+    @classproperty
+    def VASP_JOB_FIXED_SETTINGS(cls):
+        return ['vasp_cmd', 'output_file', 'stderr_file', 'auto_gamma',
+                'gamma_vasp_cmd']
+
     # default settings controlling NEB VASP jobs run through custodian
+    # (except for fixed parameters, which will be used for all calculations
+    # automatically, other parameter are only used in case no job input
+    # was passed to the calculation)
     @classproperty
     def VASP_NEB_JOB_SETTINGS(cls):
         return {
+            # always need to be replaced with the plugin defaults
             'vasp_cmd': None,
             'output_file': PluginDefaults.STDOUT_FNAME,
             'stderr_file': PluginDefaults.STDERR_FNAME,
+            # disallow automatic switch to gamma optimized version
+            'auto_gamma': False,
+            'gamma_vasp_cmd': None,
             'suffix': "",
             'final': True,
             'backup': True,
             'auto_npar': False,
-            'auto_gamma': False,
             'half_kpts': False,
             'settings_override': None,
-            'gamma_vasp_cmd': None,
             'auto_continue': False,
         }
 
-    # default settings controlling the custodian executable
+    @classproperty
+    def VASP_NEB_JOB_FIXED_SETTINGS(cls):
+        return ['vasp_cmd', 'output_file', 'stderr_file', 'auto_gamma',
+                'gamma_vasp_cmd']
+
+    # default settings that will overwrite any user input given to the
+    # calculation
     @classproperty
     def CUSTODIAN_SETTINGS(cls):
         return {
@@ -182,19 +203,21 @@ class CustodianDefaults(object):
             'polling_time_step': 10,
             'monitor_freq': 30,
             'skip_over_errors': False,
+            'checkpoint': False,
+            'terminate_on_nonzero_returncode': False,
+
+
             'scratch_dir': None,
             'gzipped_output': False,
-            'checkpoint': False,
             'terminate_func': None,
-            'terminate_on_nonzero_returncode': False,
         }
 
     # custodian settings that may be altered by the user (settings not
     # defined here won't be accepted when passed as input to the
     # calculation's custodian.settings option!)
     @classproperty
-    def MODIFIABLE_SETTINGS(cls):
-        return ['max_errors', 'polling_time_step', 'monitor_freq',
+    def FIXED_CSTDN_SETTINGS(cls):
+        return ['scratch_dir', 'polling_time_step', 'monitor_freq',
                 'skip_over_errors']
 
     # the following dictionary contains all error handlers defined in the

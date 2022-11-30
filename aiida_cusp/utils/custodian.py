@@ -135,7 +135,7 @@ class CustodianSettings(object):
         :rtype: `dict`
         """
         cstdn_settings = dict(CustodianDefaults.CUSTODIAN_SETTINGS)
-        valid_settings = CustodianDefaults.MODIFIABLE_SETTINGS
+        valid_settings = CustodianDefaults.CUSTODIAN_SETTINGS
         for parameter in list(settings.keys()):
             # fail if the parameter is not a valid custodian setting at all
             if parameter not in cstdn_settings.keys():
@@ -144,7 +144,7 @@ class CustodianSettings(object):
                                              "setting '{}' (valid settings: "
                                              "{})".format(parameter, valid))
             # fail if the parameter is valid setting but not modifiable
-            if parameter not in CustodianDefaults.MODIFIABLE_SETTINGS:
+            if parameter not in CustodianDefaults.CUSTODIAN_SETTINGS:
                 raise CustodianSettingsError("cannot set value for protected "
                                              "custodian setting '{}'"
                                              .format(parameter))
@@ -195,6 +195,62 @@ class CustodianSettings(object):
         # raise if any remaining (i.e. unprocessed) handlers are found
         self.validate_handlers(handlers_dict)
         return handler_import_and_params
+
+    def setup_custodian_jobs(self, jobs):
+        """
+        :param jobs:
+        :type jobs: dict
+        :returns:
+        :rtype: dict
+        :raises CustodianSettingsError: if a non-modifiable parameter is
+            missing from the given job inputs (this should never happen!)
+        """
+        jobs_dict = copy.deepcopy(dict(sorted(jobs.items())))
+        job_import_and_params = []
+        for (index, (jobid, job_dictionary)) in enumerate(jobs_dict.items()):
+            # make sure we start at zero and preserve the correct order!
+            assert index == int(jobid)
+            job_type = job_dictionary.pop('name')
+            job_import_path = job_dictionary.pop('import_path')
+            job_args = job_dictionary.pop('args')
+            # load the correct fixed parameters
+            (default_args, fixed_args) = self.jobargs_from_string(job_type)
+            # update non-modifiable job settings inplace
+            for (arg_name, arg_value) in default_args.items():
+                if arg_name not in fixed_args:
+                    continue
+                if arg_name not in job_args:
+                    errmsg = (f"Expected parameter '{arg_name}' not found "
+                              f"for given {job_type}")
+                    raise CustodianSettingsError(errmsg)
+                job_args[arg_name] = arg_value
+            # finally, assert vasp_cmd was overwritten and set value
+            # obtained from connected code
+            assert job_args['vasp_cmd'] is None
+            job_args['vasp_cmd'] = self.vasp_cmd
+            # build list with import path and assiged parameters
+            job_import_and_params.append((job_import_path, job_args))
+        return job_import_and_params
+
+    def jobargs_from_string(self, jobtype_name_as_string):
+        """
+        Take the jobtype, i.e. 'VaspJob' or 'VaspNEBJob', as string and
+        return the corresponding fixed and default arguments
+
+        :param jobtype_name_as_string: the name of the jobtype to be
+            returned
+        :type jobtype_name_as_string: string
+        :returns: tuple with fixed and default parameters for the jobtype
+            as defined by the plugin's defaults
+        :rtype: tuple
+        """
+        if jobtype_name_as_string == 'VaspJob':
+            default_args = CustodianDefaults.VASP_JOB_SETTINGS
+            fixed_args = CustodianDefaults.VASP_JOB_FIXED_SETTINGS
+        elif jobtype_name_as_string == 'VaspNEBJob':
+            default_args = CustodianDefaults.VASP_NEB_JOB_SETTINGS
+            fixed_args = CustodianDefaults.VASP_NEB_JOB_FIXED_SETTINGS
+        return (default_args, fixed_args)
 
     def setup_vaspjob_settings(self, settings):
         """

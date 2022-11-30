@@ -11,6 +11,112 @@ import pytest
 from aiida_cusp.utils.defaults import CustodianDefaults
 
 
+@pytest.mark.parametrize('job_type,fixed_args,default_args',
+[  # noqa: E128
+    ('VaspJob',
+     CustodianDefaults.VASP_JOB_FIXED_SETTINGS,
+     CustodianDefaults.VASP_JOB_SETTINGS),
+    ('VaspNEBJob',
+     CustodianDefaults.VASP_NEB_JOB_FIXED_SETTINGS,
+     CustodianDefaults.VASP_NEB_JOB_SETTINGS),
+])
+def test_jobargs_from_string(job_type, fixed_args, default_args):
+    """Test jobargs_from_string() function return types"""
+    from aiida_cusp.utils.custodian import CustodianSettings
+    csettings = CustodianSettings("", "", "")
+    return_value = csettings.jobargs_from_string(job_type)
+    assert isinstance(return_value, tuple)
+    assert len(return_value) == 2
+    assert return_value[0] == default_args
+    assert return_value[1] == fixed_args
+
+
+@pytest.mark.parametrize('fixed_arg',
+                         CustodianDefaults.VASP_JOB_FIXED_SETTINGS)
+def test_setup_jobs_raises_on_missing_arg(fixed_arg):
+    """Check we raise if fixed arguments are missing during job setup"""
+    from aiida_cusp.utils.custodian import CustodianSettings
+    from aiida_cusp.utils.custodian import job_serializer
+    from aiida_cusp.utils.exceptions import CustodianSettingsError
+    from custodian.vasp.jobs import VaspJob
+    job_dict = job_serializer(VaspJob('vasp_cmd')).get_dict()
+    # try to setup the custodian job and assert we do not raise
+    csettings = CustodianSettings("", "", "")
+    csettings.setup_custodian_jobs(job_dict)
+    # remove fixed argument from the job arguments and assert we do raise
+    _ = job_dict['0']['args'].pop(fixed_arg)
+    with pytest.raises(CustodianSettingsError) as exc:
+        _ = csettings.setup_custodian_jobs(job_dict)
+    assert f"Expected parameter '{fixed_arg}' not found" in str(exc.value)
+
+
+@pytest.mark.parametrize('fixed_arg',
+                         CustodianDefaults.VASP_NEB_JOB_FIXED_SETTINGS)
+def test_setup_neb_jobs_raises_on_missing_arg(fixed_arg):
+    """Check we raise if fixed arguments are missing during NEB job setup"""
+    from aiida_cusp.utils.custodian import CustodianSettings
+    from aiida_cusp.utils.custodian import job_serializer
+    from aiida_cusp.utils.exceptions import CustodianSettingsError
+    from custodian.vasp.jobs import VaspNEBJob
+    job_dict = job_serializer(VaspNEBJob('vasp_cmd')).get_dict()
+    # try to setup the custodian job and assert we do not raise
+    csettings = CustodianSettings("", "", "")
+    csettings.setup_custodian_jobs(job_dict)
+    # remove fixed argument from the job arguments and assert we do raise
+    _ = job_dict['0']['args'].pop(fixed_arg)
+    with pytest.raises(CustodianSettingsError) as exc:
+        _ = csettings.setup_custodian_jobs(job_dict)
+    assert f"Expected parameter '{fixed_arg}' not found" in str(exc.value)
+
+
+@pytest.mark.parametrize('fixed_args,default_args',
+[  # noqa: E128
+    (CustodianDefaults.VASP_JOB_FIXED_SETTINGS,
+     CustodianDefaults.VASP_JOB_SETTINGS),
+    (CustodianDefaults.VASP_NEB_JOB_FIXED_SETTINGS,
+     CustodianDefaults.VASP_NEB_JOB_SETTINGS),
+])
+def test_overwrite_only_fixed_job_args(fixed_args, default_args):
+    """Assert only fixed parameters are overwritten"""
+    from aiida_cusp.utils.custodian import CustodianSettings
+    value = "user_input_value"
+    vasp_cmd = "vasp.exe"
+    # try to setup the custodian job and assert we do not raise
+    csettings = CustodianSettings(vasp_cmd, "", "")
+    args = {fixed_arg: value for fixed_arg in fixed_args}
+    args['non_fixed_arg'] = value
+    job_dict = {
+        '0': {
+            'name': 'VaspJob',
+            'import_path': 'NotRequired',
+            'args': args,
+        }
+    }
+    (_, args) = csettings.setup_custodian_jobs(job_dict)[0]
+    # the vasp_cmd is not set from the provided default parameters but
+    # rather from the value passed to CustodianSettins.__init__()
+    assert args.pop('vasp_cmd') == vasp_cmd
+    # other fixed arguments should have been replaced with the defined
+    # defaults, tough
+    for fixed_arg in fixed_args:
+        if fixed_arg == 'vasp_cmd':
+            continue
+        assert args.pop(fixed_arg) == default_args[fixed_arg]
+    # finally, we check that the only remaining parameter is the one
+    # defined by the user and that it is, indeed, unchanged
+    assert len(args) == 1
+    assert args.pop('non_fixed_arg') == value
+
+
+def test_preserve_jobid_start():
+    """Check assertion error if jobid does not start at zero index"""
+    from aiida_cusp.utils.custodian import CustodianSettings
+    csettings = CustodianSettings("", "", "")
+    job_dict = {'1': {}}  # not further args required as we should fail early
+    with pytest.raises(AssertionError) as exception:
+        _ = csettings.setup_custodian_jobs(job_dict)
+
+
 @pytest.mark.parametrize('is_neb', [True, False])
 def test_setup_vaspjob_settings_no_input(is_neb):
     from aiida_cusp.utils.custodian import CustodianSettings

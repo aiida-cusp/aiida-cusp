@@ -156,12 +156,12 @@ class CustodianSettings(object):
         """
         Define error handlers used by custodian.
 
-        Accepts a dictionary of deserialized custodian handler classes.
-        Thereby, each dictionary key corresponds to the name of a used
-        handler.
+        Accepts a dictionary of serialized custodian handler classes
+        as returned by the `~aiida_cusp.utils.custodian.handler_serializer`
+        function.
 
         :param handlers: dictionary of handlers and their corresponding
-            user-defined parameters
+            parameters
         :type handlers: `dict`
         :returns: dictionary of handler module paths and the corresponding
             handler setings for all handlers defined in the input `handlers`
@@ -198,10 +198,23 @@ class CustodianSettings(object):
 
     def setup_custodian_jobs(self, jobs):
         """
-        :param jobs:
-        :type jobs: dict
-        :returns:
-        :rtype: dict
+        Define calculation jobs used by custodian
+
+        Accepts a dictionary of serialized custodian job classes
+        as returned by the `~aiida_cusp.utils.custodian.job_serializer`
+        function.
+
+        :param jobs: dictionary of custodian jobs and their corresponding
+            parameters
+        :type jobs: `dict`
+        :returns: a list of tuples with the jobs import path as string
+            in the first index and a dictionary of the job's parameters
+            in the second index
+        :rtype: `tuple`
+        :raises AssertionError: if the job indices, used within the passed
+            input dictionary, do not start at zero and are not consecutive
+        :raises AssertionError: if the `vasp_cmd` parameter was not set to
+            `None` before overwriting with the current path
         :raises CustodianSettingsError: if a non-modifiable parameter is
             missing from the given job inputs (this should never happen!)
         """
@@ -239,10 +252,10 @@ class CustodianSettings(object):
 
         :param jobtype_name_as_string: the name of the jobtype to be
             returned
-        :type jobtype_name_as_string: string
+        :type jobtype_name_as_string: `str`
         :returns: tuple with fixed and default parameters for the jobtype
             as defined by the plugin's defaults
-        :rtype: tuple
+        :rtype: `tuple`
         """
         if jobtype_name_as_string == 'VaspJob':
             default_args = CustodianDefaults.VASP_JOB_SETTINGS

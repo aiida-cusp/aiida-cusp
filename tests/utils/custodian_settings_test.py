@@ -109,10 +109,23 @@ def test_overwrite_only_fixed_job_args(fixed_args, default_args):
 
 
 def test_preserve_jobid_start():
-    """Check assertion error if jobid does not start at zero index"""
-    from aiida_cusp.utils.custodian import CustodianSettings
+    """
+    Check assertion error if jobid does not start at zero index or is not
+    consecutive
+    """
+    from aiida_cusp.utils.custodian import CustodianSettings, job_serializer
+    from custodian.vasp.jobs import VaspJob
     csettings = CustodianSettings("", "", "")
+    # test zero start required
     job_dict = {'1': {}}  # not further args required as we should fail early
+    with pytest.raises(AssertionError) as exception:
+        _ = csettings.setup_custodian_jobs(job_dict)
+    # test consecutive indices enforced
+    job_dict = job_serializer([VaspJob(""), VaspJob("")]).get_dict()
+    # check that this works as-is
+    _ = csettings.setup_custodian_jobs(job_dict)
+    # manually change indices to be not consecutive
+    job_dict['2'] = job_dict.pop('1')
     with pytest.raises(AssertionError) as exception:
         _ = csettings.setup_custodian_jobs(job_dict)
 

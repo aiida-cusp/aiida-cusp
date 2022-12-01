@@ -197,32 +197,36 @@ class CustodianDefaults(object):
         return ['vasp_cmd', 'output_file', 'stderr_file', 'auto_gamma',
                 'gamma_vasp_cmd']
 
-    # default settings that will overwrite any user input given to the
-    # calculation
+    # default settings for controlling the overall custodian executable
+    # wrapping and monitoring the calculation job (note that some of the
+    # settings are protected parameters which may be set by the user but
+    # will be overwritten by the internal default parameters)
     @classproperty
     def CUSTODIAN_SETTINGS(cls):
         return {
-            'max_errors_per_job': None,
             'max_errors': 10,
+            'max_errors_per_job': None,
             'polling_time_step': 10,
             'monitor_freq': 30,
             'skip_over_errors': False,
-            'checkpoint': False,
             'terminate_on_nonzero_returncode': False,
-
-
+            # will always be replaced with the following defaults
             'scratch_dir': None,
             'gzipped_output': False,
             'terminate_func': None,
+            # disallow validators for now
+            'validators': None,
+            # disallow checkpoint
+            'checkpoint': False,
         }
 
     # custodian settings that may be altered by the user (settings not
     # defined here won't be accepted when passed as input to the
     # calculation's custodian.settings option!)
     @classproperty
-    def FIXED_CSTDN_SETTINGS(cls):
-        return ['scratch_dir', 'polling_time_step', 'monitor_freq',
-                'skip_over_errors']
+    def FIXED_CUSTODIAN_SETTINGS(cls):
+        return ['scratch_dir', 'gzipped_output', 'terminate_func',
+                'validators', 'checkpoint']
 
     # the following dictionary contains all error handlers defined in the
     # custodian package. dictionary entries defined here will be used during

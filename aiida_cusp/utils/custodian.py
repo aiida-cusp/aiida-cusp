@@ -265,36 +265,6 @@ class CustodianSettings(object):
             fixed_args = CustodianDefaults.VASP_NEB_JOB_FIXED_SETTINGS
         return (default_args, fixed_args)
 
-    def setup_vaspjob_settings(self, settings):
-        """
-        Define settings for the VASP program.
-
-        Removes all VASP program specific input parameters from the passed
-        `settings` and complements missing parameters with given defaults
-
-        :param settings: dictionary containing the settings for the VASP job
-        :type settings: `dict`
-        :param is_neb: set to `True` if the VASP job is of type NEB
-        :type is_neb: `bool`
-        """
-        if self._is_neb:
-            job_settings = dict(CustodianDefaults.VASP_NEB_JOB_SETTINGS)
-        else:
-            job_settings = dict(CustodianDefaults.VASP_JOB_SETTINGS)
-        # since job_settings is set to the default values at this point it
-        # contains **all** available parameters
-        for parameter in job_settings.keys():
-            try:
-                job_settings[parameter] = settings.pop(parameter)
-            except KeyError:
-                continue
-        # finally setup the non-optional parameters and return the completed
-        # settings dictionary
-        job_settings['vasp_cmd'] = self.vasp_cmd
-        job_settings['output_file'] = self.stdout
-        job_settings['stderr_file'] = self.stderr
-        return job_settings
-
     def validate_handlers(self, handlers):
         """
         Check if `handlers` is empty, i.e. verify all handlers have been

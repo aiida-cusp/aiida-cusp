@@ -151,6 +151,8 @@ class CustodianDefaults(object):
             # disallow automatic switch to gamma optimized version
             'auto_gamma': False,
             'gamma_vasp_cmd': None,
+            # default parameters that are only used internally if no
+            # VaspJob was defined by the user
             'suffix': "",
             'final': True,
             'backup': True,
@@ -179,6 +181,8 @@ class CustodianDefaults(object):
             # disallow automatic switch to gamma optimized version
             'auto_gamma': False,
             'gamma_vasp_cmd': None,
+            # default parameters that are only used internally if no
+            # VaspNEBJob was defined by the user
             'suffix': "",
             'final': True,
             'backup': True,

@@ -8,6 +8,7 @@ Base class serving as parent for other VASP calculator implementations
 
 import pathlib
 
+from custodian.vasp.jobs import VaspJob, VaspNEBJob
 from aiida.engine import CalcJob
 from aiida.orm import RemoteData, Code, Int, Bool, Dict, List
 from aiida.orm.nodes.data.base import to_aiida_type
@@ -266,16 +267,22 @@ class CalculationBase(CalcJob):
         settings = dict(self.inputs.custodian.get('settings', {}))
         handlers = dict(self.inputs.custodian.get('handlers', {}))
         jobs = dict(self.inputs.custodian.get('jobs', {}))
+        # if no jobs have been defined by the user, simply initialize
+        # a single Job / NEBJob with the plugins default parameters
+        if not jobs:
+            if is_neb:
+                JobType = VaspNEBJob
+                defaults = CustodianDefaults.VASP_NEB_JOB_SETTINGS
+            else:
+                JobType = VaspJob
+                defaults = CustodianDefaults.VASP_JOB_SETTINGS
+            jobs = job_serializer(JobType(**defaults)).get_dict()
         # get the vasp run command and the stdout / stderr files
         vasp_cmd = self.vasp_run_line()
-        stdout = self._default_output_file
-        stderr = self._default_error_file
         # setup custodian settings used to write the spec file
-        custodian_settings = CustodianSettings(vasp_cmd, stdout, stderr,
+        custodian_settings = CustodianSettings(vasp_cmd, jobs=jobs,
                                                settings=settings,
-                                               handlers=handlers,
-                                               jobs=jobs,
-                                               is_neb=is_neb)
+                                               handlers=handlers)
         return custodian_settings
 
     def restart_copy_remote(self, folder, calcinfo):

@@ -94,10 +94,9 @@ class CustodianSettings(object):
 
     :param vasp_cmd: list of commands requird to run the VASP calculation
     :type vasp_cmd: `list`
-    :param stdout_fname: name of the file used to log messages send to stdout
-    :type stdout_fname: `str`
-    :param stderr_fname: name of the file used to log messages send to stderr
-    :type stderr_fname: `str`
+    :param jobs: non-optional jobs parameter for custodian jobs being
+        passed to the calculator
+    :type jobs: `dict`
     :param settings: settings for the Custodian job
     :type settings: `dict`
     :param handlers: a set of error-correction handlers used to correct any
@@ -105,20 +104,15 @@ class CustodianSettings(object):
     :type handlers: `list` or `dict`
     """
 
-    def __init__(self, vasp_cmd, stdout_fname, stderr_fname, settings={},
-                 handlers={}, jobs={}, is_neb=False):
+    def __init__(self, vasp_cmd, jobs, settings={}, handlers={}):
         # store shared variables
         self.vasp_cmd = vasp_cmd
-        self.stderr = stderr_fname
-        self.stdout = stdout_fname
-        self._is_neb = is_neb
         # setup VASP error handlers connected to the calculation
         self.custodian_handlers = self.setup_custodian_handlers(handlers)
-        # setup VASP and Custodian program settings
+        # setup VASP jobs connected to the calculation
+        self.custodian_jobs = self.setup_custodian_jobs(jobs)
+        # setup Custodian program settings
         self.custodian_settings = self.setup_custodian_settings(settings)
-        self.vaspjob_settings = self.setup_vaspjob_settings(settings)
-        # check for any unused parameters in `settings`
-        self.validate_settings(settings)
 
     def setup_custodian_settings(self, settings):
         """

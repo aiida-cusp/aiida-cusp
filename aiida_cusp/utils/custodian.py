@@ -128,23 +128,27 @@ class CustodianSettings(object):
         :returns: input settings for the Custodian program
         :rtype: `dict`
         """
-        cstdn_settings = dict(CustodianDefaults.CUSTODIAN_SETTINGS)
-        valid_settings = CustodianDefaults.CUSTODIAN_SETTINGS
-        for parameter in list(settings.keys()):
+        user_settings = copy.deepcopy(settings)
+        default_settings = CustodianDefaults.CUSTODIAN_SETTINGS
+        fixed_settings = CustodianDefaults.FIXED_CUSTODIAN_SETTINGS
+        for parameter in list(user_settings.keys()):
             # fail if the parameter is not a valid custodian setting at all
-            if parameter not in cstdn_settings.keys():
-                valid = ", ".join(valid_settings)
+            if parameter not in default_settings.keys():
+                valid = ", ".join(default_settings.keys())
                 raise CustodianSettingsError("got an invalid custodian "
                                              "setting '{}' (valid settings: "
                                              "{})".format(parameter, valid))
-            # fail if the parameter is valid setting but not modifiable
-            if parameter not in CustodianDefaults.CUSTODIAN_SETTINGS:
-                raise CustodianSettingsError("cannot set value for protected "
-                                             "custodian setting '{}'"
-                                             .format(parameter))
+            # check if parameter is among the fixed parameters for which
+            # defined default values shall be used only
+            if parameter in fixed_settings:
+                # we need to pop the value here so that we do not fail
+                # the verify_settings() function
+                _ = user_settings.pop(parameter)
+                continue
             # otherwise: update the defaults from the user input
-            cstdn_settings[parameter] = settings.pop(parameter)
-        return cstdn_settings
+            default_settings[parameter] = user_settings.pop(parameter)
+        self.validate_settings(user_settings)
+        return default_settings
 
     def setup_custodian_handlers(self, handlers):
         """
@@ -233,8 +237,10 @@ class CustodianSettings(object):
                 job_args[arg_name] = arg_value
             # finally, assert vasp_cmd was overwritten and set value
             # obtained from connected code
-            assert job_args['vasp_cmd'] is None
-            job_args['vasp_cmd'] = self.vasp_cmd
+            assert job_args.pop('vasp_cmd') is None
+            # replace vasp_cmd with $vasp_cmd to properly expand given
+            # arguments when spec file is read by custodian
+            job_args['$vasp_cmd'] = self.vasp_cmd
             # build list with import path and assiged parameters
             job_import_and_params.append((job_import_path, job_args))
         return job_import_and_params
@@ -312,17 +318,16 @@ class CustodianSettings(object):
                                          .format(path_to_file,
                                                  path_to_file.suffix,
                                                  expected_suffix))
-        # replace vasp_cmd with $vasp_cmd to properly expand given arguments
-        # when spec file is read by custodian
-        vasp_job_settings = dict(self.vaspjob_settings)
-        vasp_job_settings['$vasp_cmd'] = vasp_job_settings.pop('vasp_cmd')
-        # setup a single vasp-job but distinguish between regular and neb
-        # calculations due to the different folder structures
-        if self._is_neb:
-            vasp_job_type = CustodianDefaults.VASP_NEB_JOB_IMPORT_PATH
-        else:
-            vasp_job_type = CustodianDefaults.VASP_JOB_IMPORT_PATH
-        custodian_jobs = [{'jb': vasp_job_type, 'params': vasp_job_settings}]
+        # job specification is expected as list of the form
+        # [
+        #   {'jb': job1_import_path, 'params': {'job1_params}},
+        #   {'jb': job2_import_path, 'params': {'job2_params}},
+        #   ...
+        # ]
+        connected_jobs = self.custodian_jobs
+        custodian_jobs = [
+            {'jb': j, 'params': p} for (j, p) in connected_jobs
+        ]
         # handler specification is expected as list of the form
         # [
         #   {'hdlr': handler1_import_path, 'params': {'handler1_params}},
@@ -342,6 +347,9 @@ class CustodianSettings(object):
             'handlers': custodian_handlers,
             'custodian_params': custodian_settings,
         }
+        # apply dirty hack to avoid aliases being used by yaml, see
+        # https://stackoverflow.com/a/30682604
+        yaml.Dumper.ignore_aliases = lambda *args: True
         # generate custodian input file
         cstdn_spec_file_contents = yaml.dump(custodian_spec_contents,
                                              explicit_start=False,

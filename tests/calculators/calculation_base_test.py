@@ -306,13 +306,45 @@ def test_calculation_restart_copy_remote(vasp_code, cstdn_code, tmpdir,
         assert calc_file_content != remote_content
 
 
-def test_temporary_retrieve_list(vasp_code):
+def test_temporary_retrieve_list_default(vasp_code):
+    """Test temporary_retrieve list contents when no user input was defined"""
     from aiida_cusp.calculators.calculation_base import CalculationBase
     # the expected retrieve list
-    expected_list = set([('*', '.', 0)])
+    expected_list = [
+        ('vasprun.xml', '.', 2),
+        ('OUTCAR', '.', 2),
+        ('CONTCAR', '.', 2),
+        ('*/vasprun.xml', '.', 2),
+        ('*/OUTCAR', '.', 2),
+        ('*/CONTCAR', '.', 2),
+    ]
     inputs = {
         'code': vasp_code,
         'metadata': {'options': {'resources': {'num_machines': 1}}},
+    }
+    calc_base = CalculationBase(inputs=inputs)
+    calc_temp_list = calc_base.retrieve_temporary_list()
+    assert len(calc_temp_list) == len(set(calc_temp_list))
+    assert set(calc_temp_list) == set(expected_list)
+
+
+def test_temporary_retrieve_list_user(vasp_code):
+    """Test temporary_retrieve list contents when user input was defined"""
+    from aiida_cusp.calculators.calculation_base import CalculationBase
+    # the expected retrieve list
+    user_defined_file = 'USERFILE'
+    expected_list = [
+        (f"{user_defined_file}", '.', 2),
+        (f"*/{user_defined_file}", '.', 2),
+    ]
+    inputs = {
+        'code': vasp_code,
+        'metadata': {
+            'options': {
+                'resources': {'num_machines': 1},
+                'parser_settings': {'parse_files': [user_defined_file]},
+            },
+        },
     }
     calc_base = CalculationBase(inputs=inputs)
     calc_temp_list = calc_base.retrieve_temporary_list()

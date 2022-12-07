@@ -101,6 +101,17 @@ class PluginDefaults(object):
     def PARSER_OUTPUT_NAMESPACE(cls):
         return "parsed_results"
 
+    # collection of VASP output files that will be retrieved by default (i.e.
+    # when no specific list of to retrieve was passed to the calculation)
+    @classproperty
+    def DEFAULT_RETRIEVE_LIST(cls):
+        default_retrieve_list = [
+            VaspDefaults.FNAMES['vasprun'],
+            VaspDefaults.FNAMES['outcar'],
+            VaspDefaults.FNAMES['contcar'],
+        ]
+        return default_retrieve_list
+
 
 class CustodianDefaults(object):
     """

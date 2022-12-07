@@ -309,8 +309,20 @@ class CalculationBase(CalcJob):
         Which of the files are actually kept is then decided by the
         subsequently running parser.
         """
-        # simply retrieve everything in the calculation folder
-        retrieve_temporary = [('*', '.', 0)]
+        # get list of files to retrieve from parser_options.
+        # if no options are given proceed with default list
+        settings = self.inputs.metadata.options.get('parser_settings', {})
+        parse_files = list(settings.get('parse_files', []))
+        parse_files = parse_files or PluginDefaults.DEFAULT_RETRIEVE_LIST
+        retrieve_temporary = []
+        # match files located both inside the working directory **and** in
+        # possibl esubfolders of that directory (i.e NEB calculations)
+        for fname in parse_files:
+            # FIXME: Once, support for older aiida-core versions is dropped
+            #        the nesting specifier `2` can be replaced with `None`
+            #        which was introduced with aiida-core 2.1.0
+            retrieve_temporary.append((f"{fname}", ".", 2))
+            retrieve_temporary.append((f"*/{fname}", ".", 2))
         return retrieve_temporary
 
     def retrieve_permanent_list(self):
@@ -325,7 +337,7 @@ class CalculationBase(CalcJob):
         retrieve_permanent = [
             # submit script and custodian logfiles (return _aiidasubmit.sh
             # by default to be compatible with AiiDA versions < 1.2.1 where
-            # this option was introduces)
+            # this option was introduced)
             self.inputs.metadata.options.get('submit_script_filename',
                                              '_aiidasubmit.sh'),
             PluginDefaults.CSTDN_SPEC_FNAME,

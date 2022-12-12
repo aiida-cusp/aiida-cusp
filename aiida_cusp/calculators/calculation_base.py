@@ -100,14 +100,30 @@ class CalculationBase(CalcJob):
             help=("If set to `False` POSCAR in the restarted calculation will "
                   "not be replaced with CONTCAR form parent calculation")
         )
+        # define the list of calculation output files to be retrieved from
+        # the server by the daemon
+        spec.input(
+            'metadata.options.retrieve_files',
+            required=False,
+            non_db=True,
+            valid_type=list,
+            default=PluginDefaults.DEFAULT_RETRIEVE_LIST,
+        )
         # extend the metadata.options namespace with an additional
         # option to specify optional parser settings
-        spec.input_namespace('metadata.options.parser_settings',
-                             required=False, non_db=True, dynamic=True)
+        spec.input_namespace(
+            'metadata.options.parser_settings',
+            required=False,
+            non_db=True,
+            dynamic=True
+        )
         # this is the output node available to all connected parser for
         # storing their generated results (whatever these may be)
-        spec.output_namespace(PluginDefaults.PARSER_OUTPUT_NAMESPACE,
-                              required=False, dynamic=True)
+        spec.output_namespace(
+            PluginDefaults.PARSER_OUTPUT_NAMESPACE,
+            required=False,
+            dynamic=True
+        )
         # add dynamic sub-namespaces parsed_results.node_00 to
         # parsed_results.node_99 to provide possibly requird output ports for
         # neb results
@@ -311,13 +327,11 @@ class CalculationBase(CalcJob):
         """
         # get list of files to retrieve from parser_options.
         # if no options are given proceed with default list
-        settings = self.inputs.metadata.options.get('parser_settings', {})
-        parse_files = list(settings.get('parse_files', []))
-        parse_files = parse_files or PluginDefaults.DEFAULT_RETRIEVE_LIST
+        retrieve = list(self.inputs.metadata.options.get('retrieve_files'))
         retrieve_temporary = []
         # match files located both inside the working directory **and** in
         # possibl esubfolders of that directory (i.e NEB calculations)
-        for fname in parse_files:
+        for fname in retrieve:
             # FIXME: Once, support for older aiida-core versions is dropped
             #        the nesting specifier `2` can be replaced with `None`
             #        which was introduced with aiida-core 2.1.0

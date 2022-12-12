@@ -342,7 +342,30 @@ def test_temporary_retrieve_list_user(vasp_code):
         'metadata': {
             'options': {
                 'resources': {'num_machines': 1},
-                'parser_settings': {'parse_files': [user_defined_file]},
+                'retrieve_files': [user_defined_file],
+            },
+        },
+    }
+    calc_base = CalculationBase(inputs=inputs)
+    calc_temp_list = calc_base.retrieve_temporary_list()
+    assert len(calc_temp_list) == len(set(calc_temp_list))
+    assert set(calc_temp_list) == set(expected_list)
+
+
+def test_temporary_retrieve_list_user_empty(vasp_code):
+    """
+    Test temporary_retrieve list contents when user input was defined
+    but list is empty list
+    """
+    from aiida_cusp.calculators.calculation_base import CalculationBase
+    # the expected retrieve list
+    expected_list = []
+    inputs = {
+        'code': vasp_code,
+        'metadata': {
+            'options': {
+                'resources': {'num_machines': 1},
+                'retrieve_files': [],
             },
         },
     }

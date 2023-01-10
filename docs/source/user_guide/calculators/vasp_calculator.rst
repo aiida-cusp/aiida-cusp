@@ -7,10 +7,24 @@ The :class:`~aiida_cusp.calculators.VaspCalculation` is available using the ``cu
 Similar to VASP itself the behavior of the calculation is entirely controllable by the passed input parameters defined for `KPOINTS`, `INCAR` and the `POTCAR` pseudo-potential.
 (Please refer to the :ref:`potcar command documentation<user-guide-commands-potcar>` how to add pseudo-potentials for VASP to the database)
 Whether a simple calculation or complex NEB calculation is run is decided by the calculation object based on the given structural inputs (i.e. ``poscar`` or ``neb_path``).
+
 Note that by default the output files containing calculation results are parsed using the :ref:`VaspFileParser class<user-guide-parsers-vaspfileparser>`.
 Of course the default parser may be changed to a different parser class using the calculation's `metadata.options.parser_class` option with corresponding parser options passed to the parser through the `metadata.options.parser_settings` option.
 For an overview of the available parsers and the accepted settings please refer to the :ref:`Parser section<user-guide-parsers>`.
-Despite the already mentioned, optional parser options the calculator accepts several other (non-)optional inputs that are used to setup the actual VASP calculation.
+
+Similarly, the `metadata.options.retrieve_files` setting allows the user to set an individual list of files to be retrieved from the calculation server.
+By default, `retrieve_files` is set to limit the group of retrieved calculation results to the following files:
+
+* `vasprun.xml`
+* `OUTCAR`
+* `CONTCAR`
+
+.. note::
+
+   Note that all files, expected and processed by the connected parser class, have to be defined in the `retrieve_files` list, passed to the calculation.
+   Failing to do so may likely result in an parsing error, ultimately failing the parsing process after the calculation has finished!
+
+Despite the above mentioned, optional parser and general options, the calculator accepts several other (non-)optional inputs that are used to setup the actual VASP calculation.
 In the following these calculation inputs are discussed and, for clarity, have been clustered into three main input groups that can be set with the calculation class:
 
 * :ref:`Vasp Calculation Inputs:<user-guide-calculators-vaspcalculator-inputs-vasp>`

@@ -316,6 +316,25 @@ class CalculationBase(CalcJob):
             if not file_parent_folder.exists():
                 file_parent_folder.mkdir(parents=True)
 
+    def files_to_retrieve(self):
+        """
+        Return the list of files to be retrieved from a calculation
+
+        This list contains the files to be retrieved defined by the user
+        as input to the calculation, complemented with all additional files
+        that are expected by the connected parser class
+        """
+        # get list of files to retrieve from parser_options.
+        # if no options are given proceed with default list
+        retrieve = list(self.inputs.metadata.options.get('retrieve_files'))
+        # get list of expected files, indicated as non-optional by the
+        # connected parser class
+        expected = self.expected_files()
+        # complement both lists if `expected` is not None
+        if expected is not None:
+            retrieve = list(set(retrieve + expected))
+        return retrieve
+
     def retrieve_temporary_list(self):
         """
         Defines the list of files marked for temporary retrieval.
@@ -325,9 +344,7 @@ class CalculationBase(CalcJob):
         Which of the files are actually kept is then decided by the
         subsequently running parser.
         """
-        # get list of files to retrieve from parser_options.
-        # if no options are given proceed with default list
-        retrieve = list(self.inputs.metadata.options.get('retrieve_files'))
+        retrieve = self.files_to_retrieve()
         retrieve_temporary = []
         # match files located both inside the working directory **and** in
         # possibl esubfolders of that directory (i.e NEB calculations)
@@ -367,6 +384,14 @@ class CalculationBase(CalcJob):
     def create_calculation_inputs(self, folder, calcinfo):
         """
         Write the calculation inputs and set the rerieve lists
+        (This method has to be implemented by the inherited subclass)
+        """
+        raise NotImplementedError
+
+    def expected_files(self):
+        """
+        Returns the list of expected files from the connected parser
+        class if defined
         (This method has to be implemented by the inherited subclass)
         """
         raise NotImplementedError

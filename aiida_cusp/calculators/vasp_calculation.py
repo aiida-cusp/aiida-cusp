@@ -132,3 +132,18 @@ class VaspCalculation(VaspBasicCalculation, VaspNebCalculation):
                                 "at the same time")
             if not poscar and not neb_path:
                 raise Exception("Missing non-optional structure input")
+
+    def expected_files(self):
+        """
+        Check the connected parser for a list of expected files
+        and return it to the caller if given
+        """
+        from aiida.plugins.factories import ParserFactory
+        parser = ParserFactory(self.get_connected_parser_name())
+        return parser.expected_files()
+
+    def get_connected_parser_name(self):
+        """
+        Return the connected parser name from the defined options
+        """
+        return self.inputs.metadata.options.get('parser_name')

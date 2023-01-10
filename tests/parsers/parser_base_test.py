@@ -77,3 +77,11 @@ def test_register_output_nodes_method(vasp_code):
     # test storing the node with same linkname fails
     exit_code = parser.register_output_nodes([(linkname, node)])
     assert exit_code.status == 303
+
+
+def test_expected_files_method_default_value():
+    """
+    Assert that the expected_files() method returns `None` by default
+    """
+    from aiida_cusp.parsers.parser_base import ParserBase
+    assert ParserBase.expected_files() is None

@@ -110,3 +110,55 @@ def test_all_calculation_inputs(vasp_code, cstdn_code, incar, kpoints, poscar,
         neb_path = {'node_00': poscar, 'node_01': poscar, 'node_02': poscar}
         inputs['neb_path'] = neb_path
     run(VaspCalculation, **inputs)
+
+
+def test_get_connected_parser_name_method(vasp_code):
+    from aiida.plugins import CalculationFactory
+    # define some individual parser name
+    pname = "myindividualparsername"
+    # define code
+    vasp_code.set_attribute('input_plugin', 'cusp.vasp')
+    inputs = {
+        'code': vasp_code,
+        'metadata': {
+            'options': {
+                'resources': {'num_machines': 1},
+                'parser_name': pname,
+            },
+        },
+    }
+    VaspCalculation = CalculationFactory('cusp.vasp')
+    vasp_calc_base = VaspCalculation(inputs=inputs)
+    # retrieve and compare parser name
+    parser_name_from_calc = vasp_calc_base.get_connected_parser_name()
+    assert parser_name_from_calc == pname
+
+
+def test_expected_files_method(vasp_code, monkeypatch):
+    from aiida.plugins import CalculationFactory
+    from aiida.plugins import ParserFactory
+
+    # load default calculation and parser classes
+    VaspCalculation = CalculationFactory('cusp.vasp')
+    VaspFileParser = ParserFactory('cusp.default')
+
+    # monkeypatch expected_files() method on parser class to return
+    # an individually setup list of files controlled by the unittest
+    mylist = ['A', 'B', 'C']
+
+    @staticmethod
+    def mock():
+        return mylist
+    monkeypatch.setattr(VaspFileParser, 'expected_files', mock)
+    assert VaspFileParser.expected_files() == mylist
+    # setup code and check return value from expected_files() method
+    # defined on the calculation class
+    vasp_code.set_attribute('input_plugin', 'cusp.vasp')
+    inputs = {
+        'code': vasp_code,
+        'metadata': {
+            'options': {'resources': {'num_machines': 1}},
+        },
+    }
+    vasp_calc_base = VaspCalculation(inputs=inputs)
+    assert vasp_calc_base.expected_files() == mylist

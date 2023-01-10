@@ -417,3 +417,47 @@ def test_permanent_retrieve_list(vasp_code):
     calc_perm_list = calc_base.retrieve_permanent_list()
     assert len(calc_perm_list) == len(set(calc_perm_list))
     assert set(calc_perm_list) == set(expected_list)
+
+
+@pytest.mark.parametrize('retrieve_list', [[], ['A', 'B', 'C']])
+@pytest.mark.parametrize('expected_list', [None, [], ['D', 'E', 'F'],
+                         ['B', 'C', 'D']])
+def test_files_to_retrieve_method(vasp_code, retrieve_list, expected_list):
+    from aiida_cusp.calculators.calculation_base import CalculationBase
+    inputs = {
+        'code': vasp_code,
+        'metadata': {
+            'options': {
+                'resources': {'num_machines': 1},
+                'retrieve_files': retrieve_list,
+            },
+        },
+    }
+    calc_base = CalculationBase(inputs=inputs)
+    # setup the expected list that would have been returned by the parser
+    calc_base.expected_files = lambda: expected_list
+    calc_temp_list = calc_base.files_to_retrieve()
+    if expected_list is None:
+        assert calc_temp_list == retrieve_list
+    else:
+        assert calc_temp_list == list(set(retrieve_list + expected_list))
+
+
+def test_expected_files_method_raises_on_base(vasp_code):
+    """
+    Assure the expected_file() prototype method raises NotImplementedError
+    on the calculation base class.
+    """
+    from aiida_cusp.calculators.calculation_base import CalculationBase
+    inputs = {
+        'code': vasp_code,
+        'metadata': {
+            'options': {
+                'resources': {'num_machines': 1},
+                'retrieve_files': [],
+            },
+        },
+    }
+    calc_base = CalculationBase(inputs=inputs)
+    with pytest.raises(NotImplementedError) as exception:
+        assert calc_base.expected_files()

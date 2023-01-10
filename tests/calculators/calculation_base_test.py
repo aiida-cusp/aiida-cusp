@@ -160,8 +160,9 @@ def test_prepare_for_submission_base_vasp(withmpi, vasp_code, cstdn_code,
         },
     }
     Base = CalculationBase(inputs=inputs)
-    # silence the NotImplementedError (we do not need these methods here)
+    # silence the NotImplementedErrors (we do not need these methods here)
     Base.create_calculation_inputs = lambda folder, calcinfo: calcinfo
+    Base.expected_files = lambda: None
     # run prepare_for_submission() to write the submit script to the
     # sandbox folder
     calcinfo = Base.presubmit(aiida_sandbox)
@@ -202,6 +203,7 @@ def test_prepare_for_submission_base_cstdn(withmpi, vasp_code, cstdn_code,
     Base = CalculationBase(inputs=inputs)
     # silence the NotImplementedError (we do not need these methods here)
     Base.create_calculation_inputs = lambda folder, calcinfo: calcinfo
+    Base.expected_files = lambda: None
     # run prepare_for_submission() to write the submit script to the
     # sandbox folder
     calcinfo = Base.presubmit(aiida_sandbox)
@@ -283,7 +285,7 @@ def test_calculation_restart_copy_remote(vasp_code, cstdn_code, tmpdir,
     # mock the central create_calculation_inputs() method which is defined
     # on the corresponding subclasses. here we simply replace it with a
     # a call to the restart_copy_remote() method (without any checks).
-    # additionally the custodian spec file is wriiten to check if it gets
+    # additionally the custodian spec file is written to check if it gets
     # accidentially copied to the working directory
     def mock(self, folder, calcinfo):
         self.restart_copy_remote(folder, calcinfo)
@@ -292,6 +294,7 @@ def test_calculation_restart_copy_remote(vasp_code, cstdn_code, tmpdir,
         return calcinfo
 
     monkeypatch.setattr(CalculationBase, 'create_calculation_inputs', mock)
+    monkeypatch.setattr(CalculationBase, 'expected_files', lambda self: None)
     # actually submit the calculation to check that remote contents are
     # indeed copied to the working directory
     calc_node = run_get_node(CalculationBase, **inputs)
@@ -306,10 +309,11 @@ def test_calculation_restart_copy_remote(vasp_code, cstdn_code, tmpdir,
         assert calc_file_content != remote_content
 
 
-def test_temporary_retrieve_list_default(vasp_code):
+@pytest.mark.parametrize('expected', [None, ['EXPECTED_FILE']])
+def test_temporary_retrieve_list_default(vasp_code, expected):
     """Test temporary_retrieve list contents when no user input was defined"""
     from aiida_cusp.calculators.calculation_base import CalculationBase
-    # the expected retrieve list
+    # the expected base retrieve list
     expected_list = [
         ('vasprun.xml', '.', 2),
         ('OUTCAR', '.', 2),
@@ -318,17 +322,23 @@ def test_temporary_retrieve_list_default(vasp_code):
         ('*/OUTCAR', '.', 2),
         ('*/CONTCAR', '.', 2),
     ]
+    if expected is not None:
+        expected_list.append((f'{expected[0]}', '.', 2))
+        expected_list.append((f'*/{expected[0]}', '.', 2))
     inputs = {
         'code': vasp_code,
         'metadata': {'options': {'resources': {'num_machines': 1}}},
     }
     calc_base = CalculationBase(inputs=inputs)
+    # setup the expected list that would have been returned by the parser
+    calc_base.expected_files = lambda: expected
     calc_temp_list = calc_base.retrieve_temporary_list()
     assert len(calc_temp_list) == len(set(calc_temp_list))
     assert set(calc_temp_list) == set(expected_list)
 
 
-def test_temporary_retrieve_list_user(vasp_code):
+@pytest.mark.parametrize('expected', [None, ['EXPECTED_FILE']])
+def test_temporary_retrieve_list_user(vasp_code, expected):
     """Test temporary_retrieve list contents when user input was defined"""
     from aiida_cusp.calculators.calculation_base import CalculationBase
     # the expected retrieve list
@@ -337,6 +347,9 @@ def test_temporary_retrieve_list_user(vasp_code):
         (f"{user_defined_file}", '.', 2),
         (f"*/{user_defined_file}", '.', 2),
     ]
+    if expected is not None:
+        expected_list.append((f'{expected[0]}', '.', 2))
+        expected_list.append((f'*/{expected[0]}', '.', 2))
     inputs = {
         'code': vasp_code,
         'metadata': {
@@ -347,12 +360,15 @@ def test_temporary_retrieve_list_user(vasp_code):
         },
     }
     calc_base = CalculationBase(inputs=inputs)
+    # setup the expected list that would have been returned by the parser
+    calc_base.expected_files = lambda: expected
     calc_temp_list = calc_base.retrieve_temporary_list()
     assert len(calc_temp_list) == len(set(calc_temp_list))
     assert set(calc_temp_list) == set(expected_list)
 
 
-def test_temporary_retrieve_list_user_empty(vasp_code):
+@pytest.mark.parametrize('expected', [None, ['EXPECTED_FILE']])
+def test_temporary_retrieve_list_user_empty(vasp_code, expected):
     """
     Test temporary_retrieve list contents when user input was defined
     but list is empty list
@@ -360,6 +376,9 @@ def test_temporary_retrieve_list_user_empty(vasp_code):
     from aiida_cusp.calculators.calculation_base import CalculationBase
     # the expected retrieve list
     expected_list = []
+    if expected is not None:
+        expected_list.append((f'{expected[0]}', '.', 2))
+        expected_list.append((f'*/{expected[0]}', '.', 2))
     inputs = {
         'code': vasp_code,
         'metadata': {
@@ -370,6 +389,8 @@ def test_temporary_retrieve_list_user_empty(vasp_code):
         },
     }
     calc_base = CalculationBase(inputs=inputs)
+    # setup the expected list that would have been returned by the parser
+    calc_base.expected_files = lambda: expected
     calc_temp_list = calc_base.retrieve_temporary_list()
     assert len(calc_temp_list) == len(set(calc_temp_list))
     assert set(calc_temp_list) == set(expected_list)

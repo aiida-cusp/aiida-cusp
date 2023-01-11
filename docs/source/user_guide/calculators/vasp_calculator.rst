@@ -12,17 +12,12 @@ Note that by default the output files containing calculation results are parsed 
 Of course the default parser may be changed to a different parser class using the calculation's `metadata.options.parser_class` option with corresponding parser options passed to the parser through the `metadata.options.parser_settings` option.
 For an overview of the available parsers and the accepted settings please refer to the :ref:`Parser section<user-guide-parsers>`.
 
-Similarly, the `metadata.options.retrieve_files` setting allows the user to set an individual list of files to be retrieved from the calculation server.
-By default, `retrieve_files` is set to limit the group of retrieved calculation results to the following files:
-
-* `vasprun.xml`
-* `OUTCAR`
-* `CONTCAR`
+Similarly, the `metadata.options.retrieve_files` setting allows the user to set an individual list of files to be retrieved temporarily from the calculation server.
 
 .. note::
 
-   Note that all files, expected and processed by the connected parser class, have to be defined in the `retrieve_files` list, passed to the calculation.
-   Failing to do so may likely result in an parsing error, ultimately failing the parsing process after the calculation has finished!
+   Note, however, that files marked for temporary retrieval are usually the files that are used by the parser class connected to the calculation.
+   Thus, the files that should be on that list are usually defined by the connected parser class itself, and there should be no reason to fiddle with this list manually.
 
 Despite the above mentioned, optional parser and general options, the calculator accepts several other (non-)optional inputs that are used to setup the actual VASP calculation.
 In the following these calculation inputs are discussed and, for clarity, have been clustered into three main input groups that can be set with the calculation class:

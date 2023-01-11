@@ -104,13 +104,16 @@ class CustodianSettings(object):
     :type handlers: `list` or `dict`
     """
 
-    def __init__(self, vasp_cmd, jobs, settings={}, handlers={}):
+    def __init__(self, vasp_cmd, jobs, settings={}, handlers={},
+                 validators={}):
         # store shared variables
         self.vasp_cmd = vasp_cmd
         # setup VASP error handlers connected to the calculation
         self.custodian_handlers = self.setup_custodian_handlers(handlers)
         # setup VASP jobs connected to the calculation
         self.custodian_jobs = self.setup_custodian_jobs(jobs)
+        # setup VASP validators connected to the calculation
+        self.custodian_validators = self.setup_custodian_validators(validators)
         # setup Custodian program settings
         self.custodian_settings = self.setup_custodian_settings(settings)
 
@@ -245,6 +248,14 @@ class CustodianSettings(object):
             job_import_and_params.append((job_import_path, job_args))
         return job_import_and_params
 
+    def setup_custodian_validators(self, validators):
+        """
+        Define validators classes used by custodian
+        """
+        # TODO: Validators are currently not supported to b setup
+        #       for a custodian calculation.
+        return []
+
     def jobargs_from_string(self, jobtype_name_as_string):
         """
         Take the jobtype, i.e. 'VaspJob' or 'VaspNEBJob', as string and
@@ -331,12 +342,22 @@ class CustodianSettings(object):
         # handler specification is expected as list of the form
         # [
         #   {'hdlr': handler1_import_path, 'params': {'handler1_params}},
-        #   {'hdlr': handler1_import_path, 'params': {'handler1_params}},
+        #   {'hdlr': handler2_import_path, 'params': {'handler2_params}},
         #   ...
         # ]
         connected_handlers = self.custodian_handlers.items()
         custodian_handlers = [
             {'hdlr': h, 'params': p} for (h, p) in connected_handlers
+        ]
+        # validator specification is expected as list of the form
+        # [
+        #   {'vldr': validator1_import_path, 'params': {'validator1_params}},
+        #   {'vldr': validator2_import_path, 'params': {'validator2_params}},
+        #   ...
+        # ]
+        connected_validators = self.custodian_validators
+        custodian_validators = [
+            {'vldr': v, 'params': p} for (v, p) in connected_validators
         ]
         # custodian settings are expected to be of type dict
         custodian_settings = self.custodian_settings
@@ -345,6 +366,7 @@ class CustodianSettings(object):
         custodian_spec_contents = {
             'jobs': custodian_jobs,
             'handlers': custodian_handlers,
+            'validators': connected_validators,
             'custodian_params': custodian_settings,
         }
         # apply dirty hack to avoid aliases being used by yaml, see

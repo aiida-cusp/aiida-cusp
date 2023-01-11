@@ -296,7 +296,7 @@ def test_write_custodian_spec_raises_on_wrong_filetype(tmpdir):
     assert str(exception.value).startswith('Given path') is True
 
 
-def test_cusrodian_settings_raise_on_missing_jobs():
+def test_custodian_settings_raise_on_missing_jobs():
     from aiida_cusp.utils.custodian import CustodianSettings
     vasp_cmd = ['mpirun', '-np', '4', '/path/to/vasp']
     # this should work
@@ -341,7 +341,6 @@ def test_write_custodian_spec_yaml_format_with_handler_regular(tmpdir):
         "  skip_over_errors: false",
         "  terminate_func: null",
         "  terminate_on_nonzero_returncode: false",
-        "  validators: null",
         "handlers:",
         "- hdlr: custodian.vasp.handlers.VaspErrorHandler",
         "  params:",
@@ -403,6 +402,7 @@ def test_write_custodian_spec_yaml_format_with_handler_regular(tmpdir):
         "    settings_override: null",
         "    stderr_file: aiida.err",
         "    suffix: ''",
+        "validators: []",
     ]) + "\n"
     with open(outfile, 'r') as custodian_spec_file:
         custodian_spec_file_content = custodian_spec_file.read()
@@ -440,7 +440,6 @@ def test_write_custodian_spec_yaml_format_without_handler_regular(tmpdir):
         "  skip_over_errors: false",
         "  terminate_func: null",
         "  terminate_on_nonzero_returncode: false",
-        "  validators: null",
         "handlers: []",
         "jobs:",
         "- jb: custodian.vasp.jobs.VaspJob",
@@ -461,6 +460,7 @@ def test_write_custodian_spec_yaml_format_without_handler_regular(tmpdir):
         "    settings_override: null",
         "    stderr_file: aiida.err",
         "    suffix: ''",
+        "validators: []",
     ]) + "\n"
     with open(outfile, 'r') as custodian_spec_file:
         custodian_spec_file_content = custodian_spec_file.read()
@@ -500,7 +500,6 @@ def test_write_custodian_spec_yaml_format_with_handler_neb(tmpdir):
         "  skip_over_errors: false",
         "  terminate_func: null",
         "  terminate_on_nonzero_returncode: false",
-        "  validators: null",
         "handlers:",
         "- hdlr: custodian.vasp.handlers.VaspErrorHandler",
         "  params:",
@@ -562,6 +561,7 @@ def test_write_custodian_spec_yaml_format_with_handler_neb(tmpdir):
         "    settings_override: null",
         "    stderr_file: aiida.err",
         "    suffix: ''",
+        "validators: []",
     ]) + "\n"
     with open(outfile, 'r') as custodian_spec_file:
         custodian_spec_file_content = custodian_spec_file.read()
@@ -599,7 +599,6 @@ def test_write_custodian_spec_yaml_format_without_handler_neb(tmpdir):
         "  skip_over_errors: false",
         "  terminate_func: null",
         "  terminate_on_nonzero_returncode: false",
-        "  validators: null",
         "handlers: []",
         "jobs:",
         "- jb: custodian.vasp.jobs.VaspNEBJob",
@@ -620,6 +619,7 @@ def test_write_custodian_spec_yaml_format_without_handler_neb(tmpdir):
         "    settings_override: null",
         "    stderr_file: aiida.err",
         "    suffix: ''",
+        "validators: []",
     ]) + "\n"
     with open(outfile, 'r') as custodian_spec_file:
         custodian_spec_file_content = custodian_spec_file.read()
@@ -660,7 +660,6 @@ def test_yaml_spec_for_multi_job_definition(tmpdir):
         "  skip_over_errors: false",
         "  terminate_func: null",
         "  terminate_on_nonzero_returncode: false",
-        "  validators: null",
         "handlers: []",
         "jobs:",
         "- jb: custodian.vasp.jobs.VaspJob",
@@ -717,6 +716,7 @@ def test_yaml_spec_for_multi_job_definition(tmpdir):
         "    settings_override: null",
         "    stderr_file: aiida.err",
         "    suffix: ''",
+        "validators: []",
     ]) + "\n"
     with open(outfile, 'r') as custodian_spec_file:
         custodian_spec_file_content = custodian_spec_file.read()

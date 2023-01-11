@@ -214,8 +214,6 @@ class CustodianDefaults(object):
             'scratch_dir': None,
             'gzipped_output': False,
             'terminate_func': None,
-            # disallow validators for now
-            'validators': None,
             # disallow checkpoint
             'checkpoint': False,
         }
@@ -226,7 +224,7 @@ class CustodianDefaults(object):
     @classproperty
     def FIXED_CUSTODIAN_SETTINGS(cls):
         return ['scratch_dir', 'gzipped_output', 'terminate_func',
-                'validators', 'checkpoint']
+                'checkpoint']
 
     # the following dictionary contains all error handlers defined in the
     # custodian package. dictionary entries defined here will be used during

@@ -262,3 +262,11 @@ def test_output_node_namespaces(vasp_code, filepath, tmpdir):
     # is not available)
     for linkname, node in parser.outputs.items():
         vasp_calc.out(linkname, node)
+
+
+def test_list_of_essential_files():
+    """
+    Assert that the expected_files() method returns `None`
+    """
+    from aiida_cusp.parsers.vasp_file_parser import VaspFileParser
+    assert VaspFileParser.expected_files() is None

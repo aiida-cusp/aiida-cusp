@@ -84,3 +84,22 @@ class ParserBase(Parser):
             return None
         except exceptions.ModificationNotAllowed:
             return self.exit_codes.ERRNO_DUPLICATE_LINKNAME
+
+    @staticmethod
+    def expected_files():
+        """
+        Define a list of files that are expected by the parser
+
+        If a list is defined, this list will be used to complement
+        the list of temporary retrieved files, defined by the
+        calculation.
+
+        If the parser does not expect a specific set of files, the
+        return value of this function has to be set to None
+
+        :returns: A list of files that are expected by the parser
+            or `None`
+        :rtype: `list` or `None`
+        """
+        # do not expect any files by default
+        return None

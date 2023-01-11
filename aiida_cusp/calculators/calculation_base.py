@@ -100,14 +100,30 @@ class CalculationBase(CalcJob):
             help=("If set to `False` POSCAR in the restarted calculation will "
                   "not be replaced with CONTCAR form parent calculation")
         )
+        # define the list of calculation output files to be retrieved from
+        # the server by the daemon
+        spec.input(
+            'metadata.options.retrieve_files',
+            required=False,
+            non_db=True,
+            valid_type=list,
+            default=PluginDefaults.DEFAULT_RETRIEVE_LIST,
+        )
         # extend the metadata.options namespace with an additional
         # option to specify optional parser settings
-        spec.input_namespace('metadata.options.parser_settings',
-                             required=False, non_db=True, dynamic=True)
+        spec.input_namespace(
+            'metadata.options.parser_settings',
+            required=False,
+            non_db=True,
+            dynamic=True
+        )
         # this is the output node available to all connected parser for
         # storing their generated results (whatever these may be)
-        spec.output_namespace(PluginDefaults.PARSER_OUTPUT_NAMESPACE,
-                              required=False, dynamic=True)
+        spec.output_namespace(
+            PluginDefaults.PARSER_OUTPUT_NAMESPACE,
+            required=False,
+            dynamic=True
+        )
         # add dynamic sub-namespaces parsed_results.node_00 to
         # parsed_results.node_99 to provide possibly requird output ports for
         # neb results
@@ -300,6 +316,25 @@ class CalculationBase(CalcJob):
             if not file_parent_folder.exists():
                 file_parent_folder.mkdir(parents=True)
 
+    def files_to_retrieve(self):
+        """
+        Return the list of files to be retrieved from a calculation
+
+        This list contains the files to be retrieved defined by the user
+        as input to the calculation, complemented with all additional files
+        that are expected by the connected parser class
+        """
+        # get list of files to retrieve from parser_options.
+        # if no options are given proceed with default list
+        retrieve = list(self.inputs.metadata.options.get('retrieve_files'))
+        # get list of expected files, indicated as non-optional by the
+        # connected parser class
+        expected = self.expected_files()
+        # complement both lists if `expected` is not None
+        if expected is not None:
+            retrieve = list(set(retrieve + expected))
+        return retrieve
+
     def retrieve_temporary_list(self):
         """
         Defines the list of files marked for temporary retrieval.
@@ -309,8 +344,16 @@ class CalculationBase(CalcJob):
         Which of the files are actually kept is then decided by the
         subsequently running parser.
         """
-        # simply retrieve everything in the calculation folder
-        retrieve_temporary = [('*', '.', 0)]
+        retrieve = self.files_to_retrieve()
+        retrieve_temporary = []
+        # match files located both inside the working directory **and** in
+        # possibl esubfolders of that directory (i.e NEB calculations)
+        for fname in retrieve:
+            # FIXME: Once, support for older aiida-core versions is dropped
+            #        the nesting specifier `2` can be replaced with `None`
+            #        which was introduced with aiida-core 2.1.0
+            retrieve_temporary.append((f"{fname}", ".", 2))
+            retrieve_temporary.append((f"*/{fname}", ".", 2))
         return retrieve_temporary
 
     def retrieve_permanent_list(self):
@@ -325,7 +368,7 @@ class CalculationBase(CalcJob):
         retrieve_permanent = [
             # submit script and custodian logfiles (return _aiidasubmit.sh
             # by default to be compatible with AiiDA versions < 1.2.1 where
-            # this option was introduces)
+            # this option was introduced)
             self.inputs.metadata.options.get('submit_script_filename',
                                              '_aiidasubmit.sh'),
             PluginDefaults.CSTDN_SPEC_FNAME,
@@ -341,6 +384,14 @@ class CalculationBase(CalcJob):
     def create_calculation_inputs(self, folder, calcinfo):
         """
         Write the calculation inputs and set the rerieve lists
+        (This method has to be implemented by the inherited subclass)
+        """
+        raise NotImplementedError
+
+    def expected_files(self):
+        """
+        Returns the list of expected files from the connected parser
+        class if defined
         (This method has to be implemented by the inherited subclass)
         """
         raise NotImplementedError

@@ -366,6 +366,8 @@ class CalculationBase(CalcJob):
         # Make sure to also account for possible file suffixes given by
         # a connected custodian job
         custodian_jobs = dict(self.inputs.custodian.get('jobs', {}))
+        # FIXME: If multiple identical suffixes are defined, this will add
+        #        the same file multiple times. Does that pose a problem!?
         for suffix in custodian_job_suffixes(custodian_jobs):
             for fname in retrieve:
                 # FIXME: Once, support for older aiida-core versions is dropped
@@ -397,13 +399,14 @@ class CalculationBase(CalcJob):
             # other logfiles, i.e. scheduler as well as stdout / stderr
             self.inputs.metadata.options.get('scheduler_stdout'),
             self.inputs.metadata.options.get('scheduler_stderr'),
-            PluginDefaults.STDOUT_FNAME,
             PluginDefaults.STDERR_FNAME,
         ]
         # the STDOUT_FNAME (i.e. aiida.out) will also be extended with the
-        # associate suffix for each run, thus we also extend the permanent
-        # retrieve list here
+        # associated suffix for each run, thus we check for any suffix and
+        # extend and add the STDOUT_FNAME for each defined suffix
         custodian_jobs = dict(self.inputs.custodian.get('jobs', {}))
+        # FIXME: If multiple identical suffixes are defined, this will add
+        #        the same file multiple times. Does that pose a problem!?
         for suffix in custodian_job_suffixes(custodian_jobs):
             retrieve_permanent.append(f"{PluginDefaults.STDOUT_FNAME}{suffix}")
         self.logger.debug(f"[{__name__}] retrieve_permanent_list(): "

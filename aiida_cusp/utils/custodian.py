@@ -82,6 +82,29 @@ def job_serializer(input_data):
     return Dict(dict=jobs)
 
 
+def custodian_job_suffixes(jobs):
+    """
+    Extract and return possibly defined suffixes of Custodian jobs
+
+    :param jobs: dictionary of Custodian jobs as defined by the
+        aiida_cusp.utils.custodian.job_serializer() function
+    :type jobs: `dict`
+    :returns: a list composed of all suffixed extracted from the job
+        dictionary
+    :rtype: `list`
+    """
+    # if no jobs were passed to the calculation, we'll initialize a
+    # single job internally with suffix set to `""`
+    if not jobs:
+        suffixes = [""]
+    else:
+        suffixes = []
+        for job_id, job_attrs in jobs.items():
+            suffix = job_attrs['args'].get('suffix', "")
+            suffixes.append(suffix)
+    return suffixes
+
+
 class CustodianSettings(object):
     """
     Class to store Custodian settings and generate the required input files

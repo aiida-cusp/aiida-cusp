@@ -17,7 +17,7 @@ from aiida.common import (CalcInfo, CodeInfo, CodeRunMode)
 from aiida_cusp.utils.defaults import (PluginDefaults, VaspDefaults,
                                        CustodianDefaults)
 from aiida_cusp.utils.custodian import (CustodianSettings, handler_serializer,
-                                        job_serializer)
+                                        job_serializer, custodian_job_suffixes)
 
 
 class CalculationBase(CalcJob):
@@ -189,6 +189,9 @@ class CalculationBase(CalcJob):
         mpirun_command = computer.get_mpirun_command()
         mpi_base_args = [arg.format(**mpi_arg_dict) for arg in mpirun_command]
         mpi_extra_args = self.inputs.metadata.options.mpirun_extra_params
+        self.logger.debug(f"[{__name__}] vasp_calc_mpi_args(): "
+                          f"using `mpi_base_args` = {mpi_base_args} and "
+                          f"`mpi_extra_args` = {mpi_extra_args}")
         return mpi_base_args, mpi_extra_args
 
     def vasp_run_line(self):
@@ -208,6 +211,8 @@ class CalculationBase(CalcJob):
             vasp_cmdline_params = mpicmd + mpiextra + vasp_exec
         else:
             vasp_cmdline_params = vasp_exec
+        self.logger.debug(f"[{__name__}] vasp_run_line(): "
+                          f"set `vasp_cmdline_params` = {vasp_cmdline_params}")
         # Custodian requires the vasp-cmd be a list of arguments. Since we
         # also pass the stdout / stderr log-files directly to custodian we're
         # done at this point
@@ -254,7 +259,12 @@ class CalculationBase(CalcJob):
         ]
         # do not copy POSCAR if replaced with CONTCAR
         if self.inputs.restart.get('contcar_to_poscar', True):
+            self.logger.debug(f"[{__name__}] restart_files_exclude(): "
+                              f"contcar_to_poscar=True => adding POSCAR "
+                              f"to exclude_files")
             exclude_files += [VaspDefaults.FNAMES['poscar']]
+        self.logger.debug(f"[{__name__}] restart_files_exclude(): "
+                          f"files excluded from restart: {exclude_files}")
         return exclude_files
 
     def setup_custodian_settings(self, is_neb=False):
@@ -276,6 +286,9 @@ class CalculationBase(CalcJob):
             else:
                 JobType = VaspJob
                 defaults = CustodianDefaults.VASP_JOB_SETTINGS
+            self.logger.debug(f"[{__name__}] setup_custodian_settings(): "
+                              f"custodian.jobs was not set, using single "
+                              f"{JobType} with default params {defaults}")
             jobs = job_serializer(JobType(**defaults)).get_dict()
         # get the vasp run command and the stdout / stderr files
         vasp_cmd = self.vasp_run_line()
@@ -349,13 +362,19 @@ class CalculationBase(CalcJob):
         retrieve = self.files_to_retrieve()
         retrieve_temporary = []
         # match files located both inside the working directory **and** in
-        # possibl esubfolders of that directory (i.e NEB calculations)
-        for fname in retrieve:
-            # FIXME: Once, support for older aiida-core versions is dropped
-            #        the nesting specifier `2` can be replaced with `None`
-            #        which was introduced with aiida-core 2.1.0
-            retrieve_temporary.append((f"{fname}", ".", 2))
-            retrieve_temporary.append((f"*/{fname}", ".", 2))
+        # possible subfolders of that directory (i.e NEB calculations)
+        # Make sure to also account for possible file suffixes given by
+        # a connected custodian job
+        custodian_jobs = dict(self.inputs.custodian.get('jobs', {}))
+        for suffix in custodian_job_suffixes(custodian_jobs):
+            for fname in retrieve:
+                # FIXME: Once, support for older aiida-core versions is dropped
+                #        the nesting specifier `2` can be replaced with `None`
+                #        which was introduced with aiida-core 2.1.0
+                retrieve_temporary.append((f"{fname}{suffix}", ".", 2))
+                retrieve_temporary.append((f"*/{fname}{suffix}", ".", 2))
+        self.logger.debug(f"[{__name__}] retrieve_temporary_list(): "
+                          f"calculated temporary list = {retrieve_temporary}")
         return retrieve_temporary
 
     def retrieve_permanent_list(self):
@@ -381,6 +400,14 @@ class CalculationBase(CalcJob):
             PluginDefaults.STDOUT_FNAME,
             PluginDefaults.STDERR_FNAME,
         ]
+        # the STDOUT_FNAME (i.e. aiida.out) will also be extended with the
+        # associate suffix for each run, thus we also extend the permanent
+        # retrieve list here
+        custodian_jobs = dict(self.inputs.custodian.get('jobs', {}))
+        for suffix in custodian_job_suffixes(custodian_jobs):
+            retrieve_permanent.append(f"{PluginDefaults.STDOUT_FNAME}{suffix}")
+        self.logger.debug(f"[{__name__}] retrieve_permanent_list(): "
+                          f"calculated permanent list = {retrieve_permanent}")
         return retrieve_permanent
 
     def create_calculation_inputs(self, folder, calcinfo):

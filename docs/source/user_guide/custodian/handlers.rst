@@ -10,7 +10,7 @@ Here, the input is expected to be a :class:`list` of one or more VASP error hand
 
 .. code-block:: python
 
-   from custodian.handlers.vasp import VaspErrorHandler, StdErrHandler
+   from custodian.vasp.handlers import VaspErrorHandler, StdErrHandler
    handler_inputs = [
      VaspErrorHandler(),
      StdErrHandler(),

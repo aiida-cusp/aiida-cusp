@@ -306,7 +306,8 @@ def with_pbe_potcars(interactive_potcar_file):
 @pytest.fixture(scope='function')
 def vasp_file_parser(vasp_code):
     """
-    Define VaspFileParser initialized with calculation node
+    Define VaspFileParser initialized with calculation node (not using
+    any custodian jobs)
     """
     from aiida.plugins import CalculationFactory
     from aiida_cusp.parsers.vasp_file_parser import VaspFileParser

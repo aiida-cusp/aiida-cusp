@@ -548,3 +548,57 @@ def test_build_parsing_list_duplicates(vasp_file_parser, name_or_wildcard,
     actual_parselist = [entry[0] for entry in vasp_file_parser.files_to_parse]
     assert len(actual_parselist) == len(expected_parselist)
     assert set(actual_parselist) == set(expected_parselist)
+
+
+def test_only_suffix_is_removed(vasp_file_parser, tmpdir):
+    """
+    Previoulsy, the suffix was removed from the actual filename using the
+    .rstrip() method. However, this does not work as intended, as the
+    string parsed to rstrip() is interpreted as the set of characters that
+    shall be removed from the string. Thus, rstrip will continue to remove
+    characters from the end of the string until it hits a character which
+    is not part of the set provided to rstrip().
+
+    Thus, it happend that "vasprun.xml" was crippled to "vasprun.xm" if,
+    for instance, the suffix was set to ".relax1"
+
+    to test the above case, we simply create a hypotethical file with
+    name 'filename' and suffix '.filename'
+    If rstrip() is used this will be immediately catched since in this
+    case the "filename.filename".rstrip(".filename") will lead to an
+    empty string :)
+    """
+    import pathlib
+    # setup the imaginary retrieve folder containing our hypotethical file
+    # that was retrieved from the server
+    filestem = "myfile"
+    filesuff = f".{filestem}"
+    filename = f"{filestem}{filesuff}"
+    filepath = pathlib.Path(tmpdir).resolve() / filename
+    if not filepath.parent.exists():
+        filepath.parent.mkdir(parents=True)
+    filepath.touch()
+    # point parser to the temporary directory and setup parse option to
+    # parse only the given files
+    vasp_file_parser.tmpfolder = str(pathlib.Path(tmpdir).resolve())
+    vasp_file_parser.settings['parse_files'] = [filestem]
+    vasp_file_parser.get_custodian_suffixes = lambda: [filesuff]
+    _ = vasp_file_parser.verify_and_set_parser_settings()
+    parsing_triplets = vasp_file_parser.build_parsing_triplets()
+    # assert that we start with a correctly built triplet list containg
+    # only the defined file with the correct suffix and stem
+    assert len(parsing_triplets) == 1
+    assert parsing_triplets[0][0] == filename
+    assert parsing_triplets[0][1] == filestem
+    assert parsing_triplets[0][2] == filesuff
+    exit_code = vasp_file_parser.build_parsing_list()
+    assert exit_code is None
+    # finally we check that the generated files_to_parse list indeed
+    # contains the defined file with the correct suffix. if rstrip()
+    # is used the third assertion will fail, as this would result in
+    # an empty string stored as the filestem
+    parsing_list = vasp_file_parser.files_to_parse
+    assert len(parsing_list) == 1
+    assert parsing_list[0][0] == filepath
+    assert parsing_list[0][1] == filestem
+    assert parsing_list[0][2] == filesuff

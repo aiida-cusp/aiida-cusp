@@ -119,14 +119,15 @@ class VaspFileParser(ParserBase):
         path_to_tmpfolder = pathlib.Path(self.tmpfolder).absolute()
         # list of the form [..., (file_name, file_stem, suffix), ...)]
         parsing_triplets = self.build_parsing_triplets()
-        self.logger.warning(f" ### {parsing_triplets}")
+        self.logger.debug(f"[{__name__}] build_parsing_list(): "
+                          f"created parsing triplets: {parsing_triplets}")
         self.files_to_parse = []
         for name, stem, suffix in parsing_triplets:
             matching_files = path_to_tmpfolder.rglob(name)
             for matched_file_path in matching_files:
                 filepath = matched_file_path.resolve()
                 fullname = filepath.name
-                filestem = filepath.name.rstrip(suffix)
+                filestem = fullname[:-len(suffix)] if suffix else fullname
                 if not filepath.is_file():
                     self.logger.info(f"skipping over folder {filepath}")
                     continue
@@ -142,7 +143,16 @@ class VaspFileParser(ParserBase):
                                         f"added to the parsing list! THIS "
                                         f"FILE WILL BE IGNORED!")
                     continue
+                self.logger.debug(f"[{__name__}] build_parsing_list(): "
+                                  f"extracted properties for file "
+                                  f"{matched_file_path}\n"
+                                  f"  filepath = {filepath}\n"
+                                  f"  fullname = {fullname}\n"
+                                  f"  filestem = {filestem}\n"
+                                  f"  suffix   = {suffix}")
                 self.files_to_parse.append((filepath, filestem, suffix))
+        self.logger.debug(f"[{__name__}] build_parsing_list(): "
+                          f"created parse lust {self.files_to_parse}")
         # return error there were no files found to parse
         if not self.files_to_parse and self.fail_on_empty_list:
             exit_code = self.exit_codes.ERRNO_PARSING_LIST_EMPTY

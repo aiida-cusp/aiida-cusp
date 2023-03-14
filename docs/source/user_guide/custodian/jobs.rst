@@ -25,7 +25,7 @@ In order to use Custodian jobs with this plugin, two different :class:`~aiida.or
    Please also refer to the :ref:`user-guide-calculators-vaspcalculator-inputs-vasp` and :ref:`Custodian Settings<user-guide-calculators-vaspcalculator-inputs-custodian>` sections as part of the :class:`~aiida_cusp.calculators.VaspCalculation` documentation, which discuss the required and / or optional code inputs for calculations in more detail
 
 Therefore, the actual VASP executable is already fully defined via the non-optional :class:`~aiida.orm.Code` object and does not need to be set when setting up one or multiple :class:`~custodian.vasp.jobs.VaspJob` objects that will be connected to the calculation.
-Thus, instead of passing an explicit input, defining the VASP command to be run, it is sufficient to simply initialize the ``vasp_cmd`` parameter on the :class:`~custodian.jobs.vasp.VaspJob` object with value :class:`None`, when used with calculations defined by this plugin.
+Thus, instead of passing an explicit input, defining the VASP command to be run, it is sufficient to simply initialize the ``vasp_cmd`` parameter on the :class:`~custodian.vasp.jobs.VaspJob` object with value :class:`None`, when used with calculations defined by this plugin.
 For instance:
 
 .. code-block:: python
@@ -33,7 +33,7 @@ For instance:
    from custodian.vasp.jobs import VaspJob
    double_relax = VaspJob.double_relaxation_run(None)
 
-Note that the same also applies when the Custodian job is not setup from one of the provided constructor, as shown in the example above, but rather initialized directly from the :class:`~custodian.jobs.vasp.VaspJob` class:
+Note that the same also applies when the Custodian job is not setup from one of the provided constructor, as shown in the example above, but rather initialized directly from the :class:`~custodian.vasp.jobs.VaspJob` class:
 
 .. code-block:: python
 

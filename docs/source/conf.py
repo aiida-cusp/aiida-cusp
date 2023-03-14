@@ -78,6 +78,8 @@ master_doc = 'index'
 intersphinx_mapping = {
     'pymatgen':
         ('https://pymatgen.org/', None),
+    'custodian':
+        ('https://materialsproject.github.io/custodian/', None),
     'aiida':
         ('https://aiida.readthedocs.io/projects/aiida-core/en/latest/', None),
     'ase':

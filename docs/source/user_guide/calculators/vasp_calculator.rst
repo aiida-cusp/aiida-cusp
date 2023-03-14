@@ -91,8 +91,10 @@ Options passed to the Custodian executable if a custodian code is set for the `c
    If no settings are defined for Custodian the VASP code is not wrapped by Custodian (i.e. the `vasp` executable defined by the VASP code set for the `code` input is called directly)
 
 * **custodian.code** (:class:`aiida.orm.nodes.data.code.installed.InstalledCode`) --
-* **custodian.handlers** (:class:`list`) --
-  Optional input option defining the error handlers connected to the calculation.
+  Additional Custodian code that is used to apply error / job handling to the VASP calculation
+  (optional, default: ``None``
+* **custodian.handlers** (:class:`list` or :class:`~custodian.vasp.handlers.VaspErrorHandler`) --
+  Optional input of type :class:`~custodian.vasp.handlers.VaspErrorHandler` or a list of :class:`~custodian.vasp.handlers.VaspErrorHandler` objects defining the error handlers connected to the calculation.
   For a complete list of available error handlers that may be set here please refer to the :ref:`handler section<user-guide-custodian-handlers>` in the Custodian documentation of this plugin.
   (optional, default: ``[]``)
 
@@ -100,11 +102,14 @@ Options passed to the Custodian executable if a custodian code is set for the `c
 
      Be advised that setting no error handlers for Custodian is perfectly fine, however, defining a Custodian code without setting any handlers will disable the error correction.
 
+* **custodian.jobs** (:class:`list` or :class:`~custodian.vasp.jobs.VaspJob`) --
+  Optional input of type :class:`~custodian.vasp.jobs.VaspJob` or a list of :class:`~custodian.vasp.jobs.VaspJob` objects defining one or multiple Custodian jobs that shall be connected to the calculation and will be handled by the Custodian executable corresponding to the provided Custodian code input. Please refer to the :ref:`custodian job section<user-guide-custodian-jobs>` in the Custodian documentation for further information on how to setup and connect jobs to a calculation run with this plugin.
+  (optional, default: ``[]``)
 * **custodian.settings** (:class:`dict`) --
   Optional dictionary containing the settings that should be set to customize the behavior of the Custodian executable.
   If no settings are passed (default) then the plugin's default settings for Custodian will be used.
   For a complete list of available settings that may be set here and their corresponding default values, please refer to the :ref:`settings section<user-guide-custodian-settings>` in the Custodian documentation of this plugin.
-  (default: ``{}``)
+  (optional, default: ``{}``)
 
 .. _user-guide-calculators-vaspcalculator-inputs-restart:
 
@@ -132,7 +137,7 @@ Default Calculator Outputs
 After the calculation has finished, parsed outputs are available via the calculation nodes `outputs.parsed_results` key.
 Note that the contents that are stored to this output key of course depend the parser plugin used for the calculation (see the :ref:`Parsers section<user-guide-parsers>`).
 By default the :class:`~aiida_cusp.calculators.VaspCalculation` class uses the :ref:`VaspFileParser<user-guide-parsers-vaspfileparser>` to parse the generated results.
-Note that if no additional parser options are passed to this parser class only the `CONTCAR`, `vasprun.xml` and `OUTCAR` files will be avilable in the calculation's outputs.
+Note that if no additional parser options are passed to this parser class only the `CONTCAR`, `vasprun.xml` and `OUTCAR` files will be available in the calculation's outputs.
 
 .. note::
 

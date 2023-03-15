@@ -243,7 +243,7 @@ In the following a `verdi shell`_ is used to load the `CONTCAR` nodes and to ret
    >>> contcar_relax2
    <VaspContcarData: uuid: f557cec6-2552-4008-8011-422019d421c8 (pk: 1668)>
 
-Since the plugin tightly integrates AiiDA with the Pymatgen framework we can easily get to the lattice constants of both output structures (and actually many more quantities) using the :meth:`~aiida_cusp.data.VaspContcarData.get_structure` method implemented by the :class:`~aiida_cusp.data.VaspContcarData` class:
+Since the plugin tightly integrates AiiDA with the Pymatgen framework we can easily get to the lattice constants of both output structures (and actually many more quantities) using the :meth:`~aiida_cusp.data.VaspPoscarData.get_structure` method inherited by the :class:`~aiida_cusp.data.VaspContcarData` class:
 
 .. code-block:: python
 

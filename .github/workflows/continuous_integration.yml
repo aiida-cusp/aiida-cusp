@@ -2,6 +2,8 @@ name: unittests
 
 on:
   pull_request:
+    path_ignore:
+      - 'docs/**'
 
 jobs:
   pre-commit:

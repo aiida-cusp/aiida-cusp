@@ -9,9 +9,9 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
       - name: Install Pre-Commit Dependencies
@@ -44,9 +44,9 @@ jobs:
         ports:
           - 5672:5672
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Setup Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install `aiida-cusp` Package and Dependencies
@@ -77,9 +77,9 @@ jobs:
         ports:
           - 5672:5672
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
       - name: Install CodeCov Dependencies
@@ -92,7 +92,7 @@ jobs:
         run: |
             pytest --cov-report=xml --cov=aiida_cusp tests/
       - name: Upload recorded coverage report
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           name: aiida-cusp-coverage
           token: ${{ secrets.CODECOV_TOKEN }}

@@ -8,9 +8,101 @@ up the input scripts for the Custodian executable.
 
 
 import yaml
+import copy
 
 from aiida_cusp.utils.exceptions import CustodianSettingsError
 from aiida_cusp.utils.defaults import CustodianDefaults
+
+
+def handler_serializer(input_data):
+    """
+    AiiDA compliant serializer for Custodian Handlers
+
+    :param input_data: single custodian handler instance or list of multiple
+        handler instances to be serialized
+    :type input_data: `~custodian.custodian.ErrorHandler` or `list`
+    :returns: dictionary containing the json serialzed contents of all
+        handler passed in the `input_data` argument
+    :rtype: `dict`
+    """
+    from custodian.custodian import ErrorHandler
+    from aiida.orm import Dict
+
+    try:
+        handler_input_list = list(input_data)
+    except TypeError:
+        handler_input_list = [input_data]
+    assert all([isinstance(h, ErrorHandler) for h in handler_input_list])
+    handlers = dict()
+    for (hdlr_id, handler) in enumerate(handler_input_list):
+        hdlr_attr = handler.as_dict()
+        hdlr_ver = hdlr_attr.pop('@version')
+        hdlr_mod = hdlr_attr.pop('@module')
+        hdlr_cls = hdlr_attr.pop('@class')
+        hdlr_arg = hdlr_attr
+        handlers[hdlr_cls] = {
+            'name': hdlr_cls,
+            'import_path': f"{hdlr_mod}.{hdlr_cls}",
+            'args': hdlr_arg,
+        }
+    return Dict(dict=handlers)
+
+
+def job_serializer(input_data):
+    """
+    AiiDA compliant serializer for Custodian Jobs
+
+    :param input_data: single `~custodian.vasp.jobs.VaspJob` instance or list
+        of multiple `~custodian.vasp.jobs.VaspJob` instances to be serialized
+    :type input_data: `~custodian.vasp.jobs.VaspJob` or `list`
+    :returns: dictionary containing the json serialzed contents of all
+        `~custodian.vasp.jobs.VaspJob`s passed in the `input_data` argument
+    :rtype: `dict`
+    """
+    from custodian.vasp.jobs import VaspJob
+    from aiida.orm import Dict
+
+    try:
+        job_input_list = list(input_data)
+    except TypeError:
+        job_input_list = [input_data]
+    assert all([isinstance(j, VaspJob) for j in job_input_list])
+    jobs = dict()
+    for (job_id, job) in enumerate(job_input_list):
+        job_attr = job.as_dict()
+        job_ver = job_attr.pop('@version')
+        job_mod = job_attr.pop('@module')
+        job_cls = job_attr.pop('@class')
+        job_arg = job_attr
+        jobs[f"{job_id}"] = {
+            'name': job_cls,
+            'import_path': f"{job_mod}.{job_cls}",
+            'args': job_arg,
+        }
+    return Dict(dict=jobs)
+
+
+def custodian_job_suffixes(jobs):
+    """
+    Extract and return possibly defined suffixes of Custodian jobs
+
+    :param jobs: dictionary of Custodian jobs as defined by the
+        aiida_cusp.utils.custodian.job_serializer() function
+    :type jobs: `dict`
+    :returns: a list composed of all suffixed extracted from the job
+        dictionary
+    :rtype: `list`
+    """
+    # if no jobs were passed to the calculation, we'll initialize a
+    # single job internally with suffix set to `""`
+    if not jobs:
+        suffixes = [""]
+    else:
+        suffixes = []
+        for job_id, job_attrs in jobs.items():
+            suffix = job_attrs['args'].get('suffix', "")
+            suffixes.append(suffix)
+    return suffixes
 
 
 class CustodianSettings(object):
@@ -25,10 +117,9 @@ class CustodianSettings(object):
 
     :param vasp_cmd: list of commands requird to run the VASP calculation
     :type vasp_cmd: `list`
-    :param stdout_fname: name of the file used to log messages send to stdout
-    :type stdout_fname: `str`
-    :param stderr_fname: name of the file used to log messages send to stderr
-    :type stderr_fname: `str`
+    :param jobs: non-optional jobs parameter for custodian jobs being
+        passed to the calculator
+    :type jobs: `dict`
     :param settings: settings for the Custodian job
     :type settings: `dict`
     :param handlers: a set of error-correction handlers used to correct any
@@ -36,20 +127,18 @@ class CustodianSettings(object):
     :type handlers: `list` or `dict`
     """
 
-    def __init__(self, vasp_cmd, stdout_fname, stderr_fname, settings={},
-                 handlers={}, is_neb=False):
+    def __init__(self, vasp_cmd, jobs, settings={}, handlers={},
+                 validators={}):
         # store shared variables
         self.vasp_cmd = vasp_cmd
-        self.stderr = stderr_fname
-        self.stdout = stdout_fname
-        self._is_neb = is_neb
         # setup VASP error handlers connected to the calculation
         self.custodian_handlers = self.setup_custodian_handlers(handlers)
-        # setup VASP and Custodian program settings
+        # setup VASP jobs connected to the calculation
+        self.custodian_jobs = self.setup_custodian_jobs(jobs)
+        # setup VASP validators connected to the calculation
+        self.custodian_validators = self.setup_custodian_validators(validators)
+        # setup Custodian program settings
         self.custodian_settings = self.setup_custodian_settings(settings)
-        self.vaspjob_settings = self.setup_vaspjob_settings(settings)
-        # check for any unused parameters in `settings`
-        self.validate_settings(settings)
 
     def setup_custodian_settings(self, settings):
         """
@@ -65,37 +154,39 @@ class CustodianSettings(object):
         :returns: input settings for the Custodian program
         :rtype: `dict`
         """
-        cstdn_settings = dict(CustodianDefaults.CUSTODIAN_SETTINGS)
-        valid_settings = CustodianDefaults.MODIFIABLE_SETTINGS
-        for parameter in list(settings.keys()):
+        user_settings = copy.deepcopy(settings)
+        default_settings = CustodianDefaults.CUSTODIAN_SETTINGS
+        fixed_settings = CustodianDefaults.FIXED_CUSTODIAN_SETTINGS
+        for parameter in list(user_settings.keys()):
             # fail if the parameter is not a valid custodian setting at all
-            if parameter not in cstdn_settings.keys():
-                valid = ", ".join(valid_settings)
+            if parameter not in default_settings.keys():
+                valid = ", ".join(default_settings.keys())
                 raise CustodianSettingsError("got an invalid custodian "
                                              "setting '{}' (valid settings: "
                                              "{})".format(parameter, valid))
-            # fail if the parameter is valid setting but not modifiable
-            if parameter not in CustodianDefaults.MODIFIABLE_SETTINGS:
-                raise CustodianSettingsError("cannot set value for protected "
-                                             "custodian setting '{}'"
-                                             .format(parameter))
+            # check if parameter is among the fixed parameters for which
+            # defined default values shall be used only
+            if parameter in fixed_settings:
+                # we need to pop the value here so that we do not fail
+                # the verify_settings() function
+                _ = user_settings.pop(parameter)
+                continue
             # otherwise: update the defaults from the user input
-            cstdn_settings[parameter] = settings.pop(parameter)
-        return cstdn_settings
+            default_settings[parameter] = user_settings.pop(parameter)
+        self.validate_settings(user_settings)
+        return default_settings
 
     def setup_custodian_handlers(self, handlers):
         """
         Define error handlers used by custodian.
 
-        Accepts a list of handler names which will initialize the handlers
-        with their corresponding default values. If `handlers` is given as
-        dictionary keys are assumed to be of type handler name and the
-        corresponding item to be of type `dict` containing the non-default
-        parameters for the corresponding handler.
+        Accepts a dictionary of serialized custodian handler classes
+        as returned by the `~aiida_cusp.utils.custodian.handler_serializer`
+        function.
 
-        :param handlers: list of handler names or a dictionary of handlers
-            and their corresponding non-default parameters
-        :type handlers: `dict` or `list`
+        :param handlers: dictionary of handlers and their corresponding
+            parameters
+        :type handlers: `dict`
         :returns: dictionary of handler module paths and the corresponding
             handler setings for all handlers defined in the input `handlers`
         :rtype: `dict`
@@ -105,72 +196,108 @@ class CustodianSettings(object):
             found for a handler
         :raises CustodianSettingsError: if an invalid handler name is found
         """
-        # normalize input to a dictionary of the form {handler_name: params}
-        # where params = {} results in default parameters being used
-        if isinstance(handlers, (list, tuple)):
-            handlers_dict = {hdlr_name: {} for hdlr_name in handlers}
-        elif isinstance(handlers, dict):
-            handlers_dict = dict(handlers)
-        else:
+        if not isinstance(handlers, dict):
             raise CustodianSettingsError("Invalid input type for 'handler', "
-                                         "expected '{}' or '{}' but got "
-                                         "'{}'".format(type(list), type(dict),
+                                         "expected type '{}' but got type "
+                                         "'{}'".format(type(dict()),
                                                        type(handlers)))
+        handlers_dict = copy.deepcopy(handlers)
         handlers_and_settings = dict(CustodianDefaults.ERROR_HANDLER_SETTINGS)
         handler_import_and_params = {}
         for handler_name, handler_params in handlers_and_settings.items():
             try:
                 user_handler_params = handlers_dict.pop(handler_name)
-                for parameter, value in user_handler_params.items():
-                    if parameter in handler_params.keys():
-                        handler_params[parameter] = value
-                    else:
-                        valid = ", ".join(list(handler_params.keys()))
-                        error_msg = ("Invalid parameter '{}' for handler "
-                                     "'{}' (Valid parameters: {})"
-                                     .format(parameter, handler_name, valid))
-                        raise CustodianSettingsError(error_msg)
-                # if found add the handler import path with it's corresponding
-                # parameters to the input handler dictionary
-                import_path = ".".join([CustodianDefaults.HANDLER_IMPORT_PATH,
-                                        handler_name])
-                handler_import_and_params[import_path] = handler_params
-
+                user_handler_args = user_handler_params.pop('args')
+                import_path = user_handler_params.pop('import_path')
+                # override user-defined parameters with defined defaults
+                # if there are any
+                for param, value in handler_params.items():
+                    user_handler_args[param] = value
+                handler_import_and_params[import_path] = user_handler_args
             except KeyError:  # proceed with next handler if not found
                 continue
-        # raise if any handlers are remaining
+        # raise if any remaining (i.e. unprocessed) handlers are found
         self.validate_handlers(handlers_dict)
         return handler_import_and_params
 
-    def setup_vaspjob_settings(self, settings):
+    def setup_custodian_jobs(self, jobs):
         """
-        Define settings for the VASP program.
+        Define calculation jobs used by custodian
 
-        Removes all VASP program specific input parameters from the passed
-        `settings` and complements missing parameters with given defaults
+        Accepts a dictionary of serialized custodian job classes
+        as returned by the `~aiida_cusp.utils.custodian.job_serializer`
+        function.
 
-        :param settings: dictionary containing the settings for the VASP job
-        :type settings: `dict`
-        :param is_neb: set to `True` if the VASP job is of type NEB
-        :type is_neb: `bool`
+        :param jobs: dictionary of custodian jobs and their corresponding
+            parameters
+        :type jobs: `dict`
+        :returns: a list of tuples with the jobs import path as string
+            in the first index and a dictionary of the job's parameters
+            in the second index
+        :rtype: `tuple`
+        :raises AssertionError: if the job indices, used within the passed
+            input dictionary, do not start at zero and are not consecutive
+        :raises AssertionError: if the `vasp_cmd` parameter was not set to
+            `None` before overwriting with the current path
+        :raises CustodianSettingsError: if a non-modifiable parameter is
+            missing from the given job inputs (this should never happen!)
         """
-        if self._is_neb:
-            job_settings = dict(CustodianDefaults.VASP_NEB_JOB_SETTINGS)
-        else:
-            job_settings = dict(CustodianDefaults.VASP_JOB_SETTINGS)
-        # since job_settings is set to the default values at this point it
-        # contains **all** available parameters
-        for parameter in job_settings.keys():
-            try:
-                job_settings[parameter] = settings.pop(parameter)
-            except KeyError:
-                continue
-        # finally setup the non-optional parameters and return the completed
-        # settings dictionary
-        job_settings['vasp_cmd'] = self.vasp_cmd
-        job_settings['output_file'] = self.stdout
-        job_settings['stderr_file'] = self.stderr
-        return job_settings
+        jobs_dict = copy.deepcopy(dict(sorted(jobs.items())))
+        job_import_and_params = []
+        for (index, (jobid, job_dictionary)) in enumerate(jobs_dict.items()):
+            # make sure we start at zero and preserve the correct order!
+            assert index == int(jobid)
+            job_type = job_dictionary.pop('name')
+            job_import_path = job_dictionary.pop('import_path')
+            job_args = job_dictionary.pop('args')
+            # load the correct fixed parameters
+            (default_args, fixed_args) = self.jobargs_from_string(job_type)
+            # update non-modifiable job settings inplace
+            for (arg_name, arg_value) in default_args.items():
+                if arg_name not in fixed_args:
+                    continue
+                if arg_name not in job_args:
+                    errmsg = (f"Expected parameter '{arg_name}' not found "
+                              f"for given {job_type}")
+                    raise CustodianSettingsError(errmsg)
+                job_args[arg_name] = arg_value
+            # finally, assert vasp_cmd was overwritten and set value
+            # obtained from connected code
+            assert job_args.pop('vasp_cmd') is None
+            # replace vasp_cmd with $vasp_cmd to properly expand given
+            # arguments when spec file is read by custodian
+            job_args['$vasp_cmd'] = self.vasp_cmd
+            # build list with import path and assiged parameters
+            job_import_and_params.append((job_import_path, job_args))
+        return job_import_and_params
+
+    def setup_custodian_validators(self, validators):
+        """
+        Define validators classes used by custodian
+        """
+        # TODO: Validators are currently not supported to b setup
+        #       for a custodian calculation.
+        return []
+
+    def jobargs_from_string(self, jobtype_name_as_string):
+        """
+        Take the jobtype, i.e. 'VaspJob' or 'VaspNEBJob', as string and
+        return the corresponding fixed and default arguments
+
+        :param jobtype_name_as_string: the name of the jobtype to be
+            returned
+        :type jobtype_name_as_string: `str`
+        :returns: tuple with fixed and default parameters for the jobtype
+            as defined by the plugin's defaults
+        :rtype: `tuple`
+        """
+        if jobtype_name_as_string == 'VaspJob':
+            default_args = CustodianDefaults.VASP_JOB_SETTINGS
+            fixed_args = CustodianDefaults.VASP_JOB_FIXED_SETTINGS
+        elif jobtype_name_as_string == 'VaspNEBJob':
+            default_args = CustodianDefaults.VASP_NEB_JOB_SETTINGS
+            fixed_args = CustodianDefaults.VASP_NEB_JOB_FIXED_SETTINGS
+        return (default_args, fixed_args)
 
     def validate_handlers(self, handlers):
         """
@@ -225,26 +352,35 @@ class CustodianSettings(object):
                                          .format(path_to_file,
                                                  path_to_file.suffix,
                                                  expected_suffix))
-        # replace vasp_cmd with $vasp_cmd to properly expand given arguments
-        # when spec file is read by custodian
-        vasp_job_settings = dict(self.vaspjob_settings)
-        vasp_job_settings['$vasp_cmd'] = vasp_job_settings.pop('vasp_cmd')
-        # setup a single vasp-job but distinguish between regular and neb
-        # calculations due to the different folder structures
-        if self._is_neb:
-            vasp_job_type = CustodianDefaults.VASP_NEB_JOB_IMPORT_PATH
-        else:
-            vasp_job_type = CustodianDefaults.VASP_JOB_IMPORT_PATH
-        custodian_jobs = [{'jb': vasp_job_type, 'params': vasp_job_settings}]
+        # job specification is expected as list of the form
+        # [
+        #   {'jb': job1_import_path, 'params': {'job1_params}},
+        #   {'jb': job2_import_path, 'params': {'job2_params}},
+        #   ...
+        # ]
+        connected_jobs = self.custodian_jobs
+        custodian_jobs = [
+            {'jb': j, 'params': p} for (j, p) in connected_jobs
+        ]
         # handler specification is expected as list of the form
         # [
         #   {'hdlr': handler1_import_path, 'params': {'handler1_params}},
-        #   {'hdlr': handler1_import_path, 'params': {'handler1_params}},
+        #   {'hdlr': handler2_import_path, 'params': {'handler2_params}},
         #   ...
         # ]
         connected_handlers = self.custodian_handlers.items()
         custodian_handlers = [
             {'hdlr': h, 'params': p} for (h, p) in connected_handlers
+        ]
+        # validator specification is expected as list of the form
+        # [
+        #   {'vldr': validator1_import_path, 'params': {'validator1_params}},
+        #   {'vldr': validator2_import_path, 'params': {'validator2_params}},
+        #   ...
+        # ]
+        connected_validators = self.custodian_validators
+        custodian_validators = [
+            {'vldr': v, 'params': p} for (v, p) in connected_validators
         ]
         # custodian settings are expected to be of type dict
         custodian_settings = self.custodian_settings
@@ -253,8 +389,12 @@ class CustodianSettings(object):
         custodian_spec_contents = {
             'jobs': custodian_jobs,
             'handlers': custodian_handlers,
+            'validators': connected_validators,
             'custodian_params': custodian_settings,
         }
+        # apply dirty hack to avoid aliases being used by yaml, see
+        # https://stackoverflow.com/a/30682604
+        yaml.Dumper.ignore_aliases = lambda *args: True
         # generate custodian input file
         cstdn_spec_file_contents = yaml.dump(custodian_spec_contents,
                                              explicit_start=False,

@@ -1,19 +1,21 @@
-.. _tutorials-calculations-si-diamond-structure:
+.. _tutorials-calculations-si-diamond-structure-double-relaxation:
 
-Relaxation of a Si Diamond Structure
-====================================
+Double Relaxation of a Si Diamond Structure using Custodian
+===========================================================
 
 Topics covered in this tutorial:
 
 * Setting up calculation inputs
 * Setting up an (error corrected) VASP calculation
+* Add multiple Custodian jobs to the Calculation
 * Access generated outputs
 
 Introduction
 ------------
 
-In this (simple) tutorial the :class:`~aiida_cusp.calculators.VaspCalculation` calculator of this plugin is used to run an error corrected VASP calculation.
-In particular, a silicon diamond structure is relaxed and finally the ground state energy per Si atom is calculated for the relaxed structure.
+In this (simple) tutorial the :class:`~aiida_cusp.calculators.VaspCalculation` calculator of this plugin is used to perform a double relaxation run.
+In particular, the double relaxation is performed solely using Custodian using a two job workflow provided by the Custodian package that is directly connected to the AiiDA calculation.
+Here, a simple silicon diamond structure is used as an example on which the double relaxation is performed.
 
 Setting up the Inputs
 ---------------------
@@ -33,10 +35,11 @@ Since the plugin is tightly connected to pymatgen's data types the structure is 
 .. code-block:: python
 
    from pymatgen.core import Lattice, Structure
-   lattice = Lattice.cubic(5.431)
+   lattice = Lattice.cubic(5.231)
    species = ["Si"]
    coords = [[0.0, 0.0, 0.0]]
    si_diamond_structure = Structure.from_spacegroup(227, lattice, species, coords)
+   si_diamond_structure.perturb(0.1)
 
 Using this structure we can now directly setup the required `POSCAR` data for the calculation expecting a :class:`~aiida_cusp.data.VaspPoscarData` as input:
 
@@ -60,7 +63,7 @@ The expected input for the `INCAR` parameters is of type :class:`~aiida_cusp.dat
 .. code-block:: python
 
    VaspIncarData = DataFactory('cusp.incar')
-   incar_params = {'ISIF': 3, 'EDIFFG': -0.1}
+   incar_params = {'ISIF': 3, 'NSW': 100, 'IBRION': 1, 'EDIFFG': -0.1}
    incar = VaspIncarData(incar=incar_params)
 
 
@@ -123,7 +126,7 @@ Here, three different codes are available from the database, two VASP codes
 * `vasp_5.4.1_openmpi_4.0.3_scalapack_2.1.0@CompMPI`
 * `vasp_5.4.1_openmpi_4.0.3_scalapack_2.1.0_vtst@CompMPI`
 
-and one custodian code that can be used for the error correction
+and one custodian code that will be used for the error correction and execution of the connected jobs:
 
 * `custodian_2020427@CompMPI`
 
@@ -157,24 +160,25 @@ For the VASP code and the required calculation inputs, setup in the previous ste
    These define the calculation jobs resources the scheduler acquires upon submission, i.e. the number of cores and machines to be used on the computer to run the job.
    As the settings defined here usually depend on the type of scheduler you are using, please refer to the `AiiDA scheduler documentation`_ for the options available for your scheduler.
 
-Finally, we want to run the VASP calculation defined by the above inputs with automated error correction using Custodian.
-To do so we need to add the Custodian executable, defined by the `custodian_2020427@CompMPI` code object, and the error handlers we want to use to the calculation as additional inputs:
+In order to finally run the Custodian double relaxation we also need to add the corresponding jobs to the calculation.
+To do so we first need to add the Custodian executable, defined by the `custodian_2020427@CompMPI` code object
+
+
+, and the error handlers we want to use to the calculation as additional inputs:
 
 .. code-block:: python
 
-   # enable error correction by adding an  **additional** custodian code ...
+   # add the **additional** custodian code to the calculation inputs
    VaspSiRelax.custodian.code = Code.get_from_string('custodian_2020427@CompMPI')
-   # ... and the corresponding custodian error handlers
-   from custodian.vasp.handlers import VaspErrorHandler
-   VaspSiRelax.custodian.handlers = [VaspErrorHandler()]
 
-In the above example only a single error handlers, i.e. the `~custodian.vasp.handlers.VaspErrorHandler`, is set in the calculation and the default settings as defined by the plugin are used for the connected Custodian code.
-For a complete overview of the available error handlers and the available Custodian settings that may be set for the code, please refer to the :ref:`Custodian section<user-guide-custodian>` of this documentation.
+With the custodian code added to the calculation, we can now also assign the jobs, required to run the double relaxation, to the calculation:
 
-.. note::
+.. code-block:: python
 
-   You can also run this example without error corrections by simply leaving the `VaspSiRelax.custodian.code` and `VaspSiRelax.custodian.handler` inputs empty (those inputs are optional!)
-   In that case the calculator will call the VASP executable defined by the code given in the `VaspSiRelax.code` input directly instead of wrapping VASP with Custodian.
+   # add the double relaxation jobs to the `custodian.jobs` keyword
+   from custodian.vasp.jobs import VaspJob
+   double_relax_jobs = VaspJob.double_relaxation_run(None)
+   VaspSiRelax.custodian.jobs = double_relax_jobs
 
 With all required inputs defined, we are now ready to run the code.
 The following code shows how the calculation can be submitted to the AiiDA daemon via the :func:`~aiida.engine.launch.submit` function provided by the :mod:`aiida.engine` module:
@@ -195,37 +199,65 @@ We can check that the calculation was indeed submitted to the daemon by checking
    $ verdi process list
      PK  Created    Process label         Process State    Process status
    ----  ---------  --------------------  ---------------  ---------------------------------------
-   1377  43s ago    VaspCalculation       ⏵ Waiting        Monitoring scheduler: job state RUNNING
+   1664  43s ago    VaspCalculation       ⏵ Waiting        Monitoring scheduler: job state RUNNING
 
 Inspecting the Outputs
 ----------------------
 
 After the job has finished the automatically connected default :class:`~aiida_cusp.parsers.vasp_file_parser.VaspFileParser` will add the generated `vasprun.xml`, `OUTCAR` and `CONTCAR` files as outputs to the stored calculation node.
-As the stored files are available from the node using the `outputs.parsed_results` namespace we can easily determine the energy per Si atom in the relaxed structure using the parsed `vasprun.xml` file by loading the calculation node and inspecting the stored file contents.
-Using the `PK` of the stored calculation node printed, next to the running calculation in the output of `verdi process list` (see above), the node can be loaded from the database using AiiDA's :func:`~aiida.orm.utils.loaders.load_node` function.
-In the following a `verdi shell`_ is used to load the node and calculated the energy per Si atom by inspecting the loaded node's outputs:
+In general, all parsed calculation outputs are defined to the `outputs.parsed_results` namespace.
+However, if multiple custodian jobs are defined, a sub-namespace is created for all defined job-suffixes, to which the parsed files for each individual job are stored.
+In case of the discussed double relaxation, the generated process output section (available via the `verdi process show` command) would therefore look like
+
+.. code-block:: bash
+
+   Outputs              PK    Type
+   -------------------  ----  ---------------
+   parsed_results
+       relax1
+           contcar      1667  VaspContcarData
+           vasprun_xml  1669  VaspVasprunData
+           outcar       1671  VaspOutcarData
+       relax2
+           contcar      1668  VaspContcarData
+           vasprun_xml  1670  VaspVasprunData
+           outcar       1672  VaspOutcarData
+   remote_folder        1665  RemoteData
+   retrieved            1666  FolderData
+
+To access a file available from the node that is stored in a specific sub-namespace we simple extend the `outputs.parsed_results` namespace with the corresponding sub-namespace.
+As an example, we extract the calculated lattice constants obtained from the just performed double relaxation run using the parsed `CONTCAR` of the first and second relaxation run (i.e. the calculations with suffix `.relax1` and `.relax2` whose files have thus been stored to the `relax1` and `relax2` sub-namespace, respectively)
+Using the `PK` of the stored calculation node, printed next to the running calculation in the output of `verdi process list` (see above), the nodes can be loaded from the database using AiiDA's :func:`~aiida.orm.utils.loaders.load_node` function.
+In the following a `verdi shell`_ is used to load the `CONTCAR` nodes and to retrieved the lattice constants of both calculations by inspecting the loaded nodes' outputs:
 
 .. code-block:: python
 
    >>> from aiida.orm import load_node
-   >>> si_relax_node = load_node(1377)
-   >>> print(si_relax_node)
-   uuid: f97a5909-6a3d-4cec-b4ea-39a69a3a125e (pk: 1337)
-   >>> print(si_relax_node.outputs.parsed_results__vasprun_xml)
-   <VaspVasprunData: uuid: 136e55a1-b1d4-4aeb-9661-8830808552f5 (pk: 1339)>
+   >>> si_double_relax_node = load_node(1664)
+   >>> si_double_relax_node
+   <CalcJobNode: uuid: 5e27556c-3ba6-42ee-a8d2-f81c6b56fe44 (pk: 1664) (aiida.calculations:cusp.vasp)>
+   >>> contcar_relax1 = si_relax_node.outputs.parsed_results.relax1.contcar
+   >>> contcar_relax1
+   <VaspContcarData: uuid: af951a4e-f138-4152-8ce0-d4334bbf3e65 (pk: 1667)>
+   >>> contcar_relax2 = si_relax_node.outputs.parsed_results.relax2.contcar
+   >>> contcar_relax2
+   <VaspContcarData: uuid: f557cec6-2552-4008-8011-422019d421c8 (pk: 1668)>
 
-Since the plugin tightly integrates AiiDA with the Pymatgen framework we can easily get to the total energy of the system (and actually many more quantities) using the :meth:`~aiida_cusp.data.VaspVasprunData.get_vasprun` method implemented by the :class:`~aiida_cusp.data.VaspVasprunData` class:
+Since the plugin tightly integrates AiiDA with the Pymatgen framework we can easily get to the lattice constants of both output structures (and actually many more quantities) using the :meth:`~aiida_cusp.data.VaspPoscarData.get_structure` method inherited by the :class:`~aiida_cusp.data.VaspContcarData` class:
 
 .. code-block:: python
 
-   >>> pymatgen_vasprun = si_relax_node.outputs.parsed_results.vasprun_xml.get_vasprun()
-   >>> print(type(pymatgen_vasprun))
-   <class 'pymatgen.io.vasp.outputs.Vasprun'>
-   >>> total_energy = float(pymatgen_vasprun.final_energy)
-   >>> num_atoms = float(len(pymatgen_vasprun.final_structure))
-   >>> energy_per_atom = total_energy / num_atoms
-   >>> print("Energy per atom: {} (eV/atom)".format(energy_per_atom))
-   Energy per atom: -5.41045657375 (eV/atom)
+   >>> structure_relax1 = contcar_relax1.get_structure()
+   >>> structure_relax2 = contcar_relax2.get_structure()
+   >>> print(type(structure_relax1))
+   <class 'pymatgen.core.structure.Structure'>
+   >>> print(type(structure_relax2))
+   <class 'pymatgen.core.structure.Structure'>
+   # print out the lattice constants
+   >>> print(f"Relax1 abc = {structure_relax1.lattice.abc} (Angstrom)")
+   Relax1 abc = (5.465553969593606, 5.465016691078316, 5.46511582291087) (Angstrom)
+   >>> print(f"Relax2 abc = {structure_relax2.lattice.abc} (Angstrom)")
+   Relax2 abc = (5.465510440923655, 5.465511092210795, 5.4655567623820325) (Angstrom)
 
 
 Copy-and-Paste
@@ -233,15 +265,18 @@ Copy-and-Paste
 
 .. code-block:: python
 
-   from custodian.vasp.handlers import VaspErrorHandler
    from pymatgen.core import Lattice, Structure
+   from custodian.vasp.handlers import VaspErrorHandler
+   from custodian.vasp.jobs import VaspJob
+
    from aiida.orm import Code
    from aiida.plugins import CalculationFactory, DataFactory
-   from aiida.engine import submit
+   from aiida.engine import submit, run
 
    # setup the code-labels defining the codes to be used
    vasp_code_label = 'place_your_vasp_code_label_here'
    custodian_code_label = 'place_your_custodian_code_label_here'
+
 
    # define all input datatypes
    VaspIncarData = DataFactory('cusp.incar')
@@ -250,13 +285,14 @@ Copy-and-Paste
    VaspPotcarData = DataFactory('cusp.potcar')
 
    # setup the silicon diamond structure
-   lattice = Lattice.cubic(5.431)
+   lattice = Lattice.cubic(5.231)
    species = ["Si"]
    coords = [[0.0, 0.0, 0.0]]
    si_diamond_structure = Structure.from_spacegroup(227, lattice, species, coords)
+   si_diamond_structure.perturb(0.1)
 
    # define calculation inputs
-   incar = VaspIncarData(incar={'ISIF': 3, 'EDIFFG': -0.1})
+   incar = VaspIncarData(incar={'ISIF': 3, 'NSW': 100, 'IBRION': 1, 'EDIFFG': -0.1})
    poscar = VaspPoscarData(structure=si_diamond_structure)
    potcar = VaspPotcarData.from_structure(poscar, 'pbe')
    kpoints = VaspKpointData(kpoints={'mode': 'auto', 'kpoints': 25})
@@ -275,10 +311,12 @@ Copy-and-Paste
    VaspSiRelax.potcar = potcar
    VaspSiRelax.kpoints = kpoints
 
-   # optional inputs for the custodian error correction (skip this if you
-   # do not want to enable error correction)
+   # this will setup two different, custodian controlled jobs with suffixes
+   # '.relax1' and '.relax2'
+   jobs = VaspJob.double_relaxation_run(None)
    VaspSiRelax.custodian.code = custodian_code
-   VaspSiRelax.custodian.handlers = [VaspErrorHandler()]
+   VaspSiRelax.custodian.handlers = VaspErrorHandler()
+   VaspSiRelax.custodian.jobs = jobs
 
    # submit calculation the daemon
    node = submit(VaspSiRelax)

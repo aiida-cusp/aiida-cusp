@@ -138,86 +138,109 @@ class CustodianDefaults(object):
         return 'custodian.vasp.jobs.VaspJob'
 
     # default settings controlling regular VASP jobs run through custodian
+    # (except for fixed parameters, which will be used for all calculations
+    # automatically, other parameter are only used in case no job input
+    # was passed to the calculation)
     @classproperty
     def VASP_JOB_SETTINGS(cls):
         return {
+            # always need to be replaced with the plugin defaults
             'vasp_cmd': None,
             'output_file': PluginDefaults.STDOUT_FNAME,
             'stderr_file': PluginDefaults.STDERR_FNAME,
+            # disallow automatic switch to gamma optimized version
+            'auto_gamma': False,
+            'gamma_vasp_cmd': None,
+            # default parameters that are only used internally if no
+            # VaspJob was defined by the user
             'suffix': "",
             'final': True,
             'backup': True,
             'auto_npar': False,
-            'auto_gamma': False,
             'settings_override': None,
-            'gamma_vasp_cmd': None,
             'copy_magmom': False,
             'auto_continue': False,
         }
 
+    @classproperty
+    def VASP_JOB_FIXED_SETTINGS(cls):
+        return ['vasp_cmd', 'output_file', 'stderr_file', 'auto_gamma',
+                'gamma_vasp_cmd']
+
     # default settings controlling NEB VASP jobs run through custodian
+    # (except for fixed parameters, which will be used for all calculations
+    # automatically, other parameter are only used in case no job input
+    # was passed to the calculation)
     @classproperty
     def VASP_NEB_JOB_SETTINGS(cls):
         return {
+            # always need to be replaced with the plugin defaults
             'vasp_cmd': None,
             'output_file': PluginDefaults.STDOUT_FNAME,
             'stderr_file': PluginDefaults.STDERR_FNAME,
+            # disallow automatic switch to gamma optimized version
+            'auto_gamma': False,
+            'gamma_vasp_cmd': None,
+            # default parameters that are only used internally if no
+            # VaspNEBJob was defined by the user
             'suffix': "",
             'final': True,
             'backup': True,
             'auto_npar': False,
-            'auto_gamma': False,
             'half_kpts': False,
             'settings_override': None,
-            'gamma_vasp_cmd': None,
             'auto_continue': False,
         }
 
-    # default settings controlling the custodian executable
+    @classproperty
+    def VASP_NEB_JOB_FIXED_SETTINGS(cls):
+        return ['vasp_cmd', 'output_file', 'stderr_file', 'auto_gamma',
+                'gamma_vasp_cmd']
+
+    # default settings for controlling the overall custodian executable
+    # wrapping and monitoring the calculation job (note that some of the
+    # settings are protected parameters which may be set by the user but
+    # will be overwritten by the internal default parameters)
     @classproperty
     def CUSTODIAN_SETTINGS(cls):
         return {
-            'max_errors_per_job': None,
             'max_errors': 10,
+            'max_errors_per_job': None,
             'polling_time_step': 10,
             'monitor_freq': 30,
             'skip_over_errors': False,
+            'terminate_on_nonzero_returncode': False,
+            # will always be replaced with the following defaults
             'scratch_dir': None,
             'gzipped_output': False,
-            'checkpoint': False,
             'terminate_func': None,
-            'terminate_on_nonzero_returncode': False,
+            # disallow checkpoint
+            'checkpoint': False,
         }
 
     # custodian settings that may be altered by the user (settings not
     # defined here won't be accepted when passed as input to the
     # calculation's custodian.settings option!)
     @classproperty
-    def MODIFIABLE_SETTINGS(cls):
-        return ['max_errors', 'polling_time_step', 'monitor_freq',
-                'skip_over_errors']
+    def FIXED_CUSTODIAN_SETTINGS(cls):
+        return ['scratch_dir', 'gzipped_output', 'terminate_func',
+                'checkpoint']
 
-    # dictionary of the used default settings for all VASP error handlers
-    # that may be used with this plugin
+    # the following dictionary contains all error handlers defined in the
+    # custodian package. dictionary entries defined here will be used during
+    # calculation setup to overwrite any user given inputs
     @classproperty
     def ERROR_HANDLER_SETTINGS(cls):
         return dict({
             'AliasingErrorHandler': {
                 'output_filename': PluginDefaults.STDOUT_FNAME,
             },
-            'DriftErrorHandler': {
-                'max_drift': None,
-                'to_average': 3,
-                'enaug_multiply': 2,
-            },
             'FrozenJobErrorHandler': {
                 'output_filename': PluginDefaults.STDOUT_FNAME,
-                'timeout': 21600,
             },
             'IncorrectSmearingHandler': {
                 'output_filename': VaspDefaults.FNAMES['vasprun'],
             },
-            'LargeSigmaHandler': {},
             'LrfCommutatorHandler': {
                 'output_filename': PluginDefaults.STDERR_FNAME,
             },
@@ -227,7 +250,6 @@ class CustodianDefaults(object):
             },
             'NonConvergingErrorHandler': {
                 'output_filename': VaspDefaults.FNAMES['oszicar'],
-                'nionic_steps': 10,
             },
             'PositiveEnergyErrorHandler': {
                 'output_filename': VaspDefaults.FNAMES['oszicar'],
@@ -235,7 +257,6 @@ class CustodianDefaults(object):
             'PotimErrorHandler': {
                 'input_filename': VaspDefaults.FNAMES['poscar'],
                 'output_filename': VaspDefaults.FNAMES['oszicar'],
-                'dE_threshold': 1.0,
             },
             'StdErrHandler': {
                 'output_filename': PluginDefaults.STDERR_FNAME,
@@ -245,14 +266,10 @@ class CustodianDefaults(object):
             },
             'VaspErrorHandler': {
                 'output_filename': PluginDefaults.STDOUT_FNAME,
-                'natoms_large_cell': 100,
-                'errors_subset_to_catch': None,
             },
-            'WalltimeHandler': {
-                'wall_time': None,
-                'buffer_time': 300,
-                'electronic_step_stop': False,
-            },
+            'WalltimeHandler': {},
+            'DriftErrorHandler': {},
+            'LargeSigmaHandler': {},
         })  # ERROR_HANDLER_SETTINGS
 
 

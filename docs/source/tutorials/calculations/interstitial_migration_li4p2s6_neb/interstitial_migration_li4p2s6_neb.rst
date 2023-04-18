@@ -105,6 +105,7 @@ Finally, the relaxation of the created Li\ :sub:`4`\ P\ :sub:`2`\ S\ :sub:`6` st
 
 .. code-block:: python
 
+   from custodian.vasp.handlers import VaspErrorHandler
    from aiida.orm import Code
    from aiida.plugins import CalculationFactory
    from aiida.engine import submit
@@ -119,7 +120,7 @@ Finally, the relaxation of the created Li\ :sub:`4`\ P\ :sub:`2`\ S\ :sub:`6` st
    VaspRelax.metadata.options.resources = resources
    VaspRelax.code = vasp_code
    VaspRelax.custodian.code = custodian_code
-   VaspRelax.custodian.handlers = ["VaspErrorHandler"]
+   VaspRelax.custodian.handlers = [VaspErrorHandler()]
    VaspRelax.incar = incar
    VaspRelax.poscar = poscar
    VaspRelax.kpoints = kpoints
@@ -193,7 +194,7 @@ With the updated incar we can again submit the relaxation of both endpoint struc
    VaspRelaxEndpoint.metadata.options.resources = resources
    VaspRelaxEndpoint.code = vasp_code
    VaspRelaxEndpoint.custodian.code = custodian_code
-   VaspRelaxEndpoint.custodian.handlers = ["VaspErrorHandler"]
+   VaspRelaxEndpoint.custodian.handlers = [VaspErrorHandler()]
    VaspRelaxEndpoint.incar = incar
    VaspRelaxEndpoint.kpoints = kpoints
    # individual settings per endpoint, i.e. the structure
@@ -272,7 +273,7 @@ All other expected parameters are defined in the same way as for regular VASP ca
    VaspNeb.metadata.options.resources = resources
    VaspNeb.code = vasp_code
    VaspNeb.custodian.code = custodian_code
-   VaspNeb.custodian.handlers = ["VaspErrorHandler"]
+   VaspNeb.custodian.handlers = [VaspErrorHandler()]
    VaspNeb.incar = incar
    VaspNeb.kpoints = kpoints
    VaspNeb.potcar = potcar
@@ -360,6 +361,7 @@ Copy-and-Paste
 
 .. code-block:: python
 
+   from custodian.vasp.handlers import VaspErrorHandler
    from pymatgen.core import Structure, Lattice, PeriodicSite
    from aiida.orm import Code
    from aiida.plugins import CalculationFactory, DataFactory
@@ -418,7 +420,7 @@ Copy-and-Paste
    VaspRelax.potcar = VaspPotcarData.from_structure(poscar, 'pbe')
    # custodian error correction
    VaspRelax.custodian.code = Code.get_from_string(custodian_code_label)
-   VaspRelax.custodian.handlers = ["VaspErrorHandler"]
+   VaspRelax.custodian.handlers = [VaspErrorHandler()]
    # submit the calculation
    node = submit(VaspRelax)
    # print out the PK of the submitted job
@@ -432,6 +434,7 @@ Copy-and-Paste
 
 .. code-block:: python
 
+   from custodian.vasp.handlers import VaspErrorHandler
    from aiida.orm import Code, load_node
    from aiida.plugins import CalculationFactory, DataFactory
    from aiida.engine import submit
@@ -487,7 +490,7 @@ Copy-and-Paste
    VaspRelaxEndpoint.kpoints = kpoints
    # custodian error correction
    VaspRelaxEndpoint.custodian.code = Code.get_from_string(custodian_code_label)
-   VaspRelaxEndpoint.custodian.handlers = ["VaspErrorHandler"]
+   VaspRelaxEndpoint.custodian.handlers = [VaspErrorHandler()]
    # Run the NEB path endpoint relaxations in parallel, i.e. submit both
    # calculations at once
    for endpoint in endpoints:
@@ -504,6 +507,7 @@ Running the NEB Calculation
 
 .. code-block:: python
 
+   from custodian.vasp.handlers import VaspErrorHandler
    from aiida.orm import Code
    from aiida.plugins import CalculationFactory, DataFactory
    from aiida.engine import submit
@@ -570,7 +574,7 @@ Running the NEB Calculation
    VaspNeb.potcar = potcar
    # custodian error correction
    VaspNeb.custodian.code = Code.get_from_string(custodian_code_label)
-   VaspNeb.custodian.handlers = ["VaspErrorHandler"]
+   VaspNeb.custodian.handlers = [VaspErrorHandler()]
    # submit the NEB calculation
    node = submit(VaspNeb)
    # print out the PK of the submitted job

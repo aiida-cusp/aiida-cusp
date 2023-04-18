@@ -415,8 +415,47 @@ def test_permanent_retrieve_list(vasp_code):
     }
     calc_base = CalculationBase(inputs=inputs)
     calc_perm_list = calc_base.retrieve_permanent_list()
+    assert len(calc_perm_list) == len(expected_list)
     assert len(calc_perm_list) == len(set(calc_perm_list))
     assert set(calc_perm_list) == set(expected_list)
+
+
+@pytest.mark.parametrize('suffixes', [[''], ['.job1'], ['.a', '.b', '.c'],
+                         ['.samesuffix', '.samesuffix']])
+def test_permanent_retrieve_list_with_suffix(vasp_code, suffixes):
+    from aiida_cusp.calculators.calculation_base import CalculationBase
+    from aiida_cusp.utils.defaults import PluginDefaults, CustodianDefaults
+    from custodian.vasp.jobs import VaspJob
+    # this is the permanent retrieve list that is not affected by any suffix
+    # set for connected custodian jobs
+    static_files = [
+        '_scheduler-stderr.txt',  # default AiiDA file for scheduler stderr
+        '_scheduler-stdout.txt',  # default AiiDA file for scheduler stdout
+        PluginDefaults.STDERR_FNAME,  # aiida.err
+        '_aiidasubmit.sh',  # AiiDA's default submit script name
+        PluginDefaults.CSTDN_SPEC_FNAME,  # cstdn_spec.yaml
+        CustodianDefaults.RUN_LOG_FNAME,  # run.log
+    ]
+    # these are the dynamic files contained in the permanent retrieved list
+    # which are affected by the suffixes defined by connected custodian
+    # jobs
+    dynamic_files = [f"{PluginDefaults.STDOUT_FNAME}{s}" for s in suffixes]
+    # the expected list is then the combination of all static and all
+    # dynamically added files
+    expected_files = static_files + dynamic_files
+    # for each suffix, connect an individual VaspJob to the calculation
+    jobs = [VaspJob(None, suffix=s) for s in suffixes]
+    inputs = {
+        'code': vasp_code,
+        'metadata': {'options': {'resources': {'num_machines': 1}}},
+        'custodian': {'jobs': jobs},
+    }
+    calc_base = CalculationBase(inputs=inputs)
+    calc_perm_list = calc_base.retrieve_permanent_list()
+    # check the calculated permanent retrieve list against the expected
+    # list of permanent files
+    assert len(calc_perm_list) == len(expected_files)
+    assert set(calc_perm_list) == set(expected_files)
 
 
 @pytest.mark.parametrize('retrieve_list', [[], ['A', 'B', 'C']])

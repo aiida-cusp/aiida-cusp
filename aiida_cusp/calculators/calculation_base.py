@@ -8,6 +8,7 @@ Base class serving as parent for other VASP calculator implementations
 
 import pathlib
 
+from custodian.vasp.jobs import VaspJob, VaspNEBJob
 from aiida.engine import CalcJob
 from aiida.orm import RemoteData, Code, Int, Bool, Dict, List
 from aiida.orm.nodes.data.base import to_aiida_type
@@ -15,22 +16,8 @@ from aiida.common import (CalcInfo, CodeInfo, CodeRunMode)
 
 from aiida_cusp.utils.defaults import (PluginDefaults, VaspDefaults,
                                        CustodianDefaults)
-from aiida_cusp.utils.custodian import CustodianSettings
-
-
-# TODO: This is a temporary fix since the to_aiida_type serizalizer function
-#       obviously is not defined for the aiida.orm.List type...
-def lidi_serializer(value):
-    # passing a list of handler names is equivalent to passing
-    # a dictionary of handler names with empty dicts as values to indicate
-    # default values shall be used
-    # Thus, we directly transform the list to the corresponding dict to
-    # avoid further issues downstream
-    if isinstance(value, (list, tuple)):
-        out = {v: {} for v in value}
-    elif isinstance(value, dict):
-        out = value
-    return Dict(dict=out)
+from aiida_cusp.utils.custodian import (CustodianSettings, handler_serializer,
+                                        job_serializer, custodian_job_suffixes)
 
 
 class CalculationBase(CalcJob):
@@ -72,10 +59,17 @@ class CalculationBase(CalcJob):
         # definition of vasp error handlers connected to the calculation
         spec.input(
             'custodian.handlers',
-            valid_type=(Dict, List),
-            serializer=lidi_serializer,
+            valid_type=Dict,
+            serializer=handler_serializer,
             required=False,
             help=("Error handlers connected to the custodian executable")
+        )
+        spec.input(
+            'custodian.jobs',
+            valid_type=Dict,
+            serializer=job_serializer,
+            required=False,
+            help=("VaspJobs connected to the custodian executable")
         )
         spec.input(
             'custodian.settings',
@@ -195,6 +189,9 @@ class CalculationBase(CalcJob):
         mpirun_command = computer.get_mpirun_command()
         mpi_base_args = [arg.format(**mpi_arg_dict) for arg in mpirun_command]
         mpi_extra_args = self.inputs.metadata.options.mpirun_extra_params
+        self.logger.debug(f"[{__name__}] vasp_calc_mpi_args(): "
+                          f"using `mpi_base_args` = {mpi_base_args} and "
+                          f"`mpi_extra_args` = {mpi_extra_args}")
         return mpi_base_args, mpi_extra_args
 
     def vasp_run_line(self):
@@ -214,6 +211,8 @@ class CalculationBase(CalcJob):
             vasp_cmdline_params = mpicmd + mpiextra + vasp_exec
         else:
             vasp_cmdline_params = vasp_exec
+        self.logger.debug(f"[{__name__}] vasp_run_line(): "
+                          f"set `vasp_cmdline_params` = {vasp_cmdline_params}")
         # Custodian requires the vasp-cmd be a list of arguments. Since we
         # also pass the stdout / stderr log-files directly to custodian we're
         # done at this point
@@ -260,27 +259,43 @@ class CalculationBase(CalcJob):
         ]
         # do not copy POSCAR if replaced with CONTCAR
         if self.inputs.restart.get('contcar_to_poscar', True):
+            self.logger.debug(f"[{__name__}] restart_files_exclude(): "
+                              f"contcar_to_poscar=True => adding POSCAR "
+                              f"to exclude_files")
             exclude_files += [VaspDefaults.FNAMES['poscar']]
+        self.logger.debug(f"[{__name__}] restart_files_exclude(): "
+                          f"files excluded from restart: {exclude_files}")
         return exclude_files
 
     def setup_custodian_settings(self, is_neb=False):
         """
-        Create custodian settings instance from the given handlers and
-        settings.
+        Create custodian settings instance from the given handlers, jobs
+        and settings
         """
         # setup the inputs to create the custodian settings from the passed
         # parameters
         settings = dict(self.inputs.custodian.get('settings', {}))
         handlers = dict(self.inputs.custodian.get('handlers', {}))
+        jobs = dict(self.inputs.custodian.get('jobs', {}))
+        # if no jobs have been defined by the user, simply initialize
+        # a single Job / NEBJob with the plugins default parameters
+        if not jobs:
+            if is_neb:
+                JobType = VaspNEBJob
+                defaults = CustodianDefaults.VASP_NEB_JOB_SETTINGS
+            else:
+                JobType = VaspJob
+                defaults = CustodianDefaults.VASP_JOB_SETTINGS
+            self.logger.debug(f"[{__name__}] setup_custodian_settings(): "
+                              f"custodian.jobs was not set, using single "
+                              f"{JobType} with default params {defaults}")
+            jobs = job_serializer(JobType(**defaults)).get_dict()
         # get the vasp run command and the stdout / stderr files
         vasp_cmd = self.vasp_run_line()
-        stdout = self._default_output_file
-        stderr = self._default_error_file
         # setup custodian settings used to write the spec file
-        custodian_settings = CustodianSettings(vasp_cmd, stdout, stderr,
+        custodian_settings = CustodianSettings(vasp_cmd, jobs=jobs,
                                                settings=settings,
-                                               handlers=handlers,
-                                               is_neb=is_neb)
+                                               handlers=handlers)
         return custodian_settings
 
     def restart_copy_remote(self, folder, calcinfo):
@@ -347,13 +362,21 @@ class CalculationBase(CalcJob):
         retrieve = self.files_to_retrieve()
         retrieve_temporary = []
         # match files located both inside the working directory **and** in
-        # possibl esubfolders of that directory (i.e NEB calculations)
-        for fname in retrieve:
-            # FIXME: Once, support for older aiida-core versions is dropped
-            #        the nesting specifier `2` can be replaced with `None`
-            #        which was introduced with aiida-core 2.1.0
-            retrieve_temporary.append((f"{fname}", ".", 2))
-            retrieve_temporary.append((f"*/{fname}", ".", 2))
+        # possible subfolders of that directory (i.e NEB calculations)
+        # Make sure to also account for possible file suffixes given by
+        # a connected custodian job
+        custodian_jobs = dict(self.inputs.custodian.get('jobs', {}))
+        # FIXME: If multiple identical suffixes are defined, this will add
+        #        the same file multiple times. Does that pose a problem!?
+        for suffix in custodian_job_suffixes(custodian_jobs):
+            for fname in retrieve:
+                # FIXME: Once, support for older aiida-core versions is dropped
+                #        the nesting specifier `2` can be replaced with `None`
+                #        which was introduced with aiida-core 2.1.0
+                retrieve_temporary.append((f"{fname}{suffix}", ".", 2))
+                retrieve_temporary.append((f"*/{fname}{suffix}", ".", 2))
+        self.logger.debug(f"[{__name__}] retrieve_temporary_list(): "
+                          f"calculated temporary list = {retrieve_temporary}")
         return retrieve_temporary
 
     def retrieve_permanent_list(self):
@@ -376,9 +399,18 @@ class CalculationBase(CalcJob):
             # other logfiles, i.e. scheduler as well as stdout / stderr
             self.inputs.metadata.options.get('scheduler_stdout'),
             self.inputs.metadata.options.get('scheduler_stderr'),
-            PluginDefaults.STDOUT_FNAME,
             PluginDefaults.STDERR_FNAME,
         ]
+        # the STDOUT_FNAME (i.e. aiida.out) will also be extended with the
+        # associated suffix for each run, thus we check for any suffix and
+        # extend and add the STDOUT_FNAME for each defined suffix
+        custodian_jobs = dict(self.inputs.custodian.get('jobs', {}))
+        # FIXME: If multiple identical suffixes are defined, this will add
+        #        the same file multiple times. Does that pose a problem!?
+        for suffix in custodian_job_suffixes(custodian_jobs):
+            retrieve_permanent.append(f"{PluginDefaults.STDOUT_FNAME}{suffix}")
+        self.logger.debug(f"[{__name__}] retrieve_permanent_list(): "
+                          f"calculated permanent list = {retrieve_permanent}")
         return retrieve_permanent
 
     def create_calculation_inputs(self, folder, calcinfo):
